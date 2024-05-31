@@ -64,13 +64,12 @@ export default function Profile() {
         <Pressable
           style={[
             styles.buttonCriar,
-            {backgroundColor: buttonCriarBackground},
+            {
+              backgroundColor: buttonCriarBackground,
+              borderColor: buttonCriarTextColor,
+            },
           ]}>
-          <Text
-            style={[
-              styles.textCriar,
-              {color: buttonCriarTextColor, borderColor: buttonCriarTextColor},
-            ]}>
+          <Text style={[styles.textCriar, {color: buttonCriarTextColor}]}>
             Criar Conta
           </Text>
         </Pressable>
@@ -118,7 +117,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
     elevation: 3,
-    borderWidth: 1.5,
+    borderWidth: 2,
   },
   textIniciar: {
     fontSize: 16,
