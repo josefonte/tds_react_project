@@ -60,7 +60,7 @@ function TabGroup() {
           }
           if (route.name === 'Profile') {
             iconName = focused ? 'person-circle' : 'person-circle-outline';
-            return <Ionicons name={iconName} size={26} color={color} />;
+            return <Ionicons name={iconName} size={28} color={color} />;
           }
         },
       })}>
