@@ -9,27 +9,17 @@ import React from 'react';
 
 import 'react-native-gesture-handler';
 
-import {DarkTheme, NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {SafeAreaView, useColorScheme} from 'react-native';
 
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 import About from './screens/About';
 import Explore from './screens/Explore';
 import Map from './screens/Map';
 import Favorites from './screens/Favorites';
 import Profile from './screens/Profile';
 
-import FeatherIcon from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
@@ -47,7 +37,7 @@ function TabGroup() {
           height: 60,
           paddingBottom: 5,
           paddingTop: 5,
-          backgroundColor: isDarkMode ? '#191A19' : '#FEFAE0',
+          backgroundColor: isDarkMode ? '#191A19' : 'white',
         },
         tabBarIcon: ({focused, color, size}) => {
           let iconName;
@@ -87,7 +77,7 @@ export default function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
-    backgroundColor: isDarkMode ? '#191A19' : '#FEFAE0',
+    backgroundColor: isDarkMode ? '#191A19' : 'white',
   };
 
   return (
