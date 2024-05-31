@@ -1,11 +1,21 @@
 import React from 'react';
-import {Text} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  StyleSheet,
+  TextInput,
+  Text,
+  View,
+  useColorScheme,
+} from 'react-native';
 
 export default function About() {
+  const isDarkMode = useColorScheme() === 'dark';
+
   return (
-    <SafeAreaView>
-      <Text>Sobre</Text>
-    </SafeAreaView>
+    <View style={{flex: 1, backgroundColor: isDarkMode ? '#161716' : 'white'}}>
+      <Text>About</Text>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({});

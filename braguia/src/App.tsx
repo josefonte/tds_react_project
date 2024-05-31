@@ -38,6 +38,7 @@ function TabGroup() {
           paddingBottom: 5,
           paddingTop: 5,
           backgroundColor: isDarkMode ? '#191A19' : 'white',
+          borderTopColor: isDarkMode ? '#1B2107' : 'gray',
         },
         tabBarIcon: ({focused, color, size}) => {
           let iconName;
