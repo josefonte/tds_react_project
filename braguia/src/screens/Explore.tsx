@@ -14,6 +14,19 @@ import {
   ScrollView,
 } from 'react-native';
 
+import PhoneImag from './../assets/phone.svg';
+import naturaSel from './../assets/natureza_filter_sel.svg';
+import naturaUnsel from './../assets/natureza_filter_not.svg';
+import bebidaSel from './../assets/bebida_filter_sel.svg';
+import bebidaUnsel from './../assets/bebida_filter_not.svg';
+import comidaSel from './../assets/comida_filter_sel.svg';
+import comidaUnsel from './../assets/comida_filter_not.svg';
+import culturaSel from './../assets/cultura_filter_sel.svg';
+import culturaUnsel from './../assets/cultura_filter_not.svg';
+import religiaoSel from './../assets/religiao_filter_sel.svg';
+import religiaoUnsel from './../assets/religiao_filter_not.svg';
+
+
 export default function Explore() {
   const isDarkMode = useColorScheme() === 'dark';
   const textColor = isDarkMode ? '#FEFAE0' : 'black';
@@ -23,10 +36,7 @@ export default function Explore() {
       <View style={styles.containerTop}>
         <SearchComponent isDarkMode={isDarkMode} />
         <TouchableOpacity onPress={() => {}}>
-          <Image
-            style={styles.imageSuporte}
-            source={require('./../assets/phone.png')}
-          />
+          <PhoneImag height={50} width={50} />
         </TouchableOpacity>
       </View>
       <ScrollView
@@ -35,8 +45,11 @@ export default function Explore() {
         contentContainerStyle={styles.scrollViewContent}>
         <FiltroIcon
           image1={require('./../assets/filtro11.png')}
-          image2={require('./../assets/filtro12.png')}></FiltroIcon>
+          image2={require('./../assets/filtro12.png')}>
+          
+          </FiltroIcon>
         <FiltroIcon
+          
           image1={require('./../assets/filtro11.png')}
           image2={require('./../assets/filtro12.png')}></FiltroIcon>
         <FiltroIcon

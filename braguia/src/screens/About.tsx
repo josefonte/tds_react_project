@@ -19,7 +19,7 @@ export default function About() {
     container: {
       flex: 1,
       justifyContent: 'flex-start',
-      backgroundColor: isDarkMode? '#161716' : 'white',
+      backgroundColor: isDarkMode? '#161716' : '#FEFAE0',
       alignItems: 'center',
     },
   
@@ -27,7 +27,7 @@ export default function About() {
       fontSize: 50,
       fontFamily: 'Roboto',
       fontWeight: 'bold',
-      color: isDarkMode ? 'white' : 'black',
+      color: isDarkMode ? '#FEFAE0' : 'black',
       marginTop:20,
       marginBottom:40,
     },
@@ -35,7 +35,7 @@ export default function About() {
     appDescText: {
       fontSize:20,
       fontFamily: 'Roboto',
-      color: isDarkMode ? 'white' : 'black',
+      color: isDarkMode ? '#FEFAE0' : 'black',
       marginBottom:50,
     },
   
@@ -51,7 +51,7 @@ export default function About() {
     infoText:{
       fontSize:15,
       fontFamily: 'Roboto',
-      color: isDarkMode ? 'white' : 'black',
+      color: isDarkMode ? '#FEFAE0' : 'black',
       marginBottom:30,
 
     },
