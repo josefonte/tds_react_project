@@ -24,6 +24,10 @@ export default function Profile() {
   const buttonIniciarTextColor = isDarkMode ? '#191A19' : 'white';
   const buttonCriarTextColor = isDarkMode ? '#FEFAE0' : 'black';
 
+  const onPressIniciar = () => {
+    console.log('Iniciar Sessão : ', email, ' | ', password);
+  };
+
   return (
     <View style={[styles.container, {backgroundColor}]}>
       <View style={styles.content}>
@@ -48,6 +52,7 @@ export default function Profile() {
           ]}
           onChangeText={setPassword}
           value={password}
+          secureTextEntry={true}
         />
         <Text style={[styles.forgotPassword, {color: textColor}]}>
           Esqueceu-se da password?
@@ -56,7 +61,8 @@ export default function Profile() {
           style={[
             styles.buttonIniciar,
             {backgroundColor: buttonIniciarBackground},
-          ]}>
+          ]}
+          onPress={onPressIniciar}>
           <Text style={[styles.textIniciar, {color: buttonIniciarTextColor}]}>
             Iniciar Sessão
           </Text>
