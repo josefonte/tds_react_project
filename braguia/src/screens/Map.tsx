@@ -7,15 +7,15 @@ import {
   View,
   useColorScheme,
 } from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import MapScreen from './../components/mapView';
 
 export default function Map() {
   const isDarkMode = useColorScheme() === 'dark';
+  const Stack = createStackNavigator();
 
-  return (
-    <View style={{flex: 1, backgroundColor: isDarkMode ? '#161716' : 'white'}}>
-      <Text>Map</Text>
-    </View>
-  );
+  return <MapScreen></MapScreen>;
 }
 
 const styles = StyleSheet.create({});
