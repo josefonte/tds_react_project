@@ -1,6 +1,7 @@
 import SearchComponent from './../components/searchbar';
 import FiltroIcon from './../components/filtroIcon';
 import React from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
   SafeAreaView,
   StyleSheet,
@@ -30,12 +31,13 @@ import religiaoUnsel from './../assets/religiao_filter_not.svg';
 export default function Explore() {
   const isDarkMode = useColorScheme() === 'dark';
   const textColor = isDarkMode ? '#FEFAE0' : 'black';
+  const navigation = useNavigation();
 
   return (
     <View style={{backgroundColor: isDarkMode ? '#161716' : 'white'}}>
       <View style={styles.containerTop}>
         <SearchComponent isDarkMode={isDarkMode} />
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={() => navigation.navigate('Support')}>
           <PhoneImag height={50} width={50} />
         </TouchableOpacity>
       </View>

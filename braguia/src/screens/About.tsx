@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import AppLogo from './../assets/logo.svg';
 import FacebookLogo from './../assets/facebook.svg';
-import UmLogo from './../assets/umlogo2.svg';
+import UmLogo from './../assets/umlogo.svg';
 
 export default function About() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -96,24 +96,18 @@ export default function About() {
       <View style={styles.rowContainer}>
   
         <TouchableOpacity style={styles.imageButton} onPress={() => alert('First Image Button Pressed')}>
-          {/*
-          <Image
-            style={styles.image}
-            source={require('../assets/Facebook_logo.png')}
-          />
-          */}
           <FacebookLogo height={100} width={100} />
         </TouchableOpacity>
         
         
         <TouchableOpacity style={styles.imageButton} onPress={() => alert('Second Image Button Pressed')}>
-          
+          {/*
           <Image
             style={styles.image}
             source={require('../assets/umlogo.png')} // You can use a different image source here
-          />
+          />*/}
         
-        {/*  <UmLogo height={100} width={100} />*/}
+         <UmLogo height={100} width={100} />
         </TouchableOpacity>
       </View>
     </View>
