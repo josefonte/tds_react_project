@@ -1,6 +1,7 @@
-import SearchComponent from '../components/searchbar';
-import FiltroIcon from '../components/filtroIcon';
-import React, {useEffect, useState} from 'react';
+import SearchComponent from './../components/searchbar';
+import FiltroIcon from './../components/filtroIcon';
+import React, {useEffect} from 'react';
+import {useNavigation} from '@react-navigation/native';
 import {
   SafeAreaView,
   StyleSheet,
@@ -21,9 +22,22 @@ import {fetchTrails} from './../redux/actions';
 import {RootState} from './../redux/store';
 import {useDispatch, useSelector} from 'react-redux';
 
+import PhoneImag from './../assets/phone.svg';
+import naturaSel from './../assets/natureza_filter_sel.svg';
+import naturaUnsel from './../assets/natureza_filter_not.svg';
+import bebidaSel from './../assets/bebida_filter_sel.svg';
+import bebidaUnsel from './../assets/bebida_filter_not.svg';
+import comidaSel from './../assets/comida_filter_sel.svg';
+import comidaUnsel from './../assets/comida_filter_not.svg';
+import culturaSel from './../assets/cultura_filter_sel.svg';
+import culturaUnsel from './../assets/cultura_filter_not.svg';
+import religiaoSel from './../assets/religiao_filter_sel.svg';
+import religiaoUnsel from './../assets/religiao_filter_not.svg';
+
 export default function Explore() {
   const isDarkMode = useColorScheme() === 'dark';
   const textColor = isDarkMode ? '#FEFAE0' : 'black';
+  const navigation = useNavigation();
 
   const trailsState = useSelector((state: RootState) => state.trails);
   const dispatch = useDispatch();
@@ -55,11 +69,8 @@ export default function Explore() {
     <View style={{backgroundColor: isDarkMode ? '#161716' : 'white'}}>
       <View style={styles.containerTop}>
         <SearchComponent isDarkMode={isDarkMode} />
-        <TouchableOpacity onPress={() => {}}>
-          <Image
-            style={styles.imageSuporte}
-            source={require('./../assets/phone.png')}
-          />
+        <TouchableOpacity onPress={() => navigation.navigate('Support')}>
+          <PhoneImag height={50} width={50} />
         </TouchableOpacity>
       </View>
       <ScrollView

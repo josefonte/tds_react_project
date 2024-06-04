@@ -1,10 +1,3 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
 
 import 'react-native-gesture-handler';
@@ -19,6 +12,7 @@ import Explore from './screens/Explore';
 import Map from './screens/Map';
 import Favorites from './screens/Favorites';
 import Profile from './screens/Profile';
+import Support from './screens/Support'; // Import the Support screen component
 import {Provider} from 'react-redux';
 import store from './redux/store';
 
@@ -72,6 +66,8 @@ function TabGroup() {
       <Tab.Screen name="Map" component={Map} />
       <Tab.Screen name="Favorites" component={Favorites} />
       <Tab.Screen name="Profile" component={Profile} />
+      {/* Add the Support screen */}
+      <Tab.Screen name="Support" component={Support} />
     </Tab.Navigator>
   );
 }
