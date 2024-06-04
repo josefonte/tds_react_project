@@ -1,6 +1,6 @@
 import SearchComponent from './../components/searchbar';
 import FiltroIcon from './../components/filtroIcon';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {
   SafeAreaView,
@@ -14,12 +14,10 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import {fetchDataAndInsertIntoDB} from './../model/teste';
 import {Trail} from './../model/model';
-import database from './../model/database';
 
 import {fetchTrails} from './../redux/actions';
-import {RootState} from './../redux/store';
+import {AppDispatch, RootState} from './../redux/store';
 import {useDispatch, useSelector} from 'react-redux';
 
 import PhoneImag from './../assets/phone.svg';
@@ -40,29 +38,13 @@ export default function Explore() {
   const navigation = useNavigation();
 
   const trailsState = useSelector((state: RootState) => state.trails);
+  const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+
   const dispatch = useDispatch();
   useEffect(() => {
+    // Dispatch fetchTrails action to load data into the store
+    // dispatch<any>(fetchTrails()); ISTO FUNCIONA MAS DA ASNEIRA NO HOT RELOAD
     dispatch(fetchTrails());
-  }, [dispatch]);
-
-  const [trails, setTrails] = useState<Trail[]>([]);
-
-  const fetchTrails = async () => {
-    try {
-      // Query the database for trails data
-      const fetchedTrails = await database.collections
-        .get<Trail>('trails')
-        .query()
-        .fetch();
-      // Set the fetched trails data to state
-      setTrails(fetchedTrails);
-    } catch (error) {
-      console.error('Error fetching trails:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchDataAndInsertIntoDB().then(fetchTrails);
   }, []);
 
   return (
@@ -101,16 +83,12 @@ export default function Explore() {
       </Text>
       <Text style={[styles.textTitulo, {color: textColor}]}>Sugestões</Text>
       <ScrollView>
-        {/* Display the fetched trails data */}
-        {trails.map((trail, index) => (
+        {trailsState.trails.map((trail: Trail, index: number) => (
           <View key={index}>
-            <Text>oi</Text>
-            <Text>oi</Text>
-            <Text>oi</Text>
+            <Text>Oi</Text>
             <Text>{trail.trailId}</Text>
             <Text>{trail.trailName}</Text>
             <Text>{trail.trailDesc}</Text>
-            {/* Display other trail properties as needed */}
           </View>
         ))}
       </ScrollView>

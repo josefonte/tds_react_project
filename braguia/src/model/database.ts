@@ -3,7 +3,7 @@ import { Database } from '@nozbe/watermelondb'
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 
 import schema from './schema'
-import { Trail, Edge, Pin, Media, RelatedTrail, RelatedPin } from './model' // Import your model classes here
+import { Trail, Edge, Pin, Media, RelatedTrail, RelatedPin } from './model' 
 
 const adapter = new SQLiteAdapter({
   schema,

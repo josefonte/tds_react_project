@@ -1,8 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
+import thunk, { ThunkMiddleware } from 'redux-thunk';
 import rootReducer from './reducers';
 
 const store = configureStore({
   reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false, // If you need to disable this, depending on your requirements
+    }),
 });
 console.log('Redux store created:');
 console.log('Redux store created:', store);

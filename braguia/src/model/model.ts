@@ -1,6 +1,6 @@
-import { Model } from '@nozbe/watermelondb'
+import { Database, Model } from '@nozbe/watermelondb'
 import { field, relation } from '@nozbe/watermelondb/decorators'
-import database from './database'
+
 
 class Trail extends Model {
   static table = 'trails'
@@ -12,11 +12,7 @@ class Trail extends Model {
   @field('trail_difficulty') trailDifficulty!: string
   @field('trail_img') trailImg!: string
 
-  static async create(values: Partial<Trail>): Promise<Trail> {
-    return await database.write(async () => {
-      return await this.create(values);
-    });
-  }
+
 }
 
 class Edge extends Model {
