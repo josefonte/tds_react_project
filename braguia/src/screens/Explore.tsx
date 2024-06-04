@@ -1,6 +1,6 @@
-import SearchComponent from './../components/searchbar';
-import FiltroIcon from './../components/filtroIcon';
-import React from 'react';
+import SearchComponent from '../components/searchbar';
+import FiltroIcon from '../components/filtroIcon';
+import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -13,10 +13,43 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
+import {fetchDataAndInsertIntoDB} from './../model/teste';
+import {Trail} from './../model/model';
+import database from './../model/database';
+
+import {fetchTrails} from './../redux/actions';
+import {RootState} from './../redux/store';
+import {useDispatch, useSelector} from 'react-redux';
 
 export default function Explore() {
   const isDarkMode = useColorScheme() === 'dark';
   const textColor = isDarkMode ? '#FEFAE0' : 'black';
+
+  const trailsState = useSelector((state: RootState) => state.trails);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchTrails());
+  }, [dispatch]);
+
+  const [trails, setTrails] = useState<Trail[]>([]);
+
+  const fetchTrails = async () => {
+    try {
+      // Query the database for trails data
+      const fetchedTrails = await database.collections
+        .get<Trail>('trails')
+        .query()
+        .fetch();
+      // Set the fetched trails data to state
+      setTrails(fetchedTrails);
+    } catch (error) {
+      console.error('Error fetching trails:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDataAndInsertIntoDB().then(fetchTrails);
+  }, []);
 
   return (
     <View style={{backgroundColor: isDarkMode ? '#161716' : 'white'}}>
@@ -56,6 +89,20 @@ export default function Explore() {
         Pontos de Interesse
       </Text>
       <Text style={[styles.textTitulo, {color: textColor}]}>Sugestões</Text>
+      <ScrollView>
+        {/* Display the fetched trails data */}
+        {trails.map((trail, index) => (
+          <View key={index}>
+            <Text>oi</Text>
+            <Text>oi</Text>
+            <Text>oi</Text>
+            <Text>{trail.trailId}</Text>
+            <Text>{trail.trailName}</Text>
+            <Text>{trail.trailDesc}</Text>
+            {/* Display other trail properties as needed */}
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }

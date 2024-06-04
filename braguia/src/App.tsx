@@ -19,6 +19,8 @@ import Explore from './screens/Explore';
 import Map from './screens/Map';
 import Favorites from './screens/Favorites';
 import Profile from './screens/Profile';
+import {Provider} from 'react-redux';
+import store from './redux/store';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -76,17 +78,19 @@ function TabGroup() {
 
 export default function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
-
+  console.log('Redux store created na App:', store);
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#191A19' : 'white',
   };
 
   return (
-    <SafeAreaView
-      style={{flex: 1, backgroundColor: backgroundStyle.backgroundColor}}>
-      <NavigationContainer>
-        <TabGroup />
-      </NavigationContainer>
-    </SafeAreaView>
+    <Provider store={store}>
+      <SafeAreaView
+        style={{flex: 1, backgroundColor: backgroundStyle.backgroundColor}}>
+        <NavigationContainer>
+          <TabGroup />
+        </NavigationContainer>
+      </SafeAreaView>
+    </Provider>
   );
 }
