@@ -19,6 +19,7 @@ import {Trail} from './../model/model';
 import {fetchTrails} from './../redux/actions';
 import {AppDispatch, RootState} from './../redux/store';
 import {useDispatch, useSelector} from 'react-redux';
+import {useAppSelector, useAppDispatch} from './../redux/hooks';
 
 import PhoneImag from './../assets/phone.svg';
 import naturaSel from './../assets/natureza_filter_sel.svg';
@@ -40,10 +41,8 @@ export default function Explore() {
   const trailsState = useSelector((state: RootState) => state.trails);
   const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    // Dispatch fetchTrails action to load data into the store
-    // dispatch<any>(fetchTrails()); ISTO FUNCIONA MAS DA ASNEIRA NO HOT RELOAD
     dispatch(fetchTrails());
   }, []);
 

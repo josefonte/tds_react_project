@@ -46,9 +46,19 @@ export const fetchTrails = () => {
           }
         }
       });
-      const trailss= await database.collections.get<Trail>('trails').query().fetch();
-      // Dispatch success action with the fetched data
-      dispatch(fetchTrailsSuccess(trailss));
+      const transformedTrails = trailsData.map((trailData: { id: any; trail_name: any; trail_desc: any; trail_duration: any; trail_difficulty: any; trail_img: any; }) => ({
+        trailId: trailData.id,
+        trailName: trailData.trail_name,
+        trailDesc: trailData.trail_desc,
+        trailDuration: trailData.trail_duration,
+        trailDifficulty: trailData.trail_difficulty,
+        trailImg: trailData.trail_img,
+      }));
+      
+      dispatch(fetchTrailsSuccess(transformedTrails));
+      
+      //console.log(trailsData)
+      //dispatch(fetchTrailsSuccess(trailsData));
     } catch (error) {
       dispatch(fetchTrailsFailure(error));
     }
