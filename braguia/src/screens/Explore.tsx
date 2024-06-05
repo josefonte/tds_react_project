@@ -1,5 +1,3 @@
-import SearchComponent from './../components/searchbar';
-import FiltroIcon from './../components/filtroIcon';
 import React, {useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {
@@ -20,6 +18,11 @@ import {fetchTrails} from './../redux/actions';
 import {AppDispatch, RootState} from './../redux/store';
 import {useDispatch, useSelector} from 'react-redux';
 import {useAppSelector, useAppDispatch} from './../redux/hooks';
+
+// COMPONENTES
+import SearchComponent from './../components/searchbar';
+import FiltroIcon from './../components/filtroIcon';
+import PopularTrail from './../components/PopularTrail';
 
 import PhoneImag from './../assets/phone.svg';
 import naturaSel from './../assets/natureza_filter_sel.svg';
@@ -47,51 +50,63 @@ export default function Explore() {
   }, []);
 
   return (
-    <View style={{backgroundColor: isDarkMode ? '#161716' : 'white'}}>
-      <View style={styles.containerTop}>
-        <SearchComponent isDarkMode={isDarkMode} />
-        <TouchableOpacity onPress={() => navigation.navigate('Support')}>
-          <PhoneImag height={50} width={50} />
-        </TouchableOpacity>
+    <ScrollView>
+      <View style={{backgroundColor: isDarkMode ? '#161716' : 'white'}}>
+        <View style={styles.containerTop}>
+          <SearchComponent isDarkMode={isDarkMode} />
+          <TouchableOpacity onPress={() => navigation.navigate('Support')}>
+            <PhoneImag height={50} width={50} />
+          </TouchableOpacity>
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollViewContent}>
+          <FiltroIcon
+            image1={require('./../assets/filtro11.png')}
+            image2={require('./../assets/filtro12.png')}></FiltroIcon>
+          <FiltroIcon
+            image1={require('./../assets/filtro11.png')}
+            image2={require('./../assets/filtro12.png')}></FiltroIcon>
+          <FiltroIcon
+            image1={require('./../assets/filtro11.png')}
+            image2={require('./../assets/filtro12.png')}></FiltroIcon>
+          <FiltroIcon
+            image1={require('./../assets/filtro11.png')}
+            image2={require('./../assets/filtro12.png')}></FiltroIcon>
+          <FiltroIcon
+            image1={require('./../assets/filtro11.png')}
+            image2={require('./../assets/filtro12.png')}></FiltroIcon>
+        </ScrollView>
+        <Text style={[styles.textTitulo, {color: textColor}]}>
+          Roteiros Populares
+        </Text>
+        {trailsState.trails && trailsState.trails.length > 0 ? (
+          <ScrollView horizontal={true} style={styles.scrollViewPop}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('TrailDetail')}>
+              <PopularTrail trail={trailsState.trails[0]} />
+            </TouchableOpacity>
+            <PopularTrail trail={trailsState.trails[2]} />
+          </ScrollView>
+        ) : (
+          <Text>Loading...</Text>
+        )}
+        <Text style={[styles.textTitulo, {color: textColor}]}>
+          Pontos de Interesse
+        </Text>
+        <Text style={[styles.textTitulo, {color: textColor}]}>Sugestões</Text>
+        <ScrollView>
+          {trailsState.trails.map((trail: Trail, index: number) => (
+            <View key={index}>
+              <Text>{trail.trailId}</Text>
+              <Text>{trail.trailName}</Text>
+              <Text>{trail.trailDesc}</Text>
+            </View>
+          ))}
+        </ScrollView>
       </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollViewContent}>
-        <FiltroIcon
-          image1={require('./../assets/filtro11.png')}
-          image2={require('./../assets/filtro12.png')}></FiltroIcon>
-        <FiltroIcon
-          image1={require('./../assets/filtro11.png')}
-          image2={require('./../assets/filtro12.png')}></FiltroIcon>
-        <FiltroIcon
-          image1={require('./../assets/filtro11.png')}
-          image2={require('./../assets/filtro12.png')}></FiltroIcon>
-        <FiltroIcon
-          image1={require('./../assets/filtro11.png')}
-          image2={require('./../assets/filtro12.png')}></FiltroIcon>
-        <FiltroIcon
-          image1={require('./../assets/filtro11.png')}
-          image2={require('./../assets/filtro12.png')}></FiltroIcon>
-      </ScrollView>
-      <Text style={[styles.textTitulo, {color: textColor}]}>
-        Roteiros Populares
-      </Text>
-      <Text style={[styles.textTitulo, {color: textColor}]}>
-        Pontos de Interesse
-      </Text>
-      <Text style={[styles.textTitulo, {color: textColor}]}>Sugestões</Text>
-      <ScrollView>
-        {trailsState.trails.map((trail: Trail, index: number) => (
-          <View key={index}>
-            <Text>Oi</Text>
-            <Text>{trail.trailId}</Text>
-            <Text>{trail.trailName}</Text>
-            <Text>{trail.trailDesc}</Text>
-          </View>
-        ))}
-      </ScrollView>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -116,6 +131,9 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 10,
+  },
+  scrollViewPop: {
+    flexDirection: 'row',
   },
 });

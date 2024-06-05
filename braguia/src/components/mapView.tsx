@@ -8,10 +8,10 @@ export default function MapScreen() {
       <MapView
         style={styles.map}
         initialRegion={{
-          latitude: 41.5595, // Latitude of Universidade do Minho
-          longitude: -8.396, // Longitude of Universidade do Minho
-          latitudeDelta: 0.21, // Adjust as needed
-          longitudeDelta: 0.21, // Adjust as needed
+          latitude: 41.5595, // Latitude da Universidade do Minho
+          longitude: -8.396, // Longitude da Universidade do Minho
+          latitudeDelta: 0.21,
+          longitudeDelta: 0.21,
         }}></MapView>
     </View>
   );

@@ -13,6 +13,7 @@ import Map from './screens/Map';
 import Favorites from './screens/Favorites';
 import Profile from './screens/Profile';
 import Support from './screens/Support'; // Import the Support screen component
+import TrailDetail from './screens/TrailDetail';
 import {Provider} from 'react-redux';
 import store from './redux/store';
 
