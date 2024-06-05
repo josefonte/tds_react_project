@@ -10,7 +10,7 @@ interface PopularTrailProps {
 }
 
 const PopularTrail: React.FunctionComponent<PopularTrailProps> = ({trail}) => {
-  console.log('Carreguei imagem popular');
+  console.log('Carreguei imagem sugerida');
 
   const changeDifficulty = (dificuldade: string) => {
     if (dificuldade === 'E') {
@@ -33,7 +33,7 @@ const PopularTrail: React.FunctionComponent<PopularTrailProps> = ({trail}) => {
   return (
     <View style={[styles.view]}>
       <View>
-        <Image source={{uri: trail.trailImg}} style={styles.popular} />
+        <Image source={{uri: trail.trailImg}} style={styles.sugest} />
         <LinearGradient
           colors={['#00000000', '#000000']}
           style={styles.gradient}
@@ -91,9 +91,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     zIndex: 1, // Ensure the text appears on top of the SVG
   },
-  popular: {
-    width: 300,
-    height: 300,
+  sugest: {
+    width: '96%',
+    height: 150,
     borderRadius: 8,
   },
   view: {
@@ -102,8 +102,8 @@ const styles = StyleSheet.create({
   },
   gradient: {
     position: 'absolute',
-    height: 300,
-    width: 300,
+    height: 150,
+    width: '96%',
     borderRadius: 8,
   },
 });

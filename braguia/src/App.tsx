@@ -19,8 +19,10 @@ import store from './redux/store';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {createStackNavigator} from '@react-navigation/stack';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 function TabGroup() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -68,7 +70,6 @@ function TabGroup() {
       <Tab.Screen name="Favorites" component={Favorites} />
       <Tab.Screen name="Profile" component={Profile} />
       {/* Add the Support screen */}
-      <Tab.Screen name="Support" component={Support} />
     </Tab.Navigator>
   );
 }
@@ -85,7 +86,11 @@ export default function App(): React.JSX.Element {
       <SafeAreaView
         style={{flex: 1, backgroundColor: backgroundStyle.backgroundColor}}>
         <NavigationContainer>
-          <TabGroup />
+          <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="a" component={TabGroup} />
+            <Tab.Screen name="Support" component={Support} />
+            <Stack.Screen name="TrailDetail" component={TrailDetail} />
+          </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
     </Provider>

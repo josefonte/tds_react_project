@@ -23,6 +23,7 @@ import {useAppSelector, useAppDispatch} from './../redux/hooks';
 import SearchComponent from './../components/searchbar';
 import FiltroIcon from './../components/filtroIcon';
 import PopularTrail from './../components/PopularTrail';
+import SugestedTrail from './../components/SugestedTrail';
 
 import PhoneImag from './../assets/phone.svg';
 import naturaSel from './../assets/natureza_filter_sel.svg';
@@ -84,10 +85,21 @@ export default function Explore() {
         {trailsState.trails && trailsState.trails.length > 0 ? (
           <ScrollView horizontal={true} style={styles.scrollViewPop}>
             <TouchableOpacity
-              onPress={() => navigation.navigate('TrailDetail')}>
+              onPress={() =>
+                navigation.navigate('TrailDetail', {
+                  trail: trailsState.trails[0],
+                })
+              }>
               <PopularTrail trail={trailsState.trails[0]} />
             </TouchableOpacity>
-            <PopularTrail trail={trailsState.trails[2]} />
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('TrailDetail', {
+                  trail: trailsState.trails[2],
+                })
+              }>
+              <PopularTrail trail={trailsState.trails[2]} />
+            </TouchableOpacity>
           </ScrollView>
         ) : (
           <Text>Loading...</Text>
@@ -99,9 +111,12 @@ export default function Explore() {
         <ScrollView>
           {trailsState.trails.map((trail: Trail, index: number) => (
             <View key={index}>
-              <Text>{trail.trailId}</Text>
-              <Text>{trail.trailName}</Text>
-              <Text>{trail.trailDesc}</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('TrailDetail', {trail: trail})
+                }>
+                <SugestedTrail trail={trail}></SugestedTrail>
+              </TouchableOpacity>
             </View>
           ))}
         </ScrollView>
