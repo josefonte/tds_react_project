@@ -6,7 +6,7 @@ const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false, // If you need to disable this, depending on your requirements
+      serializableCheck: false, 
     }),
 });
 console.log('Redux store created:');

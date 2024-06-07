@@ -18,10 +18,11 @@ class Trail extends Model {
 class Edge extends Model {
   static table = 'edges'
 
+  @field('edge_id') edgeId !: number
   @field('edge_transport') edgeTransport!: string
   @field('edge_duration') edgeDuration!: number
   @field('edge_desc') edgeDesc!: string
-  @relation('trails', 'trail_id') trail!: Trail
+  @field('edge_trail') trail!: number
   @field('edge_start_id') edgeStartId!: string
   @field('edge_end_id') edgeEndId!: string
 }
@@ -29,12 +30,13 @@ class Edge extends Model {
 class Pin extends Model {
   static table = 'pins'
 
+  @field('pin_id') pinId !: number
   @field('pin_name') pinName!: string
   @field('pin_desc') pinDesc!: string
   @field('pin_lat') pinLat!: number
   @field('pin_lng') pinLng!: number
   @field('pin_alt') pinAlt!: number
-  @relation('trails', 'trail_id') trail!: Trail
+  @field('pin_trail') trail!: number
 }
 
 class Media extends Model {
