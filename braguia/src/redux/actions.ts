@@ -94,7 +94,7 @@ export const fetchTrails = () => {
                       pin.pinLat = pinData.pin_lat;
                       pin.pinLng = pinData.pin_lng;
                       pin.pinAlt = pinData.pin_alt;
-                      pin.trail = newTrail.id;
+                      pin.trail = trailData.id;
                     });
 
                     for (const relPinData of pinData.rel_pin || []) {
@@ -107,9 +107,10 @@ export const fetchTrails = () => {
 
                     for (const mediaData of pinData.media || []) {
                       await database.collections.get<Media>('media').create((media: any) => {
+                        media.mediaId = mediaData.id;
                         media.mediaFile = mediaData.media_file;
                         media.mediaType = mediaData.media_type;
-                        media.pin.set(newPin);
+                        media.pin = mediaData.media_pin;
                       });
                     }
                   }
@@ -140,8 +141,6 @@ export const fetchTrails = () => {
       megaArray.push(edges);
       megaArray.push(pins);
       megaArray.push(medias);
-      console.log("OU AJUDA ME");
-      console.log(medias);
 
       dispatch(fetchAllSuccess(megaArray));
       

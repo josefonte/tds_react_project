@@ -24,6 +24,7 @@ import SearchComponent from './../components/searchbar';
 import FiltroIcon from './../components/filtroIcon';
 import PopularTrail from './../components/PopularTrail';
 import SugestedTrail from './../components/SugestedTrail';
+import PontoDeInteresse from './../components/PontoDeInteresse';
 
 import PhoneImag from './../assets/phone.svg';
 import naturaSel from './../assets/natureza_filter_sel.svg';
@@ -41,9 +42,10 @@ export default function Explore() {
   const isDarkMode = useColorScheme() === 'dark';
   const textColor = isDarkMode ? '#FEFAE0' : 'black';
   const navigation = useNavigation();
-
   const trailsState = useSelector((state: RootState) => state.trails);
   const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+
+  const [pins, setPins] = useState<Pin[]>([]);
 
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -107,6 +109,29 @@ export default function Explore() {
         <Text style={[styles.textTitulo, {color: textColor}]}>
           Pontos de Interesse
         </Text>
+        {trailsState.pins && trailsState.pins.length > 0 ? (
+          <ScrollView horizontal={true} style={styles.scrollViewPop}>
+            {trailsState.pins
+              .filter(
+                (pin, index, self) =>
+                  self.findIndex(p => p.pinId === pin.pinId) === index,
+              )
+              .map((pin: Pin, index: number) => (
+                <View key={index}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('PontoDeInteresseDetail', {
+                        pin: pin,
+                      })
+                    }>
+                    <PontoDeInteresse pin={pin}></PontoDeInteresse>
+                  </TouchableOpacity>
+                </View>
+              ))}
+          </ScrollView>
+        ) : (
+          <Text>Loading...</Text>
+        )}
         <Text style={[styles.textTitulo, {color: textColor}]}>Sugestões</Text>
         <ScrollView>
           {trailsState.trails.map((trail: Trail, index: number) => (

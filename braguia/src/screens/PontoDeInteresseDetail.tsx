@@ -29,13 +29,16 @@ import database from '../model/database';
 import GoBack from './../assets/goBack.svg';
 import StartButton from './../assets/startButton.svg';
 
-const TrailDetail = ({
+const PontoDeInteresseDetail = ({
   route,
 }: {
-  route: RouteProp<{TrailDetail: {trail: Trail}}, 'TrailDetail'>;
+  route: RouteProp<
+    {PontoDeInteresseDetail: {pin: Pin}},
+    'PontoDeInteresseDetail'
+  >;
 }) => {
-  console.log('Entrei num trail específico');
-  const {trail} = route.params;
+  console.log('Entrei num ponto específico');
+  const {pin} = route.params;
   const isDarkMode = useColorScheme() === 'dark';
   const textColor = isDarkMode ? '#FEFAE0' : 'black';
   const navigation = useNavigation();
@@ -87,16 +90,11 @@ const TrailDetail = ({
   };
 
   // Ir buscar toda a Media de um Trail
-  async function getMediaFromTrail(trailId: number): Promise<Media[]> {
+  async function getMediaFromPin(pinId: number): Promise<Media[]> {
     try {
-      const pins: Pin[] = trailsState.pins.filter(
-        (pin: {trail: number}) => pin.trail === trailId,
-      );
-      const pinIds = Array.from(new Set(pins.map(pin => pin.pinId)));
-
       const media: Media[] = Array.from(
-        trailsState.medias.filter((media: {pin: number}) =>
-          pinIds.includes(media.pin),
+        trailsState.medias.filter(
+          (media: {pin: number}) => pinId === media.pin,
         ),
       );
       const mediaIds = new Set(media.map(media => media.mediaId));
@@ -117,48 +115,20 @@ const TrailDetail = ({
     }
   }
 
-  async function getPinsFromTrail(trailId: number): Promise<Media[]> {
-    try {
-      const listaIds: number[] = [];
-      const pins: Pin[] = trailsState.pins.filter(
-        (pin: {trail: number; pinId: number}) => {
-          if (pin.trail === trailId) {
-            if (listaIds.includes(pin.pinId)) {
-              return false;
-            } else {
-              listaIds.push(pin.pinId);
-              return true;
-            }
-          } else {
-            return false;
-          }
-        },
-      );
-      return pins;
-    } catch (error) {
-      console.error('Error fetching pins from trail:', error);
-      return [];
-    }
-  }
-
   const [media, setMedia] = useState<Media[]>([]);
-  const [pins, setPins] = useState<Pin[]>([]);
 
   useEffect(() => {
     const fetchMedia = async () => {
       try {
-        const mediaData = await getMediaFromTrail(trail.trailId);
+        const mediaData = await getMediaFromPin(pin.pinId);
         setMedia(mediaData);
-        const pinsData = await getPinsFromTrail(trail.trailId);
-        setPins(pinsData);
-        console.log(pinsData);
       } catch (error) {
         console.error('Error fetching media:', error);
       }
     };
 
     fetchMedia();
-  }, [trail.id]);
+  }, [pin.id]);
 
   //console.log(media);
   return (
@@ -215,7 +185,7 @@ const TrailDetail = ({
           </TouchableOpacity>
         </View>
         <Text style={[styles.textTitulo, {color: textColor}]}>
-          {trail.trailName}
+          {pin.pinName}
         </Text>
         <Text
           style={[
@@ -225,7 +195,7 @@ const TrailDetail = ({
           Braga, Braga
         </Text>
         <Text style={[styles.textSimple, {color: textColor}]}>
-          {trail.trailDesc}
+          {pin.pinDesc}
         </Text>
       </View>
     </ScrollView>
@@ -286,4 +256,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TrailDetail;
+export default PontoDeInteresseDetail;

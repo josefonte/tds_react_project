@@ -41,9 +41,10 @@ const schema = appSchema({
     tableSchema({
       name: 'media',
       columns: [
+        { name: 'media_id', type: 'number'},
         { name: 'media_file', type: 'string' },
         { name: 'media_type', type: 'string' },
-        { name: 'pin_id', type: 'string', isIndexed: true },
+        { name: 'media_pin', type: 'number', isIndexed: true },
       ],
     }),
     tableSchema({

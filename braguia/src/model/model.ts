@@ -42,9 +42,10 @@ class Pin extends Model {
 class Media extends Model {
   static table = 'media'
 
+  @field('media_id') mediaId !: number
   @field('media_file') mediaFile!: string
   @field('media_type') mediaType!: string
-  @relation('pins', 'pin_id') pin!: Pin
+  @field('media_pin') pin!: number
 }
 
 class RelatedTrail extends Model {

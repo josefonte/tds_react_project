@@ -14,6 +14,7 @@ import Favorites from './screens/Favorites';
 import Profile from './screens/Profile';
 import Support from './screens/Support'; // Import the Support screen component
 import TrailDetail from './screens/TrailDetail';
+import PontoDeInteresseDetail from './screens/PontoDeInteresseDetail';
 import {Provider} from 'react-redux';
 import store from './redux/store';
 
@@ -90,6 +91,10 @@ export default function App(): React.JSX.Element {
             <Stack.Screen name="a" component={TabGroup} />
             <Tab.Screen name="Support" component={Support} />
             <Stack.Screen name="TrailDetail" component={TrailDetail} />
+            <Stack.Screen
+              name="PontoDeInteresseDetail"
+              component={PontoDeInteresseDetail}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>

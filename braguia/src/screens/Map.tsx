@@ -15,7 +15,7 @@ export default function Map() {
   const isDarkMode = useColorScheme() === 'dark';
   const Stack = createStackNavigator();
 
-  return <MapScreen></MapScreen>;
+  return <MapScreen localizacoes={undefined}></MapScreen>;
 }
 
 const styles = StyleSheet.create({});
