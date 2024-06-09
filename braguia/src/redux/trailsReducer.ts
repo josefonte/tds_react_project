@@ -8,6 +8,7 @@ const initialState = {
     loadingMedia: false,
     loadingPin: false,
     error: null,
+    viajar: false,
   };
   
   const trailsReducer = (state = initialState, action: any) => {
@@ -56,6 +57,12 @@ const initialState = {
           edges: action.payload[1],
           pins: action.payload[2],
           medias: action.payload[3],
+        };
+      case 'COMECEI_A_VIAJAR':
+        return {
+          ...state,
+          loading: false,
+          viajar: true,
         };
       default:
         return state;

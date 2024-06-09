@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {
   SafeAreaView,
@@ -24,10 +24,15 @@ import Sound from 'react-native-sound';
 import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
+import {Linking} from 'react-native';
+import {aViajar} from './../redux/actions';
 
 // SVG
 import GoBack from './../assets/goBack.svg';
 import StartButton from './../assets/startButton.svg';
+
+// COMPONENTES
+import MapScreen from '../components/mapScreen';
 
 const PontoDeInteresseDetail = ({
   route,
@@ -43,6 +48,14 @@ const PontoDeInteresseDetail = ({
   const textColor = isDarkMode ? '#FEFAE0' : 'black';
   const navigation = useNavigation();
   const trailsState = useSelector((state: RootState) => state.trails);
+  const dispatch = useDispatch();
+
+  // Abrir Maps
+  const navigateToLocation = (latitude: number, longitude: number) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+    dispatch(aViajar());
+    Linking.openURL(url);
+  };
 
   // Dar audio
   useEffect(() => {
@@ -117,6 +130,8 @@ const PontoDeInteresseDetail = ({
 
   const [media, setMedia] = useState<Media[]>([]);
 
+  const prevPinIdRef = useRef<number | null>(null); // Ref to store the previous pin id
+
   useEffect(() => {
     const fetchMedia = async () => {
       try {
@@ -127,8 +142,12 @@ const PontoDeInteresseDetail = ({
       }
     };
 
-    fetchMedia();
-  }, [pin.id]);
+    // Check if pin id has changed before fetching media
+    if (pin.pinId !== prevPinIdRef.current) {
+      fetchMedia();
+      prevPinIdRef.current = pin.pinId; // Update the previous pin id
+    }
+  }, [pin.pinId]);
 
   //console.log(media);
   return (
@@ -180,9 +199,14 @@ const PontoDeInteresseDetail = ({
             ))}
           </ScrollView>
 
-          <TouchableOpacity style={styles.botaoComecar}>
-            <StartButton />
-          </TouchableOpacity>
+          {trailsState.viajar === false ? (
+            <TouchableOpacity
+              style={styles.botaoComecar}
+              onPress={() => navigateToLocation(pin.pinLat, pin.pinLng)}>
+              <StartButton />
+            </TouchableOpacity>
+          ) : // Alternative component or null if the condition is not met
+          null}
         </View>
         <Text style={[styles.textTitulo, {color: textColor}]}>
           {pin.pinName}
@@ -197,12 +221,23 @@ const PontoDeInteresseDetail = ({
         <Text style={[styles.textSimple, {color: textColor}]}>
           {pin.pinDesc}
         </Text>
+        <Text style={[styles.textTitulo, {color: textColor, fontSize: 22}]}>
+          Outros Pontos de Interesse
+        </Text>
+      </View>
+
+      <View style={[styles.containerMapa]}>
+        <MapScreen localizacoes={[[pin.pinLat, pin.pinLng]]} />
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  containerMapa: {
+    marginTop: 20,
+    height: 700,
+  },
   textSimple: {
     marginLeft: 10,
     fontFamily: 'Roboto',

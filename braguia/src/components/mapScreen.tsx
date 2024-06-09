@@ -20,17 +20,24 @@ const MapScreen: React.FunctionComponent<MapProps> = ({localizacoes}) => {
           }}></MapView>
       </View>
     );
-  } else if (localizacoes.length > 1) {
+  } else if (localizacoes.length == 1) {
     return (
-      <View style={styles.container}>
+      <View style={styles.container2}>
         <MapView
-          style={styles.map}
+          style={styles.map2}
           initialRegion={{
             latitude: localizacoes[0][0],
             longitude: localizacoes[0][1],
-            latitudeDelta: 0.31,
-            longitudeDelta: 0.31,
-          }}></MapView>
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }}>
+          <Marker
+            coordinate={{
+              latitude: localizacoes[0][0],
+              longitude: localizacoes[0][1],
+            }}
+          />
+        </MapView>
       </View>
     );
   } else {
@@ -60,6 +67,16 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'flex-end',
     alignItems: 'center',
+  },
+  container2: {
+    height: '30%',
+    width: '100%',
+    justifyContent: 'center',
+    borderRadius: 20,
+  },
+  map2: {
+    flex: 1,
+    borderRadius: 20,
   },
   map: {
     ...StyleSheet.absoluteFillObject,

@@ -2,43 +2,73 @@ import { Dispatch } from 'redux';
 import { Edge, Media, Pin, RelatedPin, RelatedTrail, Trail } from './../model/model'; // Adjust the import path as needed
 import database from './../model/database'; // Adjust the import path as needed
 
-export const fetchTrailsRequest = () => ({
-  type: 'FETCH_TRAILS_REQUEST',
-});
+export const fetchTrailsRequest = () => {
+  console.log('Dispatching fetchTrailsRequest action...');
+  return {
+    type: 'FETCH_TRAILS_REQUEST',
+  };
+};
 
-export const fetchTrailsSuccess = (trails: Trail[]) => ({
-  type: 'FETCH_TRAILS_SUCCESS',
-  payload: trails,
-});
+export const fetchTrailsSuccess = (trails: Trail[]) => {
+  console.log('Dispatching fetchTrailsSuccess action with trails:', trails);
+  return {
+    type: 'FETCH_TRAILS_SUCCESS',
+    payload: trails,
+  };
+};
 
-export const fetchTrailsFailure = (error: any) => ({
-  type: 'FETCH_TRAILS_FAILURE',
-  payload: error,
-});
+export const fetchTrailsFailure = (error: any) => {
+  console.log('Dispatching fetchTrailsFailure action with error:', error);
+  return {
+    type: 'FETCH_TRAILS_FAILURE',
+    payload: error,
+  };
+};
 
-export const createEdgeSuccess = (edges: Edge[]) => ({
-  type: 'FETCH_EDGE_SUCCESS',
-  payload: edges,
-});
+export const createEdgeSuccess = (edges: Edge[]) => {
+  console.log('Dispatching createEdgeSuccess action with edges:', edges);
+  return {
+    type: 'FETCH_EDGE_SUCCESS',
+    payload: edges,
+  };
+};
 
-export const createPinSuccess = (pins: Pin[]) => ({
-  type: 'FETCH_PIN_SUCCESS',
-  payload: pins,
-});
+export const createPinSuccess = (pins: Pin[]) => {
+  console.log('Dispatching createPinSuccess action with pins:', pins);
+  return {
+    type: 'FETCH_PIN_SUCCESS',
+    payload: pins,
+  };
+};
 
-export const createMediaSuccess = (medias: Media[]) => ({
-  type: 'FETCH_MEDIA_SUCCESS',
-  payload: medias,
-});
+export const createMediaSuccess = (medias: Media[]) => {
+  console.log('Dispatching createMediaSuccess action with medias:', medias);
+  return {
+    type: 'FETCH_MEDIA_SUCCESS',
+    payload: medias,
+  };
+};
 
-export const fetchAllSuccess = (data: Array<Array<Media | Trail | Edge | Pin>>) => ({
-  type: 'FETCH_ALL_THINGS_SUCCESS',
-  payload: data,
-});
+export const fetchAllSuccess = (data: Array<Array<Media | Trail | Edge | Pin>>) => {
+  console.log('Dispatching fetchAllSuccess action with data:', data);
+  return {
+    type: 'FETCH_ALL_THINGS_SUCCESS',
+    payload: data,
+  };
+};
+
+
+export const aViajar = () => {
+  console.log('Dispatching aViajar action...');
+  return {
+    type: 'COMECEI_A_VIAJAR'
+  };
+};
 
 
 
 export const fetchTrails = () => {
+  console.log("FUI CHAMADO (DISPATCH)");
   return async (dispatch: Dispatch) => {
     dispatch(fetchTrailsRequest());
     try {

@@ -12,7 +12,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import {Trail} from './../model/model';
+import {Pin, Trail} from './../model/model';
 
 import {fetchTrails} from './../redux/actions';
 import {AppDispatch, RootState} from './../redux/store';
