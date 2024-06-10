@@ -23,7 +23,6 @@ const initialState = {
         return {
           ...state,
           loading: false,
-          trails: action.payload,
         };
       case 'FETCH_TRAILS_FAILURE':
         return {
@@ -31,38 +30,16 @@ const initialState = {
           loading: false,
           error: action.payload,
         };
-      case 'FETCH_EDGE_SUCCESS':
-        return {
-          ...state,
-          loadingEdge: false,
-          edges: action.payload,
-        };
-      case 'FETCH_MEDIA_SUCCESS':
-        return {
-          ...state,
-          loadingMedia: false,
-          medias: action.payload,
-        };
-      case 'FETCH_PIN_SUCCESS':
-        return {
-          ...state,
-          loadingPin: false,
-          pins: action.payload,
-        };
-      case 'FETCH_ALL_THINGS_SUCCESS':
-        return {
-          ...state,
-          loading: false,
-          trails: action.payload[0],
-          edges: action.payload[1],
-          pins: action.payload[2],
-          medias: action.payload[3],
-        };
       case 'COMECEI_A_VIAJAR':
         return {
           ...state,
           loading: false,
           viajar: true,
+        };
+      case 'ACABEI_DE_VIAJAR':
+        return {
+          ...state,
+          viajar:false,
         };
       default:
         return state;

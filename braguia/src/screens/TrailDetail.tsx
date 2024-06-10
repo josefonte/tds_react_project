@@ -13,6 +13,7 @@ import {
   ScrollView,
   PermissionsAndroid,
   Platform,
+  Linking,
 } from 'react-native';
 import {Media, Pin, Trail} from '../model/model';
 
@@ -28,6 +29,9 @@ import database from '../model/database';
 // SVG
 import GoBack from './../assets/goBack.svg';
 import StartButton from './../assets/startButton.svg';
+
+// COMPONENTES
+import MapScreen from '../components/mapScreen';
 
 const TrailDetail = ({
   route,
@@ -89,26 +93,32 @@ const TrailDetail = ({
   // Ir buscar toda a Media de um Trail
   async function getMediaFromTrail(trailId: number): Promise<Media[]> {
     try {
-      const pins: Pin[] = trailsState.pins.filter(
-        (pin: {trail: number}) => pin.trail === trailId,
-      );
+      // Fetch pins from the database that belong to the specified trail
+      const pinCollection = database.collections.get<Pin>('pins');
+      const pins = await pinCollection
+        .query(Q.where('pin_trail', trailId))
+        .fetch();
+
       const pinIds = Array.from(new Set(pins.map(pin => pin.pinId)));
 
-      const media: Media[] = Array.from(
-        trailsState.medias.filter((media: {pin: number}) =>
-          pinIds.includes(media.pin),
-        ),
-      );
-      const mediaIds = new Set(media.map(media => media.mediaId));
+      // Fetch media from the database that belong to the pins of the specified trail
+      const mediaCollection = database.collections.get<Media>('media');
+      const media = await mediaCollection
+        .query(Q.where('media_pin', Q.oneOf(pinIds)))
+        .fetch();
 
-      const uniqueMedia = media.filter((media: {mediaId: number}) => {
-        if (mediaIds.has(media.mediaId)) {
-          mediaIds.delete(media.mediaId);
+      const mediaIds = new Set(media.map(m => m.mediaId));
+
+      // Filter out unique media items
+      const uniqueMedia = media.filter((m: {mediaId: number}) => {
+        if (mediaIds.has(m.mediaId)) {
+          mediaIds.delete(m.mediaId);
           return true;
         } else {
           return false;
         }
       });
+
       console.log(uniqueMedia);
       return uniqueMedia;
     } catch (error) {
@@ -117,24 +127,24 @@ const TrailDetail = ({
     }
   }
 
-  async function getPinsFromTrail(trailId: number): Promise<Media[]> {
+  async function getPinsFromTrail(trailId: number): Promise<Pin[]> {
     try {
+      const pinCollection = database.collections.get<Pin>('pins');
+      const pins = await pinCollection
+        .query(Q.where('pin_trail', trailId))
+        .fetch();
+
       const listaIds: number[] = [];
-      const pins: Pin[] = trailsState.pins.filter(
-        (pin: {trail: number; pinId: number}) => {
-          if (pin.trail === trailId) {
-            if (listaIds.includes(pin.pinId)) {
-              return false;
-            } else {
-              listaIds.push(pin.pinId);
-              return true;
-            }
-          } else {
-            return false;
-          }
-        },
-      );
-      return pins;
+      const uniquePins = pins.filter(pin => {
+        if (listaIds.includes(pin.pinId)) {
+          return false;
+        } else {
+          listaIds.push(pin.pinId);
+          return true;
+        }
+      });
+
+      return uniquePins;
     } catch (error) {
       console.error('Error fetching pins from trail:', error);
       return [];
@@ -143,14 +153,17 @@ const TrailDetail = ({
 
   const [media, setMedia] = useState<Media[]>([]);
   const [pins, setPins] = useState<Pin[]>([]);
-
+  const [locs, setLocs] = useState<[number, number][]>([]);
+  const [flag, setFlag] = useState<number>(0);
+  const [flag2, setFlag2] = useState<number>(0);
   useEffect(() => {
     const fetchMedia = async () => {
       try {
         const mediaData = await getMediaFromTrail(trail.trailId);
         setMedia(mediaData);
         const pinsData = await getPinsFromTrail(trail.trailId);
-        setPins(pinsData);
+        await setPins(pinsData);
+        await setLocs(pinsData.map(pin => [pin.pinLat, pin.pinLng]));
         console.log(pinsData);
       } catch (error) {
         console.error('Error fetching media:', error);
@@ -160,7 +173,32 @@ const TrailDetail = ({
     fetchMedia();
   }, [trail.id]);
 
-  //console.log(media);
+  useEffect(() => {
+    console.log(pins);
+    if (pins.length > 0) {
+      setFlag2(1);
+    }
+  }, [pins]);
+
+  useEffect(() => {
+    console.log(locs);
+    if (locs.length > 0) {
+      setFlag(1);
+    }
+  }, [locs]);
+
+  // GOOGLE MAPS
+  const openGoogleMapsDirections = (locations: [number, number][]) => {
+    const destinationString = locations
+      .map(([latitude, longitude]) => `${latitude},${longitude}`)
+      .join('/');
+    const url = `https://www.google.com/maps/dir/${destinationString}`;
+    console.log(url);
+    Linking.openURL(url).catch(err =>
+      console.error('Error opening Google Maps:', err),
+    );
+  };
+
   return (
     <ScrollView>
       <View
@@ -210,9 +248,17 @@ const TrailDetail = ({
             ))}
           </ScrollView>
 
-          <TouchableOpacity style={styles.botaoComecar}>
-            <StartButton />
-          </TouchableOpacity>
+          {flag === 0 ? (
+            <TouchableOpacity style={styles.botaoComecar}>
+              <StartButton />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.botaoComecar}
+              onPress={() => openGoogleMapsDirections(locs)}>
+              <StartButton />
+            </TouchableOpacity>
+          )}
         </View>
         <Text style={[styles.textTitulo, {color: textColor}]}>
           {trail.trailName}
@@ -227,12 +273,74 @@ const TrailDetail = ({
         <Text style={[styles.textSimple, {color: textColor}]}>
           {trail.trailDesc}
         </Text>
+        <Text
+          style={[
+            styles.textTitulo,
+            {color: textColor, fontSize: 22, marginBottom: 10},
+          ]}>
+          Pontos de Interesse
+        </Text>
+        <View style={[styles.horizontalLine, styles.pinspins]} />
+        <View style={[styles.pinspins]}>
+          {flag2 === 0 ? (
+            <Text>Loading...</Text>
+          ) : (
+            pins.map((pin, index) => (
+              <View>
+                <TouchableOpacity
+                  key={index}
+                  onPress={() =>
+                    navigation.navigate('PontoDeInteresseDetail', {
+                      pin: pin,
+                    })
+                  }
+                  style={[styles.itemPontoInteresse]}>
+                  <Text key={index}>{pin.pinName}</Text>
+                </TouchableOpacity>
+                <View style={styles.horizontalLine} />
+              </View>
+            ))
+          )}
+        </View>
+        <Text
+          style={[
+            styles.textTitulo,
+            {color: textColor, fontSize: 22, marginBottom: 10},
+          ]}>
+          Mapa
+        </Text>
       </View>
+
+      {flag === 0 ? (
+        <Text>Loading...</Text>
+      ) : (
+        <View style={[styles.containerMapa]}>
+          <MapScreen localizacoes={locs} />
+        </View>
+      )}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  horizontalLine: {
+    height: 1,
+    width: '100%',
+    backgroundColor: 'black',
+    marginVertical: 10,
+  },
+  linha: {
+    width: 50,
+  },
+  itemPontoInteresse: {
+    marginTop: 4,
+  },
+  pinspins: {
+    marginLeft: 20,
+  },
+  containerMapa: {
+    height: 700,
+  },
   textSimple: {
     marginLeft: 10,
     fontFamily: 'Roboto',

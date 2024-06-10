@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 
 import 'react-native-gesture-handler';
 
@@ -15,12 +15,15 @@ import Profile from './screens/Profile';
 import Support from './screens/Support'; // Import the Support screen component
 import TrailDetail from './screens/TrailDetail';
 import PontoDeInteresseDetail from './screens/PontoDeInteresseDetail';
-import {Provider} from 'react-redux';
+import {Provider, useDispatch} from 'react-redux';
 import store from './redux/store';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {createStackNavigator} from '@react-navigation/stack';
+import {AppDispatch, RootState} from './redux/store';
+import {fetchTrails} from './redux/actions';
+import {useAppDispatch} from './redux/hooks';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();

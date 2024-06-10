@@ -37,6 +37,7 @@ import culturaSel from './../assets/cultura_filter_sel.svg';
 import culturaUnsel from './../assets/cultura_filter_not.svg';
 import religiaoSel from './../assets/religiao_filter_sel.svg';
 import religiaoUnsel from './../assets/religiao_filter_not.svg';
+import database from '../model/database';
 
 export default function Explore() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -46,11 +47,34 @@ export default function Explore() {
   const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 
   const [pins, setPins] = useState<Pin[]>([]);
+  const [trails, setTrails] = useState<Trail[]>([]);
+  const [flagTrails, setFlagTrails] = useState<number>(0);
+  const [flagPins, setFlagPins] = useState<number>(0);
 
   const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(fetchTrails());
-  }, []);
+    const fetchData = async () => {
+      dispatch(fetchTrails());
+
+      try {
+        const fetchedTrails = await database.collections
+          .get<Trail>('trails')
+          .query()
+          .fetch();
+        setTrails(fetchedTrails);
+
+        const fetchedPins = await database.collections
+          .get<Pin>('pins')
+          .query()
+          .fetch();
+        setPins(fetchedPins);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [dispatch]);
 
   return (
     <ScrollView>
@@ -84,23 +108,23 @@ export default function Explore() {
         <Text style={[styles.textTitulo, {color: textColor}]}>
           Roteiros Populares
         </Text>
-        {trailsState.trails && trailsState.trails.length > 0 ? (
+        {trails && trails.length > 0 ? (
           <ScrollView horizontal={true} style={styles.scrollViewPop}>
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate('TrailDetail', {
-                  trail: trailsState.trails[0],
+                  trail: trails[0],
                 })
               }>
-              <PopularTrail trail={trailsState.trails[0]} />
+              <PopularTrail trail={trails[0]} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate('TrailDetail', {
-                  trail: trailsState.trails[2],
+                  trail: trails[2],
                 })
               }>
-              <PopularTrail trail={trailsState.trails[2]} />
+              <PopularTrail trail={trails[2]} />
             </TouchableOpacity>
           </ScrollView>
         ) : (
@@ -109,9 +133,9 @@ export default function Explore() {
         <Text style={[styles.textTitulo, {color: textColor}]}>
           Pontos de Interesse
         </Text>
-        {trailsState.pins && trailsState.pins.length > 0 ? (
+        {pins && pins.length > 0 ? (
           <ScrollView horizontal={true} style={styles.scrollViewPop}>
-            {trailsState.pins
+            {pins
               .filter(
                 (pin, index, self) =>
                   self.findIndex(p => p.pinId === pin.pinId) === index,
@@ -134,7 +158,7 @@ export default function Explore() {
         )}
         <Text style={[styles.textTitulo, {color: textColor}]}>Sugestões</Text>
         <ScrollView>
-          {trailsState.trails.map((trail: Trail, index: number) => (
+          {trails.map((trail: Trail, index: number) => (
             <View key={index}>
               <TouchableOpacity
                 onPress={() =>

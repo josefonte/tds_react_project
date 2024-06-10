@@ -1,11 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {SearchBar} from '@rneui/themed';
 import {View, Text, StyleSheet, ViewStyle, Image} from 'react-native';
-import {Trail} from '../model/model';
+import {Media, Pin, Trail} from '../model/model';
 import LinearGradient from 'react-native-linear-gradient';
 import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from '../redux/store';
+import database from '../model/database';
+import {Q} from '@nozbe/watermelondb';
 interface PontoDeInteresseProps {
-  trail: Pin;
+  pin: Pin;
 }
 
 const PontoDeInteresse: React.FunctionComponent<PontoDeInteresseProps> = ({
@@ -16,6 +19,8 @@ const PontoDeInteresse: React.FunctionComponent<PontoDeInteresseProps> = ({
   const [media, setMedia] = useState<Media[]>([]);
 
   useEffect(() => {
+    console.log('TESTE PIN');
+    console.log(pin);
     const fetchData = async () => {
       const mediaData = await getMediaFromPin(pin.pinId);
       setMedia(mediaData);
@@ -26,26 +31,15 @@ const PontoDeInteresse: React.FunctionComponent<PontoDeInteresseProps> = ({
     }
   }, [pin.pinId]);
 
-  function getMediaFromPin(pinId: number): Promise<Media[]> {
+  async function getMediaFromPin(pinId: number): Promise<Media[]> {
     try {
-      const listaCheck: number[] = [];
-      const media: Media[] = Array.from(
-        trailsState.medias.filter((media: {pin: number}) => {
-          if (media.pin === pinId) {
-            if (listaCheck.includes(media.mediaId)) {
-              return false;
-            } else {
-              listaCheck.push(media.mediaId);
-              return true;
-            }
-          } else {
-            return false;
-          }
-        }),
-      );
+      const mediaCollection = database.collections.get<Media>('media');
+      const media = await mediaCollection
+        .query(Q.where('media_pin', pinId))
+        .fetch();
       return media;
     } catch (error) {
-      console.error('Error fetching media from trail:', error);
+      console.error('Error fetching media from database:', error);
       return [];
     }
   }
@@ -99,7 +93,7 @@ const styles = StyleSheet.create({
     color: '#FEFAE0',
   },
   trailInfoContainer: {
-    flexDirection: 'row', // To ensure the text and TrailInfo SVG are aligned horizontally
+    flexDirection: 'row',
   },
   popular: {
     width: 100,

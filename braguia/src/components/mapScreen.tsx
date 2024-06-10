@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import MapView, {Marker} from 'react-native-maps';
+import MapView, {Marker, Polyline} from 'react-native-maps';
 
 interface MapProps {
   localizacoes: [number, number][];
@@ -42,18 +42,26 @@ const MapScreen: React.FunctionComponent<MapProps> = ({localizacoes}) => {
     );
   } else {
     return (
-      <View style={styles.container}>
+      <View style={styles.container2}>
         <MapView
-          style={styles.map}
+          style={styles.map2}
           initialRegion={{
             latitude: localizacoes[0][0],
             longitude: localizacoes[0][1],
-            latitudeDelta: 0.1,
-            longitudeDelta: 0.1,
+            latitudeDelta: 0.2,
+            longitudeDelta: 0.2,
           }}>
           {localizacoes.map(([latitude, longitude], index) => (
-            <MapView.Marker key={index} coordinate={{latitude, longitude}} />
+            <Marker key={index} coordinate={{latitude, longitude}} />
           ))}
+          <Polyline
+            coordinates={localizacoes.map(([latitude, longitude]) => ({
+              latitude,
+              longitude,
+            }))}
+            strokeColor="#000" // Line color
+            strokeWidth={2} // Line width
+          />
         </MapView>
       </View>
     );

@@ -25,11 +25,12 @@ import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
 import {Linking} from 'react-native';
-import {aViajar} from './../redux/actions';
+import {aViajar, acabeiViajar} from './../redux/actions';
 
 // SVG
 import GoBack from './../assets/goBack.svg';
 import StartButton from './../assets/startButton.svg';
+import EndButton from './../assets/acabarButton.svg';
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';
@@ -102,35 +103,34 @@ const PontoDeInteresseDetail = ({
     });
   };
 
-  // Ir buscar toda a Media de um Trail
   async function getMediaFromPin(pinId: number): Promise<Media[]> {
     try {
-      const media: Media[] = Array.from(
-        trailsState.medias.filter(
-          (media: {pin: number}) => pinId === media.pin,
-        ),
-      );
-      const mediaIds = new Set(media.map(media => media.mediaId));
+      const mediaCollection = database.collections.get<Media>('media');
+      const media = await mediaCollection
+        .query(Q.where('media_pin', pinId))
+        .fetch();
 
-      const uniqueMedia = media.filter((media: {mediaId: number}) => {
-        if (mediaIds.has(media.mediaId)) {
-          mediaIds.delete(media.mediaId);
+      const mediaIds = new Set(media.map(m => m.mediaId));
+
+      const uniqueMedia = media.filter((m: {mediaId: number}) => {
+        if (mediaIds.has(m.mediaId)) {
+          mediaIds.delete(m.mediaId);
           return true;
         } else {
           return false;
         }
       });
-      console.log(uniqueMedia);
+
       return uniqueMedia;
     } catch (error) {
-      console.error('Error fetching media from trail:', error);
+      console.error('Error fetching media from database:', error);
       return [];
     }
   }
 
   const [media, setMedia] = useState<Media[]>([]);
 
-  const prevPinIdRef = useRef<number | null>(null); // Ref to store the previous pin id
+  const prevPinIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -142,10 +142,9 @@ const PontoDeInteresseDetail = ({
       }
     };
 
-    // Check if pin id has changed before fetching media
     if (pin.pinId !== prevPinIdRef.current) {
       fetchMedia();
-      prevPinIdRef.current = pin.pinId; // Update the previous pin id
+      prevPinIdRef.current = pin.pinId;
     }
   }, [pin.pinId]);
 
@@ -159,44 +158,48 @@ const PontoDeInteresseDetail = ({
         <View>
           <TouchableOpacity
             style={styles.botaoTopo}
-            onPress={() => navigation.navigate('Explore')}>
+            onPress={() => navigation.goBack()}>
             <GoBack />
           </TouchableOpacity>
           <ScrollView horizontal={true} style={styles.scrollViewPop}>
-            {media.map((mediaItem, index) => (
-              <React.Fragment key={index}>
-                {mediaItem.mediaType === 'R' ? (
-                  <TouchableOpacity
-                    onPress={() => playSound(mediaItem.mediaFile)}>
-                    <View style={styles.audioRolo}>
-                      <Text style={styles.audioText}>Audio</Text>
-                      <Text style={styles.audioText}>Premium Only</Text>
+            {media.length === 0 ? (
+              <View style={[styles.emptyImagens]}></View>
+            ) : (
+              media.map((mediaItem, index) => (
+                <React.Fragment key={index}>
+                  {mediaItem.mediaType === 'R' ? (
+                    <TouchableOpacity
+                      onPress={() => playSound(mediaItem.mediaFile)}>
+                      <View style={styles.audioRolo}>
+                        <Text style={styles.audioText}>Audio</Text>
+                        <Text style={styles.audioText}>Premium Only</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ) : mediaItem.mediaType === 'I' ? (
+                    <View>
+                      <Image
+                        source={{uri: mediaItem.mediaFile}}
+                        style={styles.imagemRolo}
+                      />
                     </View>
-                  </TouchableOpacity>
-                ) : mediaItem.mediaType === 'I' ? (
-                  <View>
-                    <Image
-                      source={{uri: mediaItem.mediaFile}}
-                      style={styles.imagemRolo}
-                    />
-                  </View>
-                ) : mediaItem.mediaType === 'V' ? (
-                  <View>
-                    <Video
-                      source={{uri: mediaItem.mediaFile}}
-                      style={styles.videoRolo}
-                      controls={true}
-                    />
-                  </View>
-                ) : (
-                  <View>
-                    <Text onPress={() => playSound(mediaItem.mediaFile)}>
-                      Unknown media type
-                    </Text>
-                  </View>
-                )}
-              </React.Fragment>
-            ))}
+                  ) : mediaItem.mediaType === 'V' ? (
+                    <View>
+                      <Video
+                        source={{uri: mediaItem.mediaFile}}
+                        style={styles.videoRolo}
+                        controls={true}
+                      />
+                    </View>
+                  ) : (
+                    <View>
+                      <Text onPress={() => playSound(mediaItem.mediaFile)}>
+                        Unknown media type
+                      </Text>
+                    </View>
+                  )}
+                </React.Fragment>
+              ))
+            )}
           </ScrollView>
 
           {trailsState.viajar === false ? (
@@ -205,8 +208,13 @@ const PontoDeInteresseDetail = ({
               onPress={() => navigateToLocation(pin.pinLat, pin.pinLng)}>
               <StartButton />
             </TouchableOpacity>
-          ) : // Alternative component or null if the condition is not met
-          null}
+          ) : (
+            <TouchableOpacity
+              style={styles.botaoComecar}
+              onPress={() => dispatch(acabeiViajar())}>
+              <EndButton />
+            </TouchableOpacity>
+          )}
         </View>
         <Text style={[styles.textTitulo, {color: textColor}]}>
           {pin.pinName}
@@ -221,8 +229,12 @@ const PontoDeInteresseDetail = ({
         <Text style={[styles.textSimple, {color: textColor}]}>
           {pin.pinDesc}
         </Text>
-        <Text style={[styles.textTitulo, {color: textColor, fontSize: 22}]}>
-          Outros Pontos de Interesse
+        <Text
+          style={[
+            styles.textTitulo,
+            {color: textColor, fontSize: 22, marginBottom: 10},
+          ]}>
+          Mapa
         </Text>
       </View>
 
@@ -234,8 +246,10 @@ const PontoDeInteresseDetail = ({
 };
 
 const styles = StyleSheet.create({
+  emptyImagens: {
+    marginTop: 100,
+  },
   containerMapa: {
-    marginTop: 20,
     height: 700,
   },
   textSimple: {

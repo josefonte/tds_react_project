@@ -9,11 +9,10 @@ export const fetchTrailsRequest = () => {
   };
 };
 
-export const fetchTrailsSuccess = (trails: Trail[]) => {
-  console.log('Dispatching fetchTrailsSuccess action with trails:', trails);
+export const fetchTrailsSuccess = () => {
+  console.log('Dispatching fetchTrailsSuccess action');
   return {
     type: 'FETCH_TRAILS_SUCCESS',
-    payload: trails,
   };
 };
 
@@ -25,39 +24,6 @@ export const fetchTrailsFailure = (error: any) => {
   };
 };
 
-export const createEdgeSuccess = (edges: Edge[]) => {
-  console.log('Dispatching createEdgeSuccess action with edges:', edges);
-  return {
-    type: 'FETCH_EDGE_SUCCESS',
-    payload: edges,
-  };
-};
-
-export const createPinSuccess = (pins: Pin[]) => {
-  console.log('Dispatching createPinSuccess action with pins:', pins);
-  return {
-    type: 'FETCH_PIN_SUCCESS',
-    payload: pins,
-  };
-};
-
-export const createMediaSuccess = (medias: Media[]) => {
-  console.log('Dispatching createMediaSuccess action with medias:', medias);
-  return {
-    type: 'FETCH_MEDIA_SUCCESS',
-    payload: medias,
-  };
-};
-
-export const fetchAllSuccess = (data: Array<Array<Media | Trail | Edge | Pin>>) => {
-  console.log('Dispatching fetchAllSuccess action with data:', data);
-  return {
-    type: 'FETCH_ALL_THINGS_SUCCESS',
-    payload: data,
-  };
-};
-
-
 export const aViajar = () => {
   console.log('Dispatching aViajar action...');
   return {
@@ -66,9 +32,18 @@ export const aViajar = () => {
 };
 
 
+export const acabeiViajar = () => {
+  console.log('Dispatching aViajar action (end)...');
+  return {
+    type: 'ACABEI_DE_VIAJAR'
+  };
+};
+
+
+
 
 export const fetchTrails = () => {
-  console.log("FUI CHAMADO (DISPATCH)");
+  console.log("FUI CHAMADO (Colocar Informação na DB)");
   return async (dispatch: Dispatch) => {
     dispatch(fetchTrailsRequest());
     try {
@@ -78,7 +53,7 @@ export const fetchTrails = () => {
       // Get existing trail IDs from the database
       const existingTrails = await database.collections.get<Trail>('trails').query().fetch();
       const existingTrailIds = existingTrails.map(trail => trail.trailId);
-      const edgess : Edge [] = [];
+
       // Insert new trails into the database
       await database.write(async () => {
         // Insert each trail into the appropriate table
@@ -112,11 +87,20 @@ export const fetchTrails = () => {
                     edge.edgeDesc = edgeData.edge_desc;
                     edge.trail = edgeData.edge_trail;
                     edge.edgeStartId = edgeData.edge_start.id;
-                    edge.edgeEndId = edgeData.edge_end.id;   
-                    edgess.push(newEdge);         
+                    edge.edgeEndId = edgeData.edge_end.id;      
                   });
+                   
 
                   for (const pinData of [edgeData.edge_start, edgeData.edge_end]) {
+                    const newPinn = {
+                      pinId: pinData.id,
+                      pinName: pinData.pin_name,
+                      pinDesc: pinData.pin_desc,
+                      pinLat: pinData.pin_lat,
+                      pinLng: pinData.pin_lng,
+                      pinAlt: pinData.pin_alt,
+                      trail: trailData.id,
+                    };
                     const newPin = await database.collections.get<Pin>('pins').create((pin: any) => {
                       pin.pinId = pinData.id;
                       pin.pinName = pinData.pin_name;
@@ -124,7 +108,7 @@ export const fetchTrails = () => {
                       pin.pinLat = pinData.pin_lat;
                       pin.pinLng = pinData.pin_lng;
                       pin.pinAlt = pinData.pin_alt;
-                      pin.trail = trailData.id;
+                      pin.trail = trailData.id;                      
                     });
 
                     for (const relPinData of pinData.rel_pin || []) {
@@ -148,32 +132,7 @@ export const fetchTrails = () => {
           }
         }
     });
-
-      const transformedTrails = trailsData.map((trailData: { id: any; trail_name: any; trail_desc: any; trail_duration: any; trail_difficulty: any; trail_img: any; }) => ({
-        trailId: trailData.id,
-        trailName: trailData.trail_name,
-        trailDesc: trailData.trail_desc,
-        trailDuration: trailData.trail_duration,
-        trailDifficulty: trailData.trail_difficulty,
-        trailImg: trailData.trail_img,
-      }));
-
-      console.log("Dispatch!");
-      const pins = await database.collections.get<Pin>('pins').query().fetch();
-      const medias = await database.collections.get<Media>('media').query().fetch();
-      const edges = await database.collections.get<Edge>('edges').query().fetch();
-      //dispatch(fetchTrailsSuccess(transformedTrails));
-      //dispatch(createEdgeSuccess(edges));
-      //dispatch(createPinSuccess(pins));
-      //dispatch(createMediaSuccess(medias));
-      const megaArray : Array<Array<Media | Trail | Edge | Pin>> = [];
-      megaArray.push(transformedTrails);
-      megaArray.push(edges);
-      megaArray.push(pins);
-      megaArray.push(medias);
-
-      dispatch(fetchAllSuccess(megaArray));
-      
+      dispatch(fetchTrailsSuccess());
     } catch (error) {
       dispatch(fetchTrailsFailure(error));
     }
