@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import {Media, Pin, Trail} from '../model/model';
 
-import {fetchTrails} from '../redux/actions';
+import {acabeiViajar, addHistorico} from '../redux/actions';
 import {AppDispatch, RootState} from '../redux/store';
 import {useDispatch, useSelector} from 'react-redux';
 import {useAppSelector, useAppDispatch} from '../redux/hooks';
@@ -29,6 +29,7 @@ import database from '../model/database';
 // SVG
 import GoBack from './../assets/goBack.svg';
 import StartButton from './../assets/startButton.svg';
+import EndButton from './../assets/acabarButton.svg';
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';
@@ -44,6 +45,7 @@ const TrailDetail = ({
   const textColor = isDarkMode ? '#FEFAE0' : 'black';
   const navigation = useNavigation();
   const trailsState = useSelector((state: RootState) => state.trails);
+  const dispatch = useDispatch();
 
   // Dar audio
   useEffect(() => {
@@ -193,11 +195,114 @@ const TrailDetail = ({
       .map(([latitude, longitude]) => `${latitude},${longitude}`)
       .join('/');
     const url = `https://www.google.com/maps/dir/${destinationString}`;
+    dispatch(addHistorico(trail.trailId));
     console.log(url);
     Linking.openURL(url).catch(err =>
       console.error('Error opening Google Maps:', err),
     );
   };
+
+  const [numerodePins, setNumeroPins] = useState(0);
+  const [distancia, setDistancia] = useState(0);
+
+  const getPinsFromTrail2 = async (): Promise<void> => {
+    try {
+      const pinCollection = database.collections.get<Pin>('pins');
+
+      const pins = await pinCollection
+        .query(Q.where('pin_trail', trail.trailId))
+        .fetch();
+
+      const listaIds: number[] = [];
+      const uniquePins = pins.filter(pin => {
+        if (listaIds.includes(pin.pinId)) {
+          return false;
+        } else {
+          listaIds.push(pin.pinId);
+          return true;
+        }
+      });
+
+      setNumeroPins(uniquePins.length);
+    } catch (error) {
+      console.error('Error fetching pins from trail:', error);
+    }
+  };
+
+  const getDistanceFromTrail = async (): Promise<void> => {
+    try {
+      const pinCollection = database.collections.get<Pin>('pins');
+      const pins = await pinCollection
+        .query(Q.where('pin_trail', trail.trailId))
+        .fetch();
+      const listaIds: number[] = [];
+      const uniquePins = pins.filter(pin => {
+        if (listaIds.includes(pin.pinId)) {
+          return false;
+        } else {
+          listaIds.push(pin.pinId);
+          return true;
+        }
+      });
+
+      // Calculate total distance between pins
+      let totalDistance = 0;
+      for (let i = 0; i < uniquePins.length - 1; i++) {
+        const pin1 = uniquePins[i];
+        const pin2 = uniquePins[i + 1];
+        const distance = calculateDistance(
+          pin1.pinLat,
+          pin1.pinLng,
+          pin2.pinLat,
+          pin2.pinLng,
+        );
+        totalDistance += distance;
+      }
+
+      setDistancia(parseFloat(totalDistance.toFixed(2)));
+    } catch (error) {
+      console.error('Error fetching pins from trail:', error);
+    }
+  };
+
+  // Function to calculate distance between two points using Haversine formula
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) *
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    return d;
+  };
+
+  const deg2rad = (deg: number): number => {
+    return deg * (Math.PI / 180);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await getPinsFromTrail2();
+        await getDistanceFromTrail();
+      } catch (error) {
+        console.error('Error fetching pins:', error);
+        // Handle error if needed
+      }
+    };
+
+    fetchData(); // Call fetchData when the component mounts
+  }, []);
 
   return (
     <ScrollView>
@@ -247,16 +352,23 @@ const TrailDetail = ({
               </React.Fragment>
             ))}
           </ScrollView>
-
-          {flag === 0 ? (
-            <TouchableOpacity style={styles.botaoComecar}>
-              <StartButton />
-            </TouchableOpacity>
+          {trailsState.viajar === false ? (
+            flag === 0 ? (
+              <TouchableOpacity style={styles.botaoComecar}>
+                <StartButton />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.botaoComecar}
+                onPress={() => openGoogleMapsDirections(locs)}>
+                <StartButton />
+              </TouchableOpacity>
+            )
           ) : (
             <TouchableOpacity
               style={styles.botaoComecar}
-              onPress={() => openGoogleMapsDirections(locs)}>
-              <StartButton />
+              onPress={() => dispatch(acabeiViajar())}>
+              <EndButton />
             </TouchableOpacity>
           )}
         </View>
@@ -278,6 +390,35 @@ const TrailDetail = ({
             styles.textTitulo,
             {color: textColor, fontSize: 22, marginBottom: 10},
           ]}>
+          Informação Geral
+        </Text>
+        <View style={styles.gridContainer}>
+          <View style={styles.itemContainer}>
+            <Text style={styles.itemText}>Comprimento do Roteiro</Text>
+            <Text style={styles.itemValue}>{distancia}</Text>
+          </View>
+          <View style={styles.itemContainer}>
+            <Text style={styles.itemText}>Tempo Médio</Text>
+            <Text style={styles.itemValue}>{trail.trailDuration}</Text>
+          </View>
+        </View>
+
+        <View style={styles.gridContainer}>
+          <View style={styles.itemContainer}>
+            <Text style={styles.itemText}>Pontos de Interesse</Text>
+            <Text style={styles.itemValue}>{numerodePins}</Text>
+          </View>
+          <View style={styles.itemContainer}>
+            <Text style={styles.itemText}>Tipo de Roteiro</Text>
+            <Text style={styles.itemValue}>oi</Text>
+          </View>
+        </View>
+
+        <Text
+          style={[
+            styles.textTitulo,
+            {color: textColor, fontSize: 22, marginBottom: 10},
+          ]}>
           Pontos de Interesse
         </Text>
         <View style={[styles.horizontalLine, styles.pinspins]} />
@@ -286,7 +427,7 @@ const TrailDetail = ({
             <Text>Loading...</Text>
           ) : (
             pins.map((pin, index) => (
-              <View>
+              <View key={index}>
                 <TouchableOpacity
                   key={index}
                   onPress={() =>
@@ -323,6 +464,28 @@ const TrailDetail = ({
 };
 
 const styles = StyleSheet.create({
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  itemContainer: {
+    width: '48%', // Adjust width as needed
+    marginBottom: 10,
+    borderWidth: 0,
+    borderColor: 'black',
+    padding: 10,
+  },
+  itemText: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  itemValue: {
+    textAlign: 'center',
+    fontSize: 16,
+  },
   horizontalLine: {
     height: 1,
     width: '100%',

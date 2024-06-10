@@ -1,14 +1,8 @@
 const initialState = {
-    trails: [],
-    edges: [],
-    medias: [],
-    pins: [],
     loading: false,
-    loadingEdge: false,
-    loadingMedia: false,
-    loadingPin: false,
     error: null,
     viajar: false,
+    historico: [],
   };
   
   const trailsReducer = (state = initialState, action: any) => {
@@ -30,16 +24,16 @@ const initialState = {
           loading: false,
           error: action.payload,
         };
-      case 'COMECEI_A_VIAJAR':
-        return {
-          ...state,
-          loading: false,
-          viajar: true,
-        };
       case 'ACABEI_DE_VIAJAR':
         return {
           ...state,
           viajar:false,
+        };
+      case 'ADICIONEI_AO_HISTORICO_VIAGEM':
+        return {
+          ...state,
+          historico: [...state.historico, action.payload],
+          viajar: true,
         };
       default:
         return state;

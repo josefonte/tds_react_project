@@ -11,9 +11,14 @@ import {
 import AppLogo from './../assets/logo.svg';
 import FacebookLogo from './../assets/facebook.svg';
 import UmLogo from './../assets/umlogo.svg';
+import {fetchTrails} from '../redux/actions';
+import {useAppDispatch} from '../redux/hooks';
 
 export default function About() {
   const isDarkMode = useColorScheme() === 'dark';
+
+  const dispatch = useAppDispatch();
+  dispatch(fetchTrails());
 
   const styles = StyleSheet.create({
     container: {

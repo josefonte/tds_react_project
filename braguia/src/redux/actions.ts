@@ -24,18 +24,21 @@ export const fetchTrailsFailure = (error: any) => {
   };
 };
 
-export const aViajar = () => {
-  console.log('Dispatching aViajar action...');
-  return {
-    type: 'COMECEI_A_VIAJAR'
-  };
-};
+
 
 
 export const acabeiViajar = () => {
   console.log('Dispatching aViajar action (end)...');
   return {
     type: 'ACABEI_DE_VIAJAR'
+  };
+};
+
+export const addHistorico = (t : Trail) => {
+  console.log('Dispatching addHistorico action...');
+  return {
+    type: 'ADICIONEI_AO_HISTORICO_VIAGEM',
+    payload: t
   };
 };
 

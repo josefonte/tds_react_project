@@ -54,8 +54,6 @@ export default function Explore() {
   const dispatch = useAppDispatch();
   useEffect(() => {
     const fetchData = async () => {
-      dispatch(fetchTrails());
-
       try {
         const fetchedTrails = await database.collections
           .get<Trail>('trails')
@@ -74,7 +72,19 @@ export default function Explore() {
     };
 
     fetchData();
-  }, [dispatch]);
+  }, []);
+
+  useEffect(() => {
+    if (trails.length > 0) {
+      setFlagTrails(1);
+    }
+  }, [trails]);
+
+  useEffect(() => {
+    if (pins.length > 0) {
+      setFlagPins(1);
+    }
+  }, [pins]);
 
   return (
     <ScrollView>

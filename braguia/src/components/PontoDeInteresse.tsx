@@ -19,8 +19,6 @@ const PontoDeInteresse: React.FunctionComponent<PontoDeInteresseProps> = ({
   const [media, setMedia] = useState<Media[]>([]);
 
   useEffect(() => {
-    console.log('TESTE PIN');
-    console.log(pin);
     const fetchData = async () => {
       const mediaData = await getMediaFromPin(pin.pinId);
       setMedia(mediaData);
