@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -19,8 +19,10 @@ import {useNavigation} from '@react-navigation/native';
 
 export default function Favorites() {
   const isDarkMode = useColorScheme() === 'dark';
+  const textColor = isDarkMode ? '#FEFAE0' : 'black';
   const trailsState = useSelector((state: RootState) => state.trails);
   const navigation = useNavigation();
+
   const fetchTrailById = async (trailId: number): Promise<Trail> => {
     try {
       const trailCollection = database.collections.get<Trail>('trails'); // Get the collection for trails
@@ -35,20 +37,38 @@ export default function Favorites() {
     }
   };
 
+  const [trailData, setTrailData] = useState<Trail[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const trailCollection = database.collections.get<Trail>('trails'); // Get the collection for trails
+        const traill = await trailCollection
+          .query(Q.where('trail_id', Q.oneOf(trailsState.historico)))
+          .fetch();
+        setTrailData(traill);
+      } catch (error) {
+        console.error('Error fetching trails:', error);
+      }
+    };
+
+    fetchData();
+  }, [trailsState.historico]);
+
   return (
     <ScrollView>
       <View
         style={{flex: 1, backgroundColor: isDarkMode ? '#161716' : 'white'}}>
-        <Text>Histórico Trilhos</Text>
-        {trailsState.historico.map((traill: number, index: number) => (
+        <Text style={[styles.textTitulo, {color: textColor}]}>
+          Histórico Trilhos
+        </Text>
+        {trailData.map((trail: Trail, index: number) => (
           <View key={index}>
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate('TrailDetail', {
-                  trail: fetchTrailById(traill),
-                })
+                navigation.navigate('TrailDetail', {trail: trail})
               }>
-              <SugestedTrail trail={fetchTrailById(traill)}></SugestedTrail>
+              <SugestedTrail trail={trail}></SugestedTrail>
             </TouchableOpacity>
           </View>
         ))}
@@ -57,4 +77,14 @@ export default function Favorites() {
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  textTitulo: {
+    marginLeft: 10,
+    fontSize: 26,
+    fontFamily: 'Roboto',
+    lineHeight: 32,
+    fontWeight: 'bold',
+    letterSpacing: 0.25,
+    marginBottom: 20,
+  },
+});
