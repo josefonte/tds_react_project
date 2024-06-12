@@ -22,6 +22,9 @@ target 'braguia' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
+  pod 'simdjson', :path => '../node_modules/@nozbe/simdjson'
+  pod 'WatermelonDB', :path => '../node_modules/@nozbe/watermelondb'
+
 
   target 'braguiaTests' do
     inherit! :complete
