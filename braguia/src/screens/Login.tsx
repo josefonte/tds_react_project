@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -10,12 +10,16 @@ import {
   Image,
 } from 'react-native';
 
+import AppLogo from '../assets/logo.svg';
 import {AuthContext} from '../navigation/AuthContext';
 
 export default function Profile() {
-  const {logout} = React.useContext(AuthContext);
-
   const isDarkMode = useColorScheme() === 'dark';
+
+  const {login} = useContext(AuthContext);
+
+  const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
   const backgroundColor = isDarkMode ? '#161716' : 'white';
   const textColor = isDarkMode ? '#FEFAE0' : 'black';
@@ -25,24 +29,62 @@ export default function Profile() {
   const buttonIniciarTextColor = isDarkMode ? '#191A19' : 'white';
   const buttonCriarTextColor = isDarkMode ? '#FEFAE0' : 'black';
 
-  const onPressLeave = () => {
-    logout();
+  const onPressIniciar = () => {
+    console.log('Iniciar Sessão : ', username, ' | ', password);
+    login(username, password);
   };
 
   return (
     <View style={[styles.container, {backgroundColor}]}>
       <View style={styles.content}>
+        <AppLogo width={200} height={200} alignSelf={'center'} />
         <Text style={[styles.textTitulo, {color: textColor}]}>
-          PERFIL DO USER
+          Inscreve-te ou inicia sessão para aceder ao teu perfil
+        </Text>
+        <Text style={{color: textColor}}>username</Text>
+        <TextInput
+          style={[
+            styles.input,
+            {borderColor: inputBorderColor, color: textColor},
+          ]}
+          placeholder="username"
+          onChangeText={setUsername}
+          value={username}
+        />
+        <Text style={{color: textColor}}>Password</Text>
+        <TextInput
+          style={[
+            styles.input,
+            {borderColor: inputBorderColor, color: textColor},
+          ]}
+          placeholder="password"
+          onChangeText={setPassword}
+          value={password}
+          secureTextEntry={true}
+        />
+        <Text style={[styles.forgotPassword, {color: textColor}]}>
+          Esqueceu-se da password?
         </Text>
         <Pressable
           style={[
             styles.buttonIniciar,
             {backgroundColor: buttonIniciarBackground},
           ]}
-          onPress={onPressLeave}>
+          onPress={onPressIniciar}>
           <Text style={[styles.textIniciar, {color: buttonIniciarTextColor}]}>
-            Sair
+            Iniciar Sessão
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.buttonCriar,
+            {
+              backgroundColor: buttonCriarBackground,
+              borderColor: buttonCriarTextColor,
+            },
+          ]}>
+          <Text style={[styles.textCriar, {color: buttonCriarTextColor}]}>
+            Criar Conta
           </Text>
         </Pressable>
       </View>

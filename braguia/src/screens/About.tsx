@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import AppLogo from './../assets/logo.svg';
-import FacebookLogo from './../assets/facebook.svg';
-import UmLogo from './../assets/umlogo.svg';
+import AppLogo from '../assets/logo.svg';
+import FacebookLogo from '../assets/facebook.svg';
+import UmLogo from '../assets/umlogo.svg';
 import {fetchTrails} from '../redux/actions';
 import {useAppDispatch} from '../redux/hooks';
 

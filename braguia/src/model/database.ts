@@ -1,29 +1,22 @@
-import { Platform } from 'react-native'
-import { Database } from '@nozbe/watermelondb'
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
+import {Platform} from 'react-native';
+import {Database} from '@nozbe/watermelondb';
+import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 
-import schema from './schema'
-import { Trail, Edge, Pin, Media, RelatedTrail, RelatedPin } from './model' 
+import schema from './schema';
+import {User, Trail, Edge, Pin, Media, RelatedTrail, RelatedPin} from './model';
 
 const adapter = new SQLiteAdapter({
   schema,
-  jsi: true, 
+  jsi: true,
   onSetUpError: error => {
     // Handle setup error if needed
-  }
-})
+  },
+});
 
 // Then, make a Watermelon database from it!
 const database = new Database({
   adapter,
-  modelClasses: [
-    Trail,
-    Edge,
-    Pin,
-    Media,
-    RelatedTrail,
-    RelatedPin
-  ],
-})
+  modelClasses: [User, Trail, Edge, Pin, Media, RelatedTrail, RelatedPin],
+});
 
-export default database
+export default database;
