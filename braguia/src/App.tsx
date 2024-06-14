@@ -5,7 +5,7 @@ import 'react-native-gesture-handler';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
-import {SafeAreaView, useColorScheme} from 'react-native';
+import {AppState, AppStateStatus, SafeAreaView, useColorScheme} from 'react-native';
 
 import About from './screens/About';
 import Explore from './screens/Explore';
@@ -28,6 +28,8 @@ import {AuthProvider} from './navigation/AuthContext';
 import { PermissionsAndroid, Platform } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import startLocationUpdates from './utils/location';
+import BackgroundTimer from 'react-native-background-timer';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -38,10 +40,39 @@ export default function App(): React.JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#191A19' : 'white',
   };
+  const [flag, setFlag] = useState<number>(0);
 
+  if (flag === 0) {
+    fetchTrails();
+    fetchApp();
+    setFlag(1);
+  }
 
-  fetchTrails();
-  fetchApp();
+  useEffect(() => {
+    let watchId: number | null = null;
+
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+        if (nextAppState === 'active') {
+            console.log('App is in foreground');
+            startLocationUpdates();
+        } else if (nextAppState === 'background') {
+            console.log('App is in background');
+        }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    startLocationUpdates();
+
+    return () => {
+        if (watchId !== null) {
+            Geolocation.clearWatch(watchId);
+        }
+        BackgroundTimer.stopBackgroundTimer();
+        subscription.remove();
+    };
+}, []);
+
 
 
   return (
