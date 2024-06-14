@@ -93,20 +93,18 @@ export default function About() {
 
   // GEOFENCING
 
-  const requestLocationPermission = async () => {
+  const requestLocationPermission = async (): Promise<boolean> => {
     try {
       if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
+        const granted = await PermissionsAndroid.requestMultiple([
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Location Permission',
-            message: 'This app needs access to your location to track your position.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+        ]);
+  
+        if (
+          granted['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED &&
+          granted['android.permission.ACCESS_BACKGROUND_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED
+        ) {
           console.log('Location permission granted');
           return true;
         } else {
@@ -118,6 +116,7 @@ export default function About() {
       console.warn(err);
       return false;
     }
+    return false;
   };
   
   const startLocationUpdates = async () => {
@@ -137,7 +136,7 @@ export default function About() {
           (error) => {
             console.error('Error getting location', error);
           },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+          { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
         );
       };
   
