@@ -294,16 +294,22 @@ export const fetchUser = async (cookiesHeader: any) => {
   try {
     console.log('[FETCH USER] - Cookies : ', cookiesHeader);
 
-    const response = await axios.get(
+    const response = await fetch(
       'https://1130-193-137-92-26.ngrok-free.app/user',
       {
+        method: 'GET',
         headers: {
+          'Content-Type': 'application/json',
           Cookie: cookiesHeader,
         },
       },
     );
 
-    const user = response.data;
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const user = await response.json();
 
     console.log('[FETCH USER] - response : ', user);
 
