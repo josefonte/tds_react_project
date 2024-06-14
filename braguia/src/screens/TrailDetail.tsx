@@ -16,6 +16,10 @@ import {
   Linking,
   Dimensions,
 } from 'react-native';
+
+import RNFetchBlob from 'rn-fetch-blob';
+import {downloadFile, getDownloadPermissionAndroid} from './../auxFuncs/index';
+
 import {Media, Pin, Trail} from '../model/model';
 
 import {acabeiViajar, addHistorico} from '../redux/actions';
@@ -47,6 +51,23 @@ const TrailDetail = ({
   const navigation = useNavigation();
   const trailsState = useSelector((state: RootState) => state.trails);
   const dispatch = useDispatch();
+
+
+  // download
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /////
 
   // Dar audio
   useEffect(() => {
@@ -426,6 +447,24 @@ const TrailDetail = ({
                   </TouchableOpacity>
                 ) : mediaItem.mediaType === 'I' ? (
                   <View>
+                    <TouchableOpacity
+                        style={[styles.downloadButton]}
+                        onPress={() => {
+                          if (Platform.OS === 'android') {
+                            getDownloadPermissionAndroid().then(granted => {
+                              if (granted) {
+                                downloadFile(mediaItem.mediaFile);
+                              }
+                            });
+                          } else {
+                            downloadFile(mediaItem.mediaFile).then(res => {
+                              RNFetchBlob.ios.previewDocument(res.path());
+                            });
+                          }
+                        }}
+                    >
+                      <Text style={styles.textSimple}>Download</Text>
+                    </TouchableOpacity>
                     <Image
                       source={{uri: mediaItem.mediaFile}}
                       style={styles.imagemRolo}
@@ -438,6 +477,24 @@ const TrailDetail = ({
                       style={styles.videoRolo}
                       controls={true}
                     />
+                    <TouchableOpacity
+                      style={[styles.downloadButton]}
+                      onPress={() => {
+                        if (Platform.OS === 'android') {
+                          getDownloadPermissionAndroid().then(granted => {
+                            if (granted) {
+                              downloadFile(mediaItem.mediaFile);
+                            }
+                          });
+                        } else {
+                          downloadFile(mediaItem.mediaFile).then(res => {
+                            RNFetchBlob.ios.previewDocument(res.path());
+                          });
+                        }
+                      }}
+                    >
+                      <Text style={styles.textSimple}>Download</Text>
+                    </TouchableOpacity>
                   </View>
                 ) : (
                   <View>
