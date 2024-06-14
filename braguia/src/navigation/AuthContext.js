@@ -1,21 +1,20 @@
 import React from 'react';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import axios from 'axios';
-import { fetchUser } from '../redux/actions';
-import { useAppDispatch } from '../redux/hooks';
+import {fetchUser} from '../redux/actions';
+import {useAppDispatch} from '../redux/hooks';
 
 export const AuthContext = React.createContext(); // Add this line to import the 'AuthContext' namespace
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({children}) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [cookies, setCookies] = React.useState(null);
   const [errorLogin, setErrorLogin] = React.useState(false);
   const [username, setUsername] = React.useState('');
 
-  const dispatch = useAppDispatch();
   async function login(username, password) {
     console.log('login', username, password);
-    setUsername(username);
+
     try {
       setErrorLogin(false);
       axios.defaults.headers.common['Cookie'] = '';
@@ -29,14 +28,14 @@ export const AuthProvider = ({ children }) => {
 
       setIsLoading(true);
       const cookiesHeader = loginResponse.headers['set-cookie'];
-      console.log('setCookieHeader', cookiesHeader);
+
+      console.log('[Login Request] - Cookies : ', cookiesHeader);
 
       if (cookiesHeader) {
         setCookies(cookiesHeader);
-        await EncryptedStorage.setItem(
-          'cookies',
-          JSON.stringify(cookiesHeader),
-        );
+        await EncryptedStorage.setItem('cookies', cookiesHeader[0]);
+        setUsername(username);
+        await EncryptedStorage.setItem('username', username);
       }
 
       setTimeout(() => {
@@ -55,13 +54,8 @@ export const AuthProvider = ({ children }) => {
     setCookies(null);
     await EncryptedStorage.removeItem('cookies');
 
-    /*await database.write(async () => {
-      const usersCollection = database.collections.get('users');
-      const user = await usersCollection.find();
-      if (user) {
-        await user.destroyPermanently();
-      }
-    });*/
+    setUsername(null);
+    await EncryptedStorage.removeItem('username');
 
     setTimeout(() => {
       setIsLoading(false);
@@ -72,9 +66,14 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const cookiesStored = await EncryptedStorage.getItem('cookies');
-      if (cookiesStored) {
+      const usernameStored = await EncryptedStorage.getItem('username');
+      if (cookiesStored && username) {
         console.log('cookiesStored', cookiesStored);
-        setCookies(JSON.parse(cookiesStored));
+        console.log('usernameStored', usernameStored);
+        setCookies(cookiesStored);
+        setUsername(usernameStored);
+
+        await fetchUser(cookiesStored);
       }
     } catch (error) {
       console.log(error);
@@ -89,7 +88,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ login, logout, isLoading, cookies, errorLogin, username }}>
+      value={{login, logout, isLoading, cookies, errorLogin, username}}>
       {children}
     </AuthContext.Provider>
   );

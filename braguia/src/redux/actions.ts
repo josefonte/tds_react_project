@@ -1,4 +1,3 @@
-import { Dispatch } from 'redux';
 import {
   Edge,
   Media,
@@ -163,9 +162,9 @@ export const fetchTrails = async () => {
       }
     });
 
-    console.log("Success, trails in DB");
+    console.log('Success, trails in DB');
   } catch (error) {
-    console.log("Failed to put trails in DB");
+    console.log('Failed to put trails in DB');
   }
 };
 // --------- App ---------
@@ -232,10 +231,7 @@ export const fetchApp = async () => {
                     });
                   console.log('New contact created: ', newContact);
                 } catch (createContactError) {
-                  console.log(
-                    'Error creating new contact',
-                    createContactError,
-                  );
+                  console.log('Error creating new contact', createContactError);
                 }
               }
             }
@@ -255,10 +251,7 @@ export const fetchApp = async () => {
                     });
                   console.log('New partner created: ', newPartner);
                 } catch (createPartnerError) {
-                  console.log(
-                    'Error creating new partner',
-                    createPartnerError,
-                  );
+                  console.log('Error creating new partner', createPartnerError);
                 }
               }
             }
@@ -289,64 +282,72 @@ export const fetchApp = async () => {
         }
       }
     });
-    console.log("Success, app in DB")
+    console.log('Success, app in DB');
   } catch (error) {
-    console.log("Error when putting app in DB")
+    console.log('Error when putting app in DB');
   }
 };
 
 // ----------- USER ------------
 
-export const fetchUser = (cookiesHeader: string) => {
-  return async (dispatch: Dispatch) => {
-    try {
-      const response = await axios.get(
-        'https://1130-193-137-92-26.ngrok-free.app/user',
-        {
-          headers: {
-            Cookie: cookiesHeader,
-          },
+export const fetchUser = async (cookiesHeader: any) => {
+  try {
+    console.log('[FETCH USER] - Cookies : ', cookiesHeader);
+
+    const response = await axios.get(
+      'https://1130-193-137-92-26.ngrok-free.app/user',
+      {
+        headers: {
+          Cookie: cookiesHeader,
         },
-      );
-      const user = await response.data;
-      console.log('[FETCH USER] - response : ', user);
+      },
+    );
 
-      const existingUsers = await database.collections
-        .get<User>('users')
-        .query()
-        .fetch();
+    const user = response.data;
 
-      console.log('[FETCH USER] - existing user: ', existingUsers);
+    console.log('[FETCH USER] - response : ', user);
 
-      const existingUserIds = existingUsers.map(user => user.username);
-
-      await database.write(async () => {
-        if (!existingUserIds.includes(user.username)) {
-          try {
-            const newUser = await database.collections
-              .get<User>('users')
-              .create((newUser: User) => {
-                newUser.username = user.username;
-                newUser.email = user.email;
-                newUser.firstName = user.first_name;
-                newUser.lastName = user.last_name;
-                newUser.userType = user.user_type;
-                newUser.lastLogin = user.last_login;
-                newUser.isSuperuser = user.is_superuser;
-                newUser.isStaff = user.is_staff;
-                newUser.isActive = user.is_active;
-                newUser.dateJoined = user.date_joined;
-                newUser.historico = '';
-              });
-
-            console.log('[FETCH USER] - new user : ', newUser);
-          } catch (createUserError) {
-            console.log('Error creating new user', createUserError);
-          }
-        }
-      });
-    } catch (error) {
-      console.log('Error fetching user:', error);
+    if (user.username === '') {
+      throw new Error('User not found');
     }
-  };
+
+    const existingUsers = await database.collections
+      .get<User>('users')
+      .query()
+      .fetch();
+
+    console.log('[FETCH USER] - existing users: ', existingUsers);
+
+    const existingUsersIds = existingUsers.map(user => user.username);
+
+    console.log('[FETCH USER] - existing users Ids: ', existingUsersIds);
+
+    await database.write(async () => {
+      if (!existingUsersIds.includes(user.username)) {
+        try {
+          const newUser = await database.collections
+            .get<User>('users')
+            .create((newUser: User) => {
+              newUser.username = user.username;
+              newUser.email = user.email;
+              newUser.firstName = user.first_name;
+              newUser.lastName = user.last_name;
+              newUser.userType = user.user_type;
+              newUser.lastLogin = user.last_login;
+              newUser.isSuperuser = user.is_superuser;
+              newUser.isStaff = user.is_staff;
+              newUser.isActive = user.is_active;
+              newUser.dateJoined = user.date_joined;
+              newUser.historico = '';
+            });
+
+          console.log('[FETCH USER] - Add new user : ', newUser);
+        } catch (createUserError) {
+          console.log('Error creating new user', createUserError);
+        }
+      }
+    });
+  } catch (error) {
+    console.log('Error fetching user:', error);
+  }
 };
