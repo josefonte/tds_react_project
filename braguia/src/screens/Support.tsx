@@ -7,6 +7,7 @@ import {
   Pressable,
   useColorScheme,
   Switch,
+  Linking,
 } from 'react-native';
 
 import {useNavigation} from '@react-navigation/native';
@@ -19,6 +20,9 @@ import Feather from 'react-native-vector-icons/Feather';
 import {AuthContext} from '../navigation/AuthContext';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {color} from '@rneui/themed/dist/config';
+import { Contacts } from '../model/model';
+import database from '../model/database';
+;
 
 export default function Support() {
   const navigation = useNavigation();
@@ -33,6 +37,30 @@ export default function Support() {
   const redButtonText = theme.redButtontitle;
   const redButtonPressed = theme.redButtonPressed;
   const redButton = theme.redButton;
+
+
+  const [contactsData, setContactsData] = useState<Contacts[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+    try{
+      const contactsCollection = database.collections.get<Contacts>('contacts');
+      const contacts = await contactsCollection.query().fetch();
+      setContactsData(contacts);
+      console.log('Contacts Data:', contacts);
+    }catch(error){
+      console.log(error);
+    }
+    };
+
+    fetchData();
+  },[]);
+
+  const handleUrlPress = (url: string) => {
+    Linking.openURL(url).catch(err =>
+      console.error('Failed to open URL:', err),
+    );
+  };
 
   return (
     <View style={[styles.container, {backgroundColor}]}>
@@ -74,160 +102,170 @@ export default function Support() {
             </Text>
           </View>
         </View>
+        
+        {contactsData.length > 0 ? (
+          <>
+            <View style={styles.Section}>
+              <Text style={[styles.titleSection, { color: textColor }]}>Apoio ao Cliente</Text>
+              <Pressable
+                onPress={() => Linking.openURL(contactsData[0].contactUrl)} // Open the URL when pressed
+                style={({ pressed }) => [
+                  { backgroundColor: pressed ? colorDiviver : backgroundColor },
+                ]}
+              >
+                <View style={[styles.button, { borderBottomColor: colorDiviver }]}>
+                  <MaterialIcons
+                    name={'web'}
+                    size={20}
+                    color={textColor}
+                    style={{ paddingHorizontal: 10 }}
+                  />
+                  <Text style={{ fontSize: 16, color: textColor }}>
+                    {contactsData[0].contactUrl}
+                  </Text>
+                  <Feather
+                    name={'external-link'}
+                    size={20}
+                    color={colorDiviver}
+                    style={{ end: 15, position: 'absolute' }}
+                  />
+                </View>
+              </Pressable>
 
-        <View style={styles.Section}>
-          <Text style={[styles.titleSection, {color: textColor}]}>
-            Apoio ao Cliente
-          </Text>
-          <Pressable
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
-            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
-              <MaterialIcons
-                name={'web'}
-                size={20}
-                color={textColor}
-                style={{paddingHorizontal: 10}}
-              />
-              <Text style={{fontSize: 16, color: textColor}}>Website</Text>
+              <Pressable
+                onPress={() => Linking.openURL(`mailto:${contactsData[0].contactMail}`)} // Open mail client when pressed
+                style={({ pressed }) => [
+                  { backgroundColor: pressed ? colorDiviver : backgroundColor },
+                ]}
+              >
+                <View style={[styles.button, { borderBottomColor: colorDiviver }]}>
+                  <MaterialIcons
+                    name={'email-outline'}
+                    size={20}
+                    color={textColor}
+                    style={{ paddingHorizontal: 10 }}
+                  />
+                  <Text style={{ fontSize: 16, color: textColor }}>
+                    {contactsData[0].contactMail}
+                  </Text>
+                  <Feather
+                    name={'external-link'}
+                    size={20}
+                    color={colorDiviver}
+                    style={{ end: 15, position: 'absolute' }}
+                  />
+                </View>
+              </Pressable>
 
-              <Feather
-                name={'external-link'}
-                size={20}
-                color={colorDiviver}
-                style={{end: 15, position: 'absolute'}}
-              />
+              <Pressable
+                onPress={() => Linking.openURL(`tel:${contactsData[0].contactPhone}`)} // Open phone dialer when pressed
+                style={({ pressed }) => [
+                  { backgroundColor: pressed ? colorDiviver : backgroundColor },
+                ]}
+              >
+                <View style={[styles.button, { borderBottomColor: colorDiviver }]}>
+                  <Feather
+                    name={'phone'}
+                    size={18}
+                    color={textColor}
+                    style={{ paddingHorizontal: 10 }}
+                  />
+                  <Text style={{ fontSize: 16, color: textColor }}>
+                    {contactsData[0].contactPhone}
+                  </Text>
+                  <Feather
+                    name={'external-link'}
+                    size={20}
+                    color={colorDiviver}
+                    style={{ end: 15, position: 'absolute' }}
+                  />
+                </View>
+              </Pressable>
             </View>
-          </Pressable>
 
-          <Pressable
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
-            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
-              <MaterialIcons
-                name={'email-outline'}
-                size={20}
-                color={textColor}
-                style={{paddingHorizontal: 10}}
-              />
-              <Text style={{fontSize: 16, color: textColor}}>Email</Text>
+            <View style={styles.Section}>
+              <Text style={[styles.titleSection, { color: textColor }]}>
+                Serviços de Emergência Médica
+              </Text>
+              <Pressable
+                onPress={() => Linking.openURL(contactsData[1].contactUrl)} // Open the URL when pressed
+                style={({ pressed }) => [
+                  { backgroundColor: pressed ? colorDiviver : backgroundColor },
+                ]}
+              >
+                <View style={[styles.button, { borderBottomColor: colorDiviver }]}>
+                  <MaterialIcons
+                    name={'web'}
+                    size={20}
+                    color={textColor}
+                    style={{ paddingHorizontal: 10 }}
+                  />
+                  <Text style={{ fontSize: 16, color: textColor }}>
+                    {contactsData[1].contactUrl}
+                  </Text>
+                  <Feather
+                    name={'external-link'}
+                    size={20}
+                    color={colorDiviver}
+                    style={{ end: 15, position: 'absolute' }}
+                  />
+                </View>
+              </Pressable>
 
-              <Feather
-                name={'external-link'}
-                size={20}
-                color={colorDiviver}
-                style={{end: 15, position: 'absolute'}}
-              />
+              <Pressable
+                onPress={() => Linking.openURL(`mailto:${contactsData[1].contactMail}`)} // Open mail client when pressed
+                style={({ pressed }) => [
+                  { backgroundColor: pressed ? colorDiviver : backgroundColor },
+                ]}
+              >
+                <View style={[styles.button, { borderBottomColor: colorDiviver }]}>
+                  <MaterialIcons
+                    name={'email-outline'}
+                    size={20}
+                    color={textColor}
+                    style={{ paddingHorizontal: 10 }}
+                  />
+                  <Text style={{ fontSize: 16, color: textColor }}>
+                    {contactsData[1].contactMail}
+                  </Text>
+                  <Feather
+                    name={'external-link'}
+                    size={20}
+                    color={colorDiviver}
+                    style={{ end: 15, position: 'absolute' }}
+                  />
+                </View>
+              </Pressable>
+
+              <Pressable
+                onPress={() => Linking.openURL(`tel:${contactsData[1].contactPhone}`)} // Open phone dialer when pressed
+                style={({ pressed }) => [
+                  { backgroundColor: pressed ? colorDiviver : backgroundColor },
+                ]}
+              >
+                <View style={[styles.button, { borderBottomColor: colorDiviver }]}>
+                  <Feather
+                    name={'phone'}
+                    size={18}
+                    color={textColor}
+                    style={{ paddingHorizontal: 10 }}
+                  />
+                  <Text style={{ fontSize: 16, color: textColor }}>
+                    {contactsData[1].contactPhone}
+                  </Text>
+                  <Feather
+                    name={'external-link'}
+                    size={20}
+                    color={colorDiviver}
+                    style={{ end: 15, position: 'absolute' }}
+                  />
+                </View>
+              </Pressable>
             </View>
-          </Pressable>
-
-          <Pressable
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
-            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
-              <Feather
-                name={'phone'}
-                size={18}
-                color={textColor}
-                style={{paddingHorizontal: 10}}
-              />
-              <Text style={{fontSize: 16, color: textColor}}>Telemóvel</Text>
-
-              <Feather
-                name={'external-link'}
-                size={20}
-                color={colorDiviver}
-                style={{end: 15, position: 'absolute'}}
-              />
-            </View>
-          </Pressable>
-        </View>
-
-        <View style={styles.Section}>
-          <Text style={[styles.titleSection, {color: textColor}]}>
-            Serviços de Emergência Médica
-          </Text>
-          <Pressable
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
-            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
-              <MaterialIcons
-                name={'web'}
-                size={20}
-                color={textColor}
-                style={{paddingHorizontal: 10}}
-              />
-              <Text style={{fontSize: 16, color: textColor}}>Website</Text>
-
-              <Feather
-                name={'external-link'}
-                size={20}
-                color={colorDiviver}
-                style={{end: 15, position: 'absolute'}}
-              />
-            </View>
-          </Pressable>
-
-          <Pressable
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
-            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
-              <MaterialIcons
-                name={'email-outline'}
-                size={20}
-                color={textColor}
-                style={{paddingHorizontal: 10}}
-              />
-              <Text style={{fontSize: 16, color: textColor}}>Email</Text>
-
-              <Feather
-                name={'external-link'}
-                size={20}
-                color={colorDiviver}
-                style={{end: 15, position: 'absolute'}}
-              />
-            </View>
-          </Pressable>
-
-          <Pressable
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
-            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
-              <Feather
-                name={'phone'}
-                size={18}
-                color={textColor}
-                style={{paddingHorizontal: 10}}
-              />
-              <Text style={{fontSize: 16, color: textColor}}>Telemóvel</Text>
-
-              <Feather
-                name={'external-link'}
-                size={20}
-                color={colorDiviver}
-                style={{end: 15, position: 'absolute'}}
-              />
-            </View>
-          </Pressable>
-        </View>
+          </>
+        ) : (
+          <Text style={{ color: textColor }}>Loading contacts...</Text>
+        )}
       </View>
     </View>
   );

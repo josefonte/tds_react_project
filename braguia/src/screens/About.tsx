@@ -6,6 +6,7 @@ import {
   useColorScheme,
   TouchableOpacity,
   Linking,
+  Pressable,
 } from 'react-native';
 
 import {fetchTrails, fetchApp} from '../redux/actions';
@@ -138,6 +139,15 @@ export default function About() {
       resizeMode: 'cover',
       alignSelf: 'center',
     },
+    partnerText: {
+      fontSize: 10,
+      fontFamily: 'Roboto',
+      color: isDarkMode ? '#FEFAE0' : 'black',
+      marginBottom: 5,
+      alignSelf: 'center',
+      alignItems: 'center',
+      alignContent: 'center',
+    }
   });
 
   return (
@@ -167,17 +177,31 @@ export default function About() {
           </TouchableOpacity>
         ))}
 
-        {partnersData.map((partner, index) => {
-          console.log('Rendering partner:', partner); // Debugging log
-          return (
+{partnersData.map((partner, index) => {
+        console.log('Rendering partner:', partner); // Debugging log
+        return (
+          <View key={index} style={styles.container}>
+            <Text style={styles.infoText}>{partner.partnerName}</Text>
             <TouchableOpacity
-              key={index}
               style={styles.imageButton}
               onPress={() => handlePress(partner.partnerUrl)}>
               <UmLogo height={100} width={150} />
             </TouchableOpacity>
-          );
-        })}
+
+            <TouchableOpacity
+              onPress={() => Linking.openURL(`mailto:${partner.partnerMail}`)}
+              style={styles.partnerText}>
+              <Text style={styles.partnerText}>{partner.partnerMail}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => Linking.openURL(`tel:${partner.partnerPhone}`)}
+              style={styles.partnerText}>
+              <Text style={styles.partnerText}>{partner.partnerPhone}</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      })}
       </View>
     </View>
   );
