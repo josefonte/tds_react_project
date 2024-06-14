@@ -76,4 +76,41 @@ class RelatedPin extends Model {
   @relation('pins', 'pin_id') pin!: Pin;
 }
 
-export {User, Trail, Edge, Pin, Media, RelatedPin, RelatedTrail};
+class Socials extends Model {
+  static table ='socials'
+
+  @field('social_name') socialName!: string
+  @field('social_url') socialUrl!: string
+  @field('social_share_link') socialShareLink!: string
+  @field('social_app') socialApp!: string
+}
+
+class Contacts extends Model {
+  static table = 'contacts'
+
+  @field('contact_name') contactName!: string
+  @field('contact_phone') contactPhone!: string
+  @field('contact_url') contactUrl!: string
+  @field('contact_mail') contactMail!: string
+  @field('contact_desc') contactDesc!: string
+}
+
+class Partners extends Model {
+  static table = 'partners'
+  @field('partner_name') partnerName!: string
+  @field('partner_phone') partnerPhone!: string
+  @field('partner_url') partnerUrl!: string
+  @field('partner_mail') partnerMail!: string
+  @field('partner_desc') partnerDesc!: string
+  @field('partner_app') partnerApp!: string
+}
+
+class App extends Model {
+  static table = 'app'
+
+  @field('app_name') appName!: string
+  @field('app_desc') appDesc!: string
+  @field('app_landing') appLanding!: string
+}
+
+export {User, Trail, Edge, Pin, Media, RelatedPin, RelatedTrail, Socials, Contacts, Partners, App};

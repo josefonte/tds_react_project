@@ -1,13 +1,6 @@
-import {Dispatch} from 'redux';
-import {
-  Edge,
-  Media,
-  Pin,
-  RelatedPin,
-  RelatedTrail,
-  Trail,
-} from '../model/model'; // Adjust the import path as needed
-import database from '../model/database'; // Adjust the import path as needed
+import { Dispatch } from 'redux';
+import { Edge, Media, Pin, RelatedPin, RelatedTrail, Trail, Socials, Contacts, Partners, App } from './../model/model'; // Adjust the import path as needed
+import database from './../model/database'; // Adjust the import path as needed
 
 export const fetchTrailsRequest = () => {
   console.log('Dispatching fetchTrailsRequest action...');
@@ -58,9 +51,7 @@ export const fetchTrails = () => {
   return async (dispatch: Dispatch) => {
     dispatch(fetchTrailsRequest());
     try {
-      const response = await fetch(
-        'https://39b6-193-137-92-72.ngrok-free.app/trails',
-      );
+      const response = await fetch('https://1130-193-137-92-26.ngrok-free.app/trails'); 
       const trailsData = await response.json();
 
       // Get existing trail IDs from the database
@@ -166,3 +157,106 @@ export const fetchTrails = () => {
 };
 
 export const fetchUser = () => {};
+
+
+
+
+
+
+// --------- App ---------
+
+export const fetchAppRequest = () => {
+  console.log("[FetchApp]: Requesting app...");
+  return {
+    type: 'FETCH_APP_REQUEST',
+  };
+};
+
+export const fetchAppSuccess = () => {
+  console.log("[FetchApp]: Requests app successfully...");
+  return {
+    type: 'FETCH_APP_SUCCESS',
+  };
+};
+
+export const fetchAppFailure = (error: any) => {
+  console.log("[FetchApp]: Request app Failed...");
+  return {
+    type: 'FETCH_APP_FAILURE',
+    payload: error
+  };
+};
+
+
+export const fetchApp = () => {
+  console.log("[FetchApp]: Requesting app...");
+  return async (dispatch: Dispatch) => {
+    dispatch(fetchAppRequest());
+    try {
+      const response = await fetch('https://1130-193-137-92-26.ngrok-free.app/app'); 
+      const appsData = await response.json();
+      console.log("[fetchApp] Read data from API: " , appsData);
+
+      const existingApp = await database.collections.get<App>('app').query().fetch();
+      const existingAppNames = existingApp.map(app => app.appName);
+      console.log("[fetchApp] existingAppNames:", existingAppNames);
+
+      await database.write(async () => {
+        for (const appData of appsData) {
+          if (!existingAppNames.includes(appData.app_name)) {
+            console.log(`Creating new app: ${appData.app_name}`);
+            try {
+              const newApp = await database.collections.get<App>('app').create((app: any) => {
+                app.appName = appData.app_name;
+                app.appDesc = appData.app_desc;
+                app.appLanding = appData.app_landing_page_text;
+              });
+              console.log("New App created: ", newApp);
+
+              for (const socialData of appData.socials) {
+                const newSocial = await database.collections.get<Socials>('socials').create((social: any) => {
+                  social.socialId = socialData.id;
+                  social.socialName = socialData.social_name;
+                  social.socialUrl = socialData.social_url;
+                  social.socialIcon = socialData.social_icon;
+                  social.socialApp = newApp.appName;
+                });
+                console.log("New social created: ", newSocial);
+              }
+
+              for (const contactData of appData.contacts) {
+                const newContact = await database.collections.get<Contacts>('contacts').create((contact: any) => {
+                  contact.contactId = contactData.id;
+                  contact.contactName = contactData.contact_name;
+                  contact.contactPhone = contactData.contact_phone;
+                  contact.contactUrl = contactData.contact_url;
+                  contact.contactMail = contactData.contact_mail;
+                  contact.contactDesc = contactData.contact_desc;
+                  contact.contactApp = newApp.appName;
+                });
+                console.log("New contact created: ", newContact);
+              }
+
+              for (const partnerData of appData.partners) {
+                const newPartner = await database.collections.get<Partners>('partners').create((partner: any) => {
+                  partner.partnerName = partnerData.partner_name;
+                  partner.partnerPhone = partnerData.partner_phone;
+                  partner.partnerUrl = partnerData.partner_url;
+                  partner.partnerMail = partnerData.partner_mail;
+                  partner.partnerDesc = partnerData.partner_desc;
+                  partner.partnerApp = newApp.appName;
+                });
+                console.log("New partner created: ", newPartner);
+              }
+            } catch (createError) {
+              console.log("Error creating new app or its related entities", createError);
+            }
+          }
+        }
+      });
+      dispatch(fetchAppSuccess());
+    } catch (error) {
+      dispatch(fetchAppFailure(error));
+    }
+  };
+};

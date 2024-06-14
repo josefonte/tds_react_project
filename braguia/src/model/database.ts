@@ -2,8 +2,9 @@ import {Platform} from 'react-native';
 import {Database} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 
+
 import schema from './schema';
-import {User, Trail, Edge, Pin, Media, RelatedTrail, RelatedPin} from './model';
+import {User, Trail, Edge, Pin, Media, RelatedTrail, RelatedPin,Socials, Contacts, Partners, App} from './model';
 
 const adapter = new SQLiteAdapter({
   schema,
@@ -16,7 +17,19 @@ const adapter = new SQLiteAdapter({
 // Then, make a Watermelon database from it!
 const database = new Database({
   adapter,
-  modelClasses: [User, Trail, Edge, Pin, Media, RelatedTrail, RelatedPin],
+  modelClasses: [
+    User,
+    Trail,
+    Edge, 
+    Pin,
+    Media,
+    RelatedTrail,
+    RelatedPin,
+    Socials,
+    Contacts,
+    Partners,
+    App],
+  actionsEnabled:true,
 });
 
 export default database;

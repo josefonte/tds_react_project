@@ -1,7 +1,7 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 const schema = appSchema({
-  version: 4,
+  version: 5,
   tables: [
     tableSchema({
       name: 'users',
@@ -76,6 +76,45 @@ const schema = appSchema({
         {name: 'value', type: 'string'},
         {name: 'attrib', type: 'string'},
         {name: 'pin_id', type: 'string', isIndexed: true},
+      ],
+    }),
+    tableSchema({
+      name: 'socials',
+      columns: [
+        { name: 'social_name', type: 'string' },
+        { name: 'social_url', type: 'string' },
+        { name: 'social_share_link', type: 'string' },
+        { name: 'social_app', type: 'string' },
+      ],
+    }),
+    tableSchema({
+      name: 'contacts',
+      columns: [
+        { name: 'contact_name', type: 'string' },
+        { name: 'contact_phone', type: 'string' },
+        { name: 'contact_url', type: 'string' },
+        { name: 'contact_mail', type: 'string' },
+        { name: 'contact_desc', type: 'string' },
+        { name: 'contact_app', type: 'string' },
+      ],
+    }),
+    tableSchema({
+      name: 'partners',
+      columns: [
+        { name: 'partner_name', type: 'string' },
+        { name: 'partner_phone', type: 'string' },
+        { name: 'parrner_url', type: 'string' },
+        { name: 'partner_mail', type: 'string' },
+        { name: 'partner_desc', type: 'string' },
+        { name: 'partner_app', type: 'string' },
+      ],
+    }),
+    tableSchema({
+      name: 'app',
+      columns: [
+        { name: 'app_name', type: 'string' },
+        { name: 'app_desc', type: 'string' },
+        { name: 'app_landing', type: 'string' },
       ],
     }),
   ],
