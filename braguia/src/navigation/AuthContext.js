@@ -1,7 +1,8 @@
 import React from 'react';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import axios from 'axios';
-import database from '../model/database';
+import {fetchUser} from '../redux/actions';
+import {useAppDispatch} from '../redux/hooks';
 
 export const AuthContext = React.createContext(); // Add this line to import the 'AuthContext' namespace
 
@@ -9,9 +10,12 @@ export const AuthProvider = ({children}) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [cookies, setCookies] = React.useState(null);
   const [errorLogin, setErrorLogin] = React.useState(false);
+  const [username, setUsername] = React.useState('');
 
+  const dispatch = useAppDispatch();
   async function login(username, password) {
     console.log('login', username, password);
+    setUsername(username);
     try {
       setErrorLogin(false);
       axios.defaults.headers.common['Cookie'] = '';
@@ -34,18 +38,6 @@ export const AuthProvider = ({children}) => {
           JSON.stringify(cookiesHeader),
         );
       }
-
-      const userResponse = await axios.get(
-        'https://1130-193-137-92-26.ngrok-free.app/user',
-        {
-          headers: {
-            Cookie: cookiesHeader,
-          },
-        },
-      );
-      console.log('Response:', userResponse.data);
-
-      //guardar dados na BD
 
       setTimeout(() => {
         setIsLoading(false);
@@ -97,7 +89,7 @@ export const AuthProvider = ({children}) => {
 
   return (
     <AuthContext.Provider
-      value={{login, logout, isLoading, cookies, errorLogin}}>
+      value={{login, logout, isLoading, cookies, errorLogin, username}}>
       {children}
     </AuthContext.Provider>
   );

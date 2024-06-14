@@ -1,21 +1,22 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 const schema = appSchema({
-  version: 5,
+  version: 6,
   tables: [
     tableSchema({
       name: 'users',
       columns: [
         {name: 'userType', type: 'string'},
-        {name: 'last_login', type: 'string', isOptional: true},
+        {name: 'last_login', type: 'string'},
         {name: 'is_superuser', type: 'boolean'},
         {name: 'username', type: 'string'},
         {name: 'first_name', type: 'string'},
         {name: 'last_name', type: 'string'},
-        {name: 'email', type: 'string', isOptional: true},
+        {name: 'email', type: 'string'},
         {name: 'is_staff', type: 'boolean'},
         {name: 'is_active', type: 'boolean'},
-        {name: 'date_joined', type: 'string', isOptional: true},
+        {name: 'date_joined', type: 'string'},
+        {name: 'historico', type: 'string'},
       ],
     }),
     tableSchema({
@@ -81,40 +82,40 @@ const schema = appSchema({
     tableSchema({
       name: 'socials',
       columns: [
-        { name: 'social_name', type: 'string' },
-        { name: 'social_url', type: 'string' },
-        { name: 'social_share_link', type: 'string' },
-        { name: 'social_app', type: 'string' },
+        {name: 'social_name', type: 'string'},
+        {name: 'social_url', type: 'string'},
+        {name: 'social_share_link', type: 'string'},
+        {name: 'social_app', type: 'string'},
       ],
     }),
     tableSchema({
       name: 'contacts',
       columns: [
-        { name: 'contact_name', type: 'string' },
-        { name: 'contact_phone', type: 'string' },
-        { name: 'contact_url', type: 'string' },
-        { name: 'contact_mail', type: 'string' },
-        { name: 'contact_desc', type: 'string' },
-        { name: 'contact_app', type: 'string' },
+        {name: 'contact_name', type: 'string'},
+        {name: 'contact_phone', type: 'string'},
+        {name: 'contact_url', type: 'string'},
+        {name: 'contact_mail', type: 'string'},
+        {name: 'contact_desc', type: 'string'},
+        {name: 'contact_app', type: 'string'},
       ],
     }),
     tableSchema({
       name: 'partners',
       columns: [
-        { name: 'partner_name', type: 'string' },
-        { name: 'partner_phone', type: 'string' },
-        { name: 'partner_url', type: 'string' },
-        { name: 'partner_mail', type: 'string' },
-        { name: 'partner_desc', type: 'string' },
-        { name: 'partner_app', type: 'string' },
+        {name: 'partner_name', type: 'string'},
+        {name: 'partner_phone', type: 'string'},
+        {name: 'partner_url', type: 'string'},
+        {name: 'partner_mail', type: 'string'},
+        {name: 'partner_desc', type: 'string'},
+        {name: 'partner_app', type: 'string'},
       ],
     }),
     tableSchema({
       name: 'app',
       columns: [
-        { name: 'app_name', type: 'string' },
-        { name: 'app_desc', type: 'string' },
-        { name: 'app_landing', type: 'string' },
+        {name: 'app_name', type: 'string'},
+        {name: 'app_desc', type: 'string'},
+        {name: 'app_landing', type: 'string'},
       ],
     }),
   ],

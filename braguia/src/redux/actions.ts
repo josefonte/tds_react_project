@@ -5,6 +5,7 @@ import {
   Pin,
   RelatedPin,
   RelatedTrail,
+  User,
   Trail,
   Socials,
   Contacts,
@@ -12,6 +13,7 @@ import {
   App,
 } from './../model/model'; // Adjust the import path as needed
 import database from './../model/database'; // Adjust the import path as needed
+import axios from 'axios';
 
 export const fetchTrailsRequest = () => {
   console.log('Dispatching fetchTrailsRequest action...');
@@ -168,9 +170,6 @@ export const fetchTrails = () => {
     }
   };
 };
-
-export const fetchUser = () => {};
-
 // --------- App ---------
 
 export const fetchAppRequest = () => {
@@ -225,17 +224,22 @@ export const fetchApp = () => {
               if (appData.contacts) {
                 for (const contactData of appData.contacts) {
                   try {
-                    const newContact = await database.collections.get<Contacts>('contacts').create((contact: any) => {
-                      contact.contactName = contactData.contact_name;
-                      contact.contactPhone = contactData.contact_phone;
-                      contact.contactUrl = contactData.contact_url;
-                      contact.contactMail = contactData.contact_mail;
-                      contact.contactDesc = contactData.contact_desc;
-                      contact.contactApp = contactData.contact_app;
-                    });
-                    console.log("New contact created: ", newContact);
+                    const newContact = await database.collections
+                      .get<Contacts>('contacts')
+                      .create((contact: any) => {
+                        contact.contactName = contactData.contact_name;
+                        contact.contactPhone = contactData.contact_phone;
+                        contact.contactUrl = contactData.contact_url;
+                        contact.contactMail = contactData.contact_mail;
+                        contact.contactDesc = contactData.contact_desc;
+                        contact.contactApp = contactData.contact_app;
+                      });
+                    console.log('New contact created: ', newContact);
                   } catch (createContactError) {
-                    console.log("Error creating new contact", createContactError);
+                    console.log(
+                      'Error creating new contact',
+                      createContactError,
+                    );
                   }
                 }
               }
@@ -243,17 +247,22 @@ export const fetchApp = () => {
               if (appData.partners) {
                 for (const partnerData of appData.partners) {
                   try {
-                    const newPartner = await database.collections.get<Partners>('partners').create((partner: any) => {
-                      partner.partnerName = partnerData.partner_name;
-                      partner.partnerPhone = partnerData.partner_phone;
-                      partner.partnerUrl = partnerData.partner_url;
-                      partner.partnerMail = partnerData.partner_mail;
-                      partner.partnerDesc = partnerData.partner_desc;
-                      partner.partnerApp = partnerData.partner_app;
-                    });
-                    console.log("New partner created: ", newPartner);
+                    const newPartner = await database.collections
+                      .get<Partners>('partners')
+                      .create((partner: any) => {
+                        partner.partnerName = partnerData.partner_name;
+                        partner.partnerPhone = partnerData.partner_phone;
+                        partner.partnerUrl = partnerData.partner_url;
+                        partner.partnerMail = partnerData.partner_mail;
+                        partner.partnerDesc = partnerData.partner_desc;
+                        partner.partnerApp = partnerData.partner_app;
+                      });
+                    console.log('New partner created: ', newPartner);
                   } catch (createPartnerError) {
-                    console.log("Error creating new partner", createPartnerError);
+                    console.log(
+                      'Error creating new partner',
+                      createPartnerError,
+                    );
                   }
                 }
               }
@@ -261,15 +270,17 @@ export const fetchApp = () => {
               if (appData.socials) {
                 for (const socialData of appData.socials) {
                   try {
-                    const newSocial = await database.collections.get<Socials>('socials').create((social: any) => {
-                      social.socialName = socialData.social_name;
-                      social.socialUrl = socialData.social_url;
-                      social.socialIcon = socialData.social_icon;
-                      social.socialApp = socialData.social_app;
-                    });
-                    console.log("New social created: ", newSocial);
+                    const newSocial = await database.collections
+                      .get<Socials>('socials')
+                      .create((social: any) => {
+                        social.socialName = socialData.social_name;
+                        social.socialUrl = socialData.social_url;
+                        social.socialIcon = socialData.social_icon;
+                        social.socialApp = socialData.social_app;
+                      });
+                    console.log('New social created: ', newSocial);
                   } catch (createSocialError) {
-                    console.log("Error creating new social", createSocialError);
+                    console.log('Error creating new social', createSocialError);
                   }
                 }
               }
@@ -285,6 +296,62 @@ export const fetchApp = () => {
       dispatch(fetchAppSuccess());
     } catch (error) {
       dispatch(fetchAppFailure(error));
+    }
+  };
+};
+
+// ----------- USER ------------
+
+export const fetchUser = (cookiesHeader: string) => {
+  return async (dispatch: Dispatch) => {
+    try {
+      const response = await axios.get(
+        'https://1130-193-137-92-26.ngrok-free.app/user',
+        {
+          headers: {
+            Cookie: cookiesHeader,
+          },
+        },
+      );
+      const user = await response.data;
+      console.log('[FETCH USER] - response : ', user);
+
+      const existingUsers = await database.collections
+        .get<User>('users')
+        .query()
+        .fetch();
+
+      console.log('[FETCH USER] - existing user: ', existingUsers);
+
+      const existingUserIds = existingUsers.map(user => user.username);
+
+      await database.write(async () => {
+        if (!existingUserIds.includes(user.username)) {
+          try {
+            const newUser = await database.collections
+              .get<User>('users')
+              .create((newUser: User) => {
+                newUser.username = user.username;
+                newUser.email = user.email;
+                newUser.firstName = user.first_name;
+                newUser.lastName = user.last_name;
+                newUser.userType = user.user_type;
+                newUser.lastLogin = user.last_login;
+                newUser.isSuperuser = user.is_superuser;
+                newUser.isStaff = user.is_staff;
+                newUser.isActive = user.is_active;
+                newUser.dateJoined = user.date_joined;
+                newUser.historico = '';
+              });
+
+            console.log('[FETCH USER] - new user : ', newUser);
+          } catch (createUserError) {
+            console.log('Error creating new user', createUserError);
+          }
+        }
+      });
+    } catch (error) {
+      console.log('Error fetching user:', error);
     }
   };
 };
