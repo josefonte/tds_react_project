@@ -30,7 +30,7 @@ export default function Profile() {
   const textColor = theme.text2;
   const colorDiviver = theme.color8;
   const redButtonPressed = theme.redButton;
-  const redtitle = theme.redtitle;
+  const redtitle = theme.redButtontitle;
 
   const onPressLeave = () => {
     logout();

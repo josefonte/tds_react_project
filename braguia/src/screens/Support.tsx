@@ -1,143 +1,290 @@
 import React from 'react';
 import {
   StyleSheet,
-  TextInput,
   Text,
+  ScrollView,
   View,
+  Pressable,
   useColorScheme,
-  TouchableOpacity,
-  Image,
+  Switch,
 } from 'react-native';
 
-import Site from '../assets/site.svg';
-import Mail from '../assets/mail.svg';
-import Phone from '../assets/phone2.svg';
-import Redirect from '../assets/redirect.svg';
-import GoBack from '../assets/goBack.svg';
 import {useNavigation} from '@react-navigation/native';
 
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Octicons from 'react-native-vector-icons/Octicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Feather from 'react-native-vector-icons/Feather';
+
+import {AuthContext} from '../navigation/AuthContext';
+import {darkModeTheme, lightModeTheme} from '../utils/themes';
+import {color} from '@rneui/themed/dist/config';
+
 export default function Support() {
-  const isDarkMode = useColorScheme() === 'dark';
   const navigation = useNavigation();
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'flex-start',
-      backgroundColor: isDarkMode ? '#161716' : '#FEFAE0',
-      alignItems: 'flex-start',
-    },
+  const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
+  const [isEnabled, setIsEnabled] = React.useState(false);
+  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
 
-    titleText: {
-      fontSize: 50,
-      fontFamily: 'Roboto',
-      fontWeight: 'bold',
-      color: isDarkMode ? '#FEFAE0' : 'black',
-      marginTop: 20,
-      marginBottom: 40,
-      marginStart: 20,
-      alignContent: 'flex-start',
-    },
-
-    appDescText: {
-      fontSize: 20,
-      fontFamily: 'Roboto',
-      color: isDarkMode ? '#FEFAE0' : 'black',
-      marginBottom: 20,
-      marginTop: 20,
-      marginStart: 20,
-    },
-
-    rowContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between', // Center the buttons horizontally
-      alignItems: 'center', // Center the buttons vertically
-      marginBottom: 5, // Space between the button row and text
-      width: '80%',
-    },
-
-    infoText: {
-      fontSize: 15,
-      fontFamily: 'Roboto',
-      color: isDarkMode ? '#FEFAE0' : 'black',
-    },
-
-    imageButton: {
-      marginHorizontal: 10, // Space between the two buttons
-      alignItems: 'center', // Center the content of the button
-      alignSelf: 'center', // Center the content of the button
-    },
-  });
+  const backgroundColor = theme.background_color;
+  const titleColor = theme.text;
+  const textColor = theme.text2;
+  const colorDiviver = theme.color8;
+  const redButtonText = theme.redButtontitle;
+  const redButtonPressed = theme.redButtonPressed;
+  const redButton = theme.redButton;
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <GoBack />
-      </TouchableOpacity>
-      <Text style={styles.titleText}>Bem Vindo ao Suporte do BraGuia</Text>
+    <View style={[styles.container, {backgroundColor}]}>
+      <View style={styles.content}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            marginBottom: 10,
+          }}>
+          <Pressable onPress={() => navigation.goBack()}>
+            <View
+              style={{
+                borderRadius: 100,
+                backgroundColor: colorDiviver,
+                width: 40,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Octicons
+                name={'chevron-left'}
+                size={20}
+                color={textColor}
+                style={{paddingRight: 3}}
+              />
+            </View>
+          </Pressable>
+          <View style={[styles.pageTitleContainer, {borderColor: titleColor}]}>
+            <Ionicons
+              name={'settings-outline'}
+              size={17}
+              color={titleColor}
+              style={{paddingRight: 5}}
+            />
 
-      <Text style={styles.appDescText}>Customer Support</Text>
-
-      <TouchableOpacity
-        style={styles.imageButton}
-        onPress={() => alert('First Image Button Pressed')}>
-        <View style={styles.rowContainer}>
-          <Site height={20} width={20} />
-          <Text style={styles.infoText}>site</Text>
-          <Redirect height={20} width={20} />
+            <Text style={[styles.pageTitle, {color: titleColor}]}>
+              Centro de Apoio da Braguia
+            </Text>
+          </View>
         </View>
-      </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.imageButton}
-        onPress={() => alert('First Image Button Pressed')}>
-        <View style={styles.rowContainer}>
-          <Mail height={20} width={20} />
-          <Text style={styles.infoText}>mail</Text>
-          <Redirect height={20} width={20} />
+        <View style={styles.Section}>
+          <Text style={[styles.titleSection, {color: textColor}]}>
+            Apoio ao Cliente
+          </Text>
+          <Pressable
+            style={({pressed}) => [
+              {
+                backgroundColor: pressed ? colorDiviver : backgroundColor,
+              },
+            ]}>
+            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
+              <MaterialIcons
+                name={'web'}
+                size={20}
+                color={textColor}
+                style={{paddingHorizontal: 10}}
+              />
+              <Text style={{fontSize: 16, color: textColor}}>Website</Text>
+
+              <Feather
+                name={'external-link'}
+                size={20}
+                color={colorDiviver}
+                style={{end: 15, position: 'absolute'}}
+              />
+            </View>
+          </Pressable>
+
+          <Pressable
+            style={({pressed}) => [
+              {
+                backgroundColor: pressed ? colorDiviver : backgroundColor,
+              },
+            ]}>
+            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
+              <MaterialIcons
+                name={'email-outline'}
+                size={20}
+                color={textColor}
+                style={{paddingHorizontal: 10}}
+              />
+              <Text style={{fontSize: 16, color: textColor}}>Email</Text>
+
+              <Feather
+                name={'external-link'}
+                size={20}
+                color={colorDiviver}
+                style={{end: 15, position: 'absolute'}}
+              />
+            </View>
+          </Pressable>
+
+          <Pressable
+            style={({pressed}) => [
+              {
+                backgroundColor: pressed ? colorDiviver : backgroundColor,
+              },
+            ]}>
+            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
+              <Feather
+                name={'phone'}
+                size={18}
+                color={textColor}
+                style={{paddingHorizontal: 10}}
+              />
+              <Text style={{fontSize: 16, color: textColor}}>Telemóvel</Text>
+
+              <Feather
+                name={'external-link'}
+                size={20}
+                color={colorDiviver}
+                style={{end: 15, position: 'absolute'}}
+              />
+            </View>
+          </Pressable>
         </View>
-      </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.imageButton}
-        onPress={() => alert('First Image Button Pressed')}>
-        <View style={styles.rowContainer}>
-          <Phone height={20} width={20} />
-          <Text style={styles.infoText}>phone</Text>
-          <Redirect height={20} width={20} />
+        <View style={styles.Section}>
+          <Text style={[styles.titleSection, {color: textColor}]}>
+            Serviços de Emergência Médica
+          </Text>
+          <Pressable
+            style={({pressed}) => [
+              {
+                backgroundColor: pressed ? colorDiviver : backgroundColor,
+              },
+            ]}>
+            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
+              <MaterialIcons
+                name={'web'}
+                size={20}
+                color={textColor}
+                style={{paddingHorizontal: 10}}
+              />
+              <Text style={{fontSize: 16, color: textColor}}>Website</Text>
+
+              <Feather
+                name={'external-link'}
+                size={20}
+                color={colorDiviver}
+                style={{end: 15, position: 'absolute'}}
+              />
+            </View>
+          </Pressable>
+
+          <Pressable
+            style={({pressed}) => [
+              {
+                backgroundColor: pressed ? colorDiviver : backgroundColor,
+              },
+            ]}>
+            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
+              <MaterialIcons
+                name={'email-outline'}
+                size={20}
+                color={textColor}
+                style={{paddingHorizontal: 10}}
+              />
+              <Text style={{fontSize: 16, color: textColor}}>Email</Text>
+
+              <Feather
+                name={'external-link'}
+                size={20}
+                color={colorDiviver}
+                style={{end: 15, position: 'absolute'}}
+              />
+            </View>
+          </Pressable>
+
+          <Pressable
+            style={({pressed}) => [
+              {
+                backgroundColor: pressed ? colorDiviver : backgroundColor,
+              },
+            ]}>
+            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
+              <Feather
+                name={'phone'}
+                size={18}
+                color={textColor}
+                style={{paddingHorizontal: 10}}
+              />
+              <Text style={{fontSize: 16, color: textColor}}>Telemóvel</Text>
+
+              <Feather
+                name={'external-link'}
+                size={20}
+                color={colorDiviver}
+                style={{end: 15, position: 'absolute'}}
+              />
+            </View>
+          </Pressable>
         </View>
-      </TouchableOpacity>
-
-      <Text style={styles.appDescText}>Medical Emergency Service</Text>
-
-      <TouchableOpacity
-        style={styles.imageButton}
-        onPress={() => alert('First Image Button Pressed')}>
-        <View style={styles.rowContainer}>
-          <Site height={20} width={20} />
-          <Text style={styles.infoText}>site</Text>
-          <Redirect height={20} width={20} />
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.imageButton}
-        onPress={() => alert('First Image Button Pressed')}>
-        <View style={styles.rowContainer}>
-          <Mail height={20} width={20} />
-          <Text style={styles.infoText}>mail</Text>
-          <Redirect height={20} width={20} />
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.imageButton}
-        onPress={() => alert('First Image Button Pressed')}>
-        <View style={styles.rowContainer}>
-          <Phone height={20} width={20} />
-          <Text style={styles.infoText}>phone</Text>
-          <Redirect height={20} width={20} />
-        </View>
-      </TouchableOpacity>
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    flexDirection: 'column',
+    margin: '5%',
+  },
+
+  options: {
+    bottom: 0,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+
+  pageTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 5,
+    paddingLeft: 5,
+    borderBottomWidth: 1,
+    borderStyle: 'solid',
+    width: '85%',
+    marginLeft: 15,
+  },
+  pageTitle: {
+    fontSize: 18,
+
+    borderBottomWidth: 1,
+    borderStyle: 'solid',
+  },
+
+  button: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderStyle: 'solid',
+    borderBottomWidth: 1,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+
+  titleSection: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+
+  Section: {
+    marginTop: 30,
+    marginBottom: 30,
+  },
+});
