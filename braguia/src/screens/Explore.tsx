@@ -48,10 +48,8 @@ export default function Explore() {
 
   const [pins, setPins] = useState<Pin[]>([]);
   const [trails, setTrails] = useState<Trail[]>([]);
-  const [flagTrails, setFlagTrails] = useState<number>(0);
-  const [flagPins, setFlagPins] = useState<number>(0);
 
-  const dispatch = useAppDispatch();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -74,17 +72,7 @@ export default function Explore() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (trails.length > 0) {
-      setFlagTrails(1);
-    }
-  }, [trails]);
 
-  useEffect(() => {
-    if (pins.length > 0) {
-      setFlagPins(1);
-    }
-  }, [pins]);
 
   return (
     <ScrollView>

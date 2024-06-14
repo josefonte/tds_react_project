@@ -6,6 +6,7 @@ const initialState = {
 };
 
 const trailsReducer = (state = initialState, action: any) => {
+  console.log(initialState.historico);
   switch (action.type) {
     case 'FETCH_TRAILS_REQUEST':
       return {

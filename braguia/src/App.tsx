@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import 'react-native-gesture-handler';
 
@@ -20,10 +20,14 @@ import store from './redux/store';
 
 import {createStackNavigator} from '@react-navigation/stack';
 import {AppDispatch, RootState} from './redux/store';
-import {fetchTrails} from './redux/actions';
+import {fetchApp, fetchTrails} from './redux/actions';
 import {useAppDispatch} from './redux/hooks';
 import AppNav from './navigation/AppNav';
 import {AuthProvider} from './navigation/AuthContext';
+
+import { PermissionsAndroid, Platform } from 'react-native';
+import Geolocation from 'react-native-geolocation-service';
+import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -34,6 +38,11 @@ export default function App(): React.JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#191A19' : 'white',
   };
+
+
+  fetchTrails();
+  fetchApp();
+
 
   return (
     <Provider store={store}>
