@@ -6,8 +6,8 @@ import {
   RelatedPin,
   RelatedTrail,
   Trail,
-} from './../model/model'; // Adjust the import path as needed
-import database from './../model/database'; // Adjust the import path as needed
+} from '../model/model'; // Adjust the import path as needed
+import database from '../model/database'; // Adjust the import path as needed
 
 export const fetchTrailsRequest = () => {
   console.log('Dispatching fetchTrailsRequest action...');

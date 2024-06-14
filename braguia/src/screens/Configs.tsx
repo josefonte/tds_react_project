@@ -1,14 +1,6 @@
 import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  TextInput,
-  Text,
-  View,
-  Pressable,
-  useColorScheme,
-  Image,
-} from 'react-native';
+import {StyleSheet, Text, View, Pressable, useColorScheme} from 'react-native';
+
 import {useNavigation} from '@react-navigation/native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -20,11 +12,11 @@ import {AuthContext} from '../navigation/AuthContext';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {color} from '@rneui/themed/dist/config';
 
-export default function Profile() {
+export default function Configs() {
   const {logout} = React.useContext(AuthContext);
+  const navigation = useNavigation();
 
   const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
-  const {navigate} = useNavigation();
 
   const backgroundColor = theme.background_color;
   const titleColor = theme.text;
@@ -38,43 +30,46 @@ export default function Profile() {
   return (
     <View style={[styles.container, {backgroundColor}]}>
       <View style={styles.content}>
-        <View>
-          <Text style={[styles.username, {color: titleColor}]}>
-            NOME DO USER
-          </Text>
-          <View style={[styles.stats, {borderColor: colorDiviver}]}>
-            <View style={styles.stats_cont}>
-              <Text style={[styles.stats_num, {color: textColor}]}>1</Text>
-              <Text style={[styles.stats_desc, {color: textColor}]}>
-                Feitos
-              </Text>
-            </View>
-
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'baseline',
+            justifyContent: 'flex-start',
+          }}>
+          <Pressable onPress={() => navigation.goBack()}>
             <View
               style={{
-                height: '100%',
-                borderStyle: 'solid',
-                borderColor: colorDiviver,
-                borderRightWidth: 1,
-              }}
-            />
-            <View style={styles.stats_cont}>
-              <Text style={[styles.stats_num, {color: textColor}]}>8</Text>
-              <Text style={[styles.stats_desc, {color: textColor}]}>
-                Criados
-              </Text>
+                borderRadius: 100,
+                backgroundColor: colorDiviver,
+                width: 40,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Octicons
+                name={'chevron-left'}
+                size={22}
+                color={textColor}
+                style={{paddingRight: 3}}
+              />
             </View>
+          </Pressable>
+          <View style={[styles.pageTitleContainer, {borderColor: titleColor}]}>
+            <Ionicons
+              name={'settings-outline'}
+              size={17}
+              color={titleColor}
+              style={{paddingRight: 5}}
+            />
+
+            <Text style={[styles.pageTitle, {color: titleColor}]}>
+              Configurações
+            </Text>
           </View>
         </View>
 
         <View style={styles.options}>
-          <Pressable
-            onPress={() => navigate('Configs')}
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
+          <Pressable>
             <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
               <Ionicons
                 name={'settings-outline'}
@@ -96,12 +91,7 @@ export default function Profile() {
             </View>
           </Pressable>
 
-          <Pressable
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
+          <Pressable>
             <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
               <Ionicons
                 name={'help-buoy-outline'}
@@ -121,12 +111,7 @@ export default function Profile() {
             </View>
           </Pressable>
 
-          <Pressable
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
+          <Pressable>
             <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
               <Ionicons
                 name={'information-circle-outline'}
@@ -134,8 +119,11 @@ export default function Profile() {
                 color={textColor}
                 style={{paddingHorizontal: 10}}
               />
-
-              <Text style={{fontSize: 18, color: textColor}}>Sobre a app</Text>
+              <Pressable>
+                <Text style={{fontSize: 18, color: textColor}}>
+                  Sobre a app
+                </Text>
+              </Pressable>
 
               <Octicons
                 name={'chevron-right'}
@@ -146,12 +134,7 @@ export default function Profile() {
             </View>
           </Pressable>
 
-          <Pressable
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
+          <Pressable>
             <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
               <MaterialIcons
                 name={'script-text-outline'}
@@ -173,13 +156,7 @@ export default function Profile() {
             </View>
           </Pressable>
 
-          <Pressable
-            onPress={onPressLeave}
-            style={({pressed}) => [
-              {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
-              },
-            ]}>
+          <Pressable onPress={onPressLeave}>
             <View style={[styles.button, {borderBottomWidth: 0}]}>
               <Text style={{paddingLeft: 15, fontSize: 18, color: textColor}}>
                 Terminar Sessão
@@ -216,11 +193,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
-  username: {
-    marginTop: '10%',
-    fontSize: 30,
-    fontWeight: '600',
-    textAlign: 'center',
+  pageTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 5,
+    paddingLeft: 5,
+    borderBottomWidth: 1,
+    borderStyle: 'solid',
+    width: '85%',
+    marginLeft: 15,
+  },
+  pageTitle: {
+    fontSize: 18,
+
+    borderBottomWidth: 1,
+    borderStyle: 'solid',
   },
 
   button: {
@@ -231,34 +218,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingTop: 15,
     paddingBottom: 15,
-  },
-
-  stats: {
-    flexDirection: 'row',
-    alignContent: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: '10%',
-    marginHorizontal: '10%',
-    paddingBottom: 10,
-    borderStyle: 'solid',
-    borderBottomWidth: 1,
-  },
-
-  stats_cont: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 15,
-  },
-
-  stats_num: {
-    fontSize: 30,
-    fontWeight: '600',
-  },
-
-  stats_desc: {
-    fontSize: 12,
-    fontWeight: '400',
   },
 });

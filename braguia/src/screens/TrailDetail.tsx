@@ -27,9 +27,9 @@ import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
 
 // SVG
-import GoBack from './../assets/goBack.svg';
-import StartButton from './../assets/startButton.svg';
-import EndButton from './../assets/acabarButton.svg';
+import GoBack from '../assets/goBack.svg';
+import StartButton from '../assets/startButton.svg';
+import EndButton from '../assets/acabarButton.svg';
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';

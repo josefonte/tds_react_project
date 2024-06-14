@@ -8,6 +8,7 @@ import Profile from '../screens/Profile';
 import Support from '../screens/Support'; // Import the Support screen component
 import TrailDetail from '../screens/TrailDetail';
 import PontoDeInteresseDetail from '../screens/PontoDeInteresseDetail';
+import Configs from '../screens/Configs';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {useColorScheme} from 'react-native';
 
@@ -72,12 +73,13 @@ export default function NoAuthStack() {
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
       <Stack.Screen name="tabs" component={TabGroup} />
-      <Tab.Screen name="Support" component={Support} />
+      <Stack.Screen name="Support" component={Support} />
       <Stack.Screen name="TrailDetail" component={TrailDetail} />
       <Stack.Screen
         name="PontoDeInteresseDetail"
         component={PontoDeInteresseDetail}
       />
+      <Stack.Screen name="Configs" component={Configs} />
     </Stack.Navigator>
   );
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import axios from 'axios';
-import {json} from '@nozbe/watermelondb/decorators';
+import database from '../model/database';
 
 export const AuthContext = React.createContext(); // Add this line to import the 'AuthContext' namespace
 
@@ -52,8 +52,18 @@ export const AuthProvider = ({children}) => {
 
   async function logout() {
     setIsLoading(true);
+
     setCookies(null);
     await EncryptedStorage.removeItem('cookies');
+
+    /*await database.write(async () => {
+      const usersCollection = database.collections.get('users');
+      const user = await usersCollection.find();
+      if (user) {
+        await user.destroyPermanently();
+      }
+    });*/
+
     setTimeout(() => {
       setIsLoading(false);
     }, 500);
