@@ -30,7 +30,6 @@ import Sound from 'react-native-sound';
 import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
-import RNFetchBlob from 'rn-fetch-blob';
 // SVG
 import GoBack from '../assets/goBack.svg';
 import StartButton from '../assets/startButton.svg';
@@ -51,23 +50,6 @@ const TrailDetail = ({
   const navigation = useNavigation();
   const trailsState = useSelector((state: RootState) => state.trails);
   const dispatch = useDispatch();
-
-
-  // download
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /////
 
   // Dar audio
   useEffect(() => {
@@ -506,13 +488,14 @@ const TrailDetail = ({
               </React.Fragment>
             ))}
           </ScrollView>
-
+          {/*
           <TouchableOpacity
             style={styles.downloadButton}
             onPress={downloadCurrentMedia}
           >
             <Text style={styles.textSimple}>Download</Text>
           </TouchableOpacity>
+           */}
 
           
           
