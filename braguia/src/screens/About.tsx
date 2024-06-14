@@ -13,11 +13,17 @@ import {fetchTrails, fetchApp} from '../redux/actions';
 import database from '../model/database';
 import {App, Partners, Socials} from '../model/model';
 import {useAppDispatch} from '../redux/hooks';
+
 const MAX_RETRY_COUNT = 5;
 // Assets
 import AppLogo from '../assets/logo.svg';
 import FacebookLogo from './../assets/facebook.svg';
 import UmLogo from '../assets/umlogo.svg';
+
+// GEOFENCING
+import { PermissionsAndroid, Platform } from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
+import BackgroundTimer from 'react-native-background-timer';
 
 export default function About() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -84,6 +90,75 @@ export default function About() {
       console.error('Failed to open URL:', err),
     );
   };
+
+  // GEOFENCING
+
+  const requestLocationPermission = async () => {
+    try {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Permission',
+            message: 'This app needs access to your location to track your position.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Location permission granted');
+          return true;
+        } else {
+          console.log('Location permission denied');
+          return false;
+        }
+      }
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  };
+  
+  const startLocationUpdates = async () => {
+    const permissionGranted = await requestLocationPermission();
+  
+    if (permissionGranted) {
+      // Configure location updates
+      Geolocation.setRNConfiguration({ skipPermissionRequests: false, authorizationLevel: 'auto' });
+  
+      // Function to get location
+      const getLocation = () => {
+        Geolocation.getCurrentPosition(
+          (position) => {
+            console.log('Position:', position.coords);
+            // Handle your location data here
+          },
+          (error) => {
+            console.error('Error getting location', error);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
+      };
+  
+      
+      BackgroundTimer.runBackgroundTimer(() => {
+        getLocation();
+      }, 5 * 1000);
+    } else {
+      console.log('Permission not granted', 'Unable to fetch location in background.');
+    }
+  };
+  
+
+    useEffect(() => {
+      startLocationUpdates(); // Start location updates when component mounts
+  
+      return () => {
+        // Clean up (stop background updates if necessary)
+        BackgroundTimer.stopBackgroundTimer();
+      };
+    }, []);
 
   const styles = StyleSheet.create({
     container: {
@@ -206,3 +281,4 @@ export default function About() {
     </View>
   );
 }
+

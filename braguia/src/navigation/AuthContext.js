@@ -1,12 +1,12 @@
 import React from 'react';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import axios from 'axios';
-import {fetchUser} from '../redux/actions';
-import {useAppDispatch} from '../redux/hooks';
+import { fetchUser } from '../redux/actions';
+import { useAppDispatch } from '../redux/hooks';
 
 export const AuthContext = React.createContext(); // Add this line to import the 'AuthContext' namespace
 
-export const AuthProvider = ({children}) => {
+export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [cookies, setCookies] = React.useState(null);
   const [errorLogin, setErrorLogin] = React.useState(false);
@@ -89,7 +89,7 @@ export const AuthProvider = ({children}) => {
 
   return (
     <AuthContext.Provider
-      value={{login, logout, isLoading, cookies, errorLogin, username}}>
+      value={{ login, logout, isLoading, cookies, errorLogin, username }}>
       {children}
     </AuthContext.Provider>
   );
