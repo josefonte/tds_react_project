@@ -16,8 +16,9 @@ export const AuthProvider = ({children}) => {
     console.log('login', username, password);
 
     try {
-      setErrorLogin(false);
       axios.defaults.headers.common['Cookie'] = '';
+
+      setErrorLogin(false);
       const loginResponse = await axios.post(
         'https://1130-193-137-92-26.ngrok-free.app/login',
         {
@@ -36,6 +37,7 @@ export const AuthProvider = ({children}) => {
         await EncryptedStorage.setItem('cookies', cookiesHeader[0]);
         setUsername(username);
         await EncryptedStorage.setItem('username', username);
+        fetchUser(cookiesHeader[0]);
       }
 
       setTimeout(() => {
