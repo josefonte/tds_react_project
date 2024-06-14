@@ -29,7 +29,6 @@ const database = new Database({
     Contacts,
     Partners,
     App],
-  actionsEnabled:true,
 });
 
 export default database;

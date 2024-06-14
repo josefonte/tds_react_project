@@ -213,7 +213,6 @@ export const fetchApp = () => {
       await database.write(async () => {
         for (const appData of appsData) {
           if (!existingAppNames.includes(appData.app_name)) {
-            console.log(`Creating new app: ${appData.app_name}`);
             try {
               const newApp = await database.collections
                 .get<App>('app')
@@ -223,45 +222,56 @@ export const fetchApp = () => {
                   app.appLanding = appData.app_landing_page_text;
                 });
 
-              for (const socialData of appData.socials) {
-                const newSocial = await database.collections
-                  .get<Socials>('socials')
-                  .create((social: any) => {
-                    social.socialId = socialData.id;
-                    social.socialName = socialData.social_name;
-                    social.socialUrl = socialData.social_url;
-                    social.socialIcon = socialData.social_icon;
-                    social.socialApp = newApp.appName;
-                  });
+              if (appData.contacts) {
+                for (const contactData of appData.contacts) {
+                  try {
+                    const newContact = await database.collections.get<Contacts>('contacts').create((contact: any) => {
+                      contact.contactName = contactData.contact_name;
+                      contact.contactPhone = contactData.contact_phone;
+                      contact.contactUrl = contactData.contact_url;
+                      contact.contactMail = contactData.contact_mail;
+                      contact.contactDesc = contactData.contact_desc;
+                      contact.contactApp = contactData.contact_app;
+                    });
+                    console.log("New contact created: ", newContact);
+                  } catch (createContactError) {
+                    console.log("Error creating new contact", createContactError);
+                  }
+                }
               }
 
-              for (const contactData of appData.contacts) {
-                const newContact = await database.collections
-                  .get<Contacts>('contacts')
-                  .create((contact: any) => {
-                    contact.contactId = contactData.id;
-                    contact.contactName = contactData.contact_name;
-                    contact.contactPhone = contactData.contact_phone;
-                    contact.contactUrl = contactData.contact_url;
-                    contact.contactMail = contactData.contact_mail;
-                    contact.contactDesc = contactData.contact_desc;
-                    contact.contactApp = newApp.appName;
-                  });
-                console.log('New contact created: ', newContact);
+              if (appData.partners) {
+                for (const partnerData of appData.partners) {
+                  try {
+                    const newPartner = await database.collections.get<Partners>('partners').create((partner: any) => {
+                      partner.partnerName = partnerData.partner_name;
+                      partner.partnerPhone = partnerData.partner_phone;
+                      partner.partnerUrl = partnerData.partner_url;
+                      partner.partnerMail = partnerData.partner_mail;
+                      partner.partnerDesc = partnerData.partner_desc;
+                      partner.partnerApp = partnerData.partner_app;
+                    });
+                    console.log("New partner created: ", newPartner);
+                  } catch (createPartnerError) {
+                    console.log("Error creating new partner", createPartnerError);
+                  }
+                }
               }
 
-              for (const partnerData of appData.partners) {
-                const newPartner = await database.collections
-                  .get<Partners>('partners')
-                  .create((partner: any) => {
-                    partner.partnerName = partnerData.partner_name;
-                    partner.partnerPhone = partnerData.partner_phone;
-                    partner.partnerUrl = partnerData.partner_url;
-                    partner.partnerMail = partnerData.partner_mail;
-                    partner.partnerDesc = partnerData.partner_desc;
-                    partner.partnerApp = newApp.appName;
-                  });
-                console.log('New partner created: ', newPartner);
+              if (appData.socials) {
+                for (const socialData of appData.socials) {
+                  try {
+                    const newSocial = await database.collections.get<Socials>('socials').create((social: any) => {
+                      social.socialName = socialData.social_name;
+                      social.socialUrl = socialData.social_url;
+                      social.socialIcon = socialData.social_icon;
+                      social.socialApp = socialData.social_app;
+                    });
+                    console.log("New social created: ", newSocial);
+                  } catch (createSocialError) {
+                    console.log("Error creating new social", createSocialError);
+                  }
+                }
               }
             } catch (createError) {
               console.log(

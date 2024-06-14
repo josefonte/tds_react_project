@@ -12,7 +12,7 @@ import {fetchTrails, fetchApp} from '../redux/actions';
 import database from '../model/database';
 import {App, Partners, Socials} from '../model/model';
 import {useAppDispatch} from '../redux/hooks';
-const MAX_RETRY_COUNT = 5;
+const MAX_RETRY_COUNT = 3;
 
 // Assets
 import AppLogo from '../assets/logo.svg';
@@ -32,12 +32,14 @@ export default function About() {
   const [partnersData, setPartnersData] = useState<Partners[]>([]);
   const [retryCount, setRetryCount] = useState<number>(0);
 
+  var flag=false;
   useEffect(() => {
     const fetchData = async () => {
-      if (retryCount >= MAX_RETRY_COUNT) {
+      if (retryCount >= MAX_RETRY_COUNT && flag === true) {
         console.log('Max retry count reached. Stopping retries.');
         return;
       }
+
 
       try {
         const appCollection = database.collections.get<App>('app');
@@ -53,17 +55,26 @@ export default function About() {
         setSocialsData(socials);
         setPartnersData(partners);
 
-        if (app.length === 0 && socials.length === 0 && partners.length === 0) {
-          console.log('Retrying - attempt: ', retryCount);
-          setRetryCount(prevCount => prevCount + 1);
-        } else {
-          console.log('Data fetched successfully');
+        
+        if (app.length !== 0 && socials.length !== 0 && partners.length !== 0) {
+          flag = true;
         }
+
+        console.log('App Data:', app);
+        console.log('Socials Data:', socials);
+        console.log('Partners Data:', partners);
+
       } catch (error) {
         console.error('Error fetching data:', error);
-        console.log('Retrying - attempt: ', retryCount);
-        setRetryCount(prevCount => prevCount + 1);
+        console.log('Retrying - attempt2: ', retryCount);
+        setRetryCount((prevCount) => prevCount + 1);
       }
+      
+      if(!flag){
+        console.log('Retrying - attempt: ', retryCount);
+        setRetryCount((prevCount) => prevCount + 1);
+      }
+      
     };
 
     fetchData();

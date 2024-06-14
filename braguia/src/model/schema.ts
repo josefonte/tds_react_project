@@ -103,7 +103,7 @@ const schema = appSchema({
       columns: [
         { name: 'partner_name', type: 'string' },
         { name: 'partner_phone', type: 'string' },
-        { name: 'parrner_url', type: 'string' },
+        { name: 'partner_url', type: 'string' },
         { name: 'partner_mail', type: 'string' },
         { name: 'partner_desc', type: 'string' },
         { name: 'partner_app', type: 'string' },
