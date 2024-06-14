@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Linking,
   Pressable,
+  AppStateStatus,
+  AppState,
 } from 'react-native';
 
 import {fetchTrails, fetchApp} from '../redux/actions';
@@ -23,7 +25,7 @@ import UmLogo from '../assets/umlogo.svg';
 // GEOFENCING
 import { PermissionsAndroid, Platform } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundFetch from 'react-native-background-fetch';
 
 export default function About() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -93,45 +95,71 @@ export default function About() {
 
   // GEOFENCING
 
-  const requestLocationPermission = async (): Promise<boolean> => {
+  const requestBackgroundLocation = async (): Promise<boolean> => {
     try {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-        ]);
-  
-        if (
-          granted['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED &&
-          granted['android.permission.ACCESS_BACKGROUND_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED
-        ) {
-          console.log('Location permission granted');
-          return true;
-        } else {
-          console.log('Location permission denied');
-          return false;
-        }
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+        {
+          title: 'Track Background Location Permission',
+          message:
+            'We need to get background location',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Tracking...');
+        return true;
+      } else {
+        console.log('Not tracking...');
+        return false;
       }
     } catch (err) {
       console.warn(err);
       return false;
     }
-    return false;
   };
+
+  const requestFineLocation = async (): Promise<boolean> => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Track Fine Location Permission',
+          message:
+            'We need to get fine location',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Tracking Fine...');
+        return true;
+      } else {
+        console.log('Not Tracking Fine...');
+        return false;
+      }
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  };
+
+
   
-  const startLocationUpdates = async () => {
-    const permissionGranted = await requestLocationPermission();
+  const startLocationUpdates = async (): Promise<number | null> => {
+    const permissionGranted = await requestBackgroundLocation();
+    const permissionGranted2 = await requestFineLocation();
   
-    if (permissionGranted) {
-      // Configure location updates
-      Geolocation.setRNConfiguration({ skipPermissionRequests: false, authorizationLevel: 'auto' });
+    if (permissionGranted && permissionGranted2) {
+      Geolocation.setRNConfiguration({ skipPermissionRequests: false, authorizationLevel: 'always' });
   
-      // Function to get location
       const getLocation = () => {
         Geolocation.getCurrentPosition(
           (position) => {
             console.log('Position:', position.coords);
-            // Handle your location data here
           },
           (error) => {
             console.error('Error getting location', error);
@@ -140,24 +168,68 @@ export default function About() {
         );
       };
   
-      
-      BackgroundTimer.runBackgroundTimer(() => {
+      const watchId = Geolocation.watchPosition(
+        (position) => {
+          console.log('Updated Position:', position.coords);
+        },
+        (error) => {
+          console.error('Error watching location', error);
+        },
+        { enableHighAccuracy: true, distanceFilter: 0, interval: 5000, fastestInterval: 2000 }
+      );
+  
+      // Configure BackgroundFetch
+      BackgroundFetch.configure({
+        minimumFetchInterval: 5, 
+        enableHeadless: true, 
+        forceAlarmManager: false, 
+        stopOnTerminate: false,
+        startOnBoot: true,
+        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE, 
+      }, async () => {
+        console.log('[BackgroundFetch] Task fired');
         getLocation();
-      }, 5 * 1000);
+        BackgroundFetch.finish();
+      }, (error) => {
+        console.log('[BackgroundFetch] Error', error);
+      });
+  
+      // Start BackgroundFetch
+      console.log("OU");
+      BackgroundFetch.start();
+      console.log("OU2");
+      return watchId;
     } else {
       console.log('Permission not granted', 'Unable to fetch location in background.');
+      return null;
     }
   };
   
 
-    useEffect(() => {
-      startLocationUpdates(); // Start location updates when component mounts
-  
-      return () => {
-        // Clean up (stop background updates if necessary)
-        BackgroundTimer.stopBackgroundTimer();
-      };
-    }, []);
+  useEffect(() => {
+    let watchId: number | null = null;
+
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        console.log('App is in foreground');
+        startLocationUpdates().then(id => watchId = id);
+      } else if (nextAppState === 'background') {
+        console.log('App is in background');
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    startLocationUpdates().then(id => watchId = id);
+
+    return () => {
+      if (watchId !== null) {
+        Geolocation.clearWatch(watchId);
+      }
+      BackgroundFetch.stop();
+      subscription.remove();
+    };
+  }, []);
 
   const styles = StyleSheet.create({
     container: {
