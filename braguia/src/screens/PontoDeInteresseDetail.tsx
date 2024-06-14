@@ -13,6 +13,7 @@ import {
   ScrollView,
   PermissionsAndroid,
   Platform,
+  Dimensions,
 } from 'react-native';
 import {Media, Pin, Trail} from '../model/model';
 
@@ -34,6 +35,7 @@ import EndButton from '../assets/acabarButton.svg';
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';
+import RNFetchBlob from 'rn-fetch-blob';
 
 const PontoDeInteresseDetail = ({
   route,
@@ -148,6 +150,97 @@ const PontoDeInteresseDetail = ({
     }
   }, [pin.pinId]);
 
+
+
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  const scrollViewRef = useRef(null);
+
+  const getDownloadPermissionAndroid = async () => {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      {
+        title: 'Permissão para download',
+        message: 'O aplicativo precisa de permissão para baixar arquivos.',
+        buttonNeutral: 'Pergunte-me depois',
+        buttonNegative: 'Cancelar',
+        buttonPositive: 'OK',
+      }
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  };
+
+  const checkAndDownload = async (fileUrl) => {
+    if (Platform.OS === 'android') {
+      const hasPermission = await getDownloadPermissionAndroid();
+      if (!hasPermission) {
+        console.log('Permissão negada');
+        return;
+      }
+    }
+    actualDownload(fileUrl);
+  };
+
+  const actualDownload = (fileUrl) => {
+    console.log(`Iniciando download do arquivo: ${fileUrl}`);
+    const { dirs } = RNFetchBlob.fs;
+    const dirToSave = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+    const fileName = fileUrl.split('/').pop();
+    
+    const configfb = {
+      fileCache: true,
+      addAndroidDownloads: {
+        useDownloadManager: true,
+        notification: true,
+        mediaScannable: true,
+        title: fileName,
+        path: `${dirToSave}/${fileName}`,
+        mime: 'application/octet-stream', // Fallback MIME type
+        description: 'Downloading file.'
+      },
+      path: `${dirToSave}/${fileName}`,
+      mime: 'application/octet-stream'
+    };
+
+    const configOptions = Platform.select({
+      ios: configfb,
+      android: configfb,
+    });
+
+    RNFetchBlob.config(configOptions || {})
+      .fetch('GET', fileUrl, {})
+      .then(res => {
+        console.log('Download concluído');
+        if (Platform.OS === 'ios') {
+          RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
+          RNFetchBlob.ios.previewDocument(configfb.path);
+        }
+        if (Platform.OS === 'android') {
+          console.log("Arquivo baixado");
+        }
+      })
+      .catch(e => {
+        console.log('Falha no download', e);
+      });
+  };
+
+  const handleScroll = (event) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const width = event.nativeEvent.layoutMeasurement.width;
+    const currentIndex = Math.floor(contentOffsetX / width);
+    setCurrentMediaIndex(currentIndex);
+  };
+
+  const downloadCurrentMedia = async () => {
+    const currentMedia = media[currentMediaIndex];
+    console.log(`Tentando baixar media na posição: ${currentMediaIndex}, Tipo: ${currentMedia.mediaType}, URL: ${currentMedia.mediaFile}`);
+    if (currentMedia) {
+      await checkAndDownload(currentMedia.mediaFile);
+    } else {
+      console.log('Nenhuma mídia encontrada na posição atual');
+    }
+  };
+
   //console.log(media);
   return (
     <ScrollView>
@@ -201,6 +294,13 @@ const PontoDeInteresseDetail = ({
               ))
             )}
           </ScrollView>
+          <TouchableOpacity
+            style={styles.downloadButton}
+            onPress={downloadCurrentMedia}
+          >
+            <Text style={styles.textSimple}>Download</Text>
+          </TouchableOpacity>
+
 
           {trailsState.viajar === false ? (
             <TouchableOpacity
@@ -302,6 +402,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textAlignVertical: 'center',
     marginTop: 30,
+  },
+  downloadButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 2,
+    backgroundColor: 'black',
+    padding: 10,
+    borderRadius: 10,
   },
 });
 

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {
   SafeAreaView,
@@ -14,6 +14,7 @@ import {
   PermissionsAndroid,
   Platform,
   Linking,
+  Dimensions,
 } from 'react-native';
 import {Media, Pin, Trail} from '../model/model';
 
@@ -25,7 +26,7 @@ import Sound from 'react-native-sound';
 import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
-
+import RNFetchBlob from 'rn-fetch-blob';
 // SVG
 import GoBack from '../assets/goBack.svg';
 import StartButton from '../assets/startButton.svg';
@@ -304,6 +305,96 @@ const TrailDetail = ({
     fetchData(); // Call fetchData when the component mounts
   }, []);
 
+
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  const scrollViewRef = useRef(null);
+
+  const getDownloadPermissionAndroid = async () => {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      {
+        title: 'Permissão para download',
+        message: 'O aplicativo precisa de permissão para baixar arquivos.',
+        buttonNeutral: 'Pergunte-me depois',
+        buttonNegative: 'Cancelar',
+        buttonPositive: 'OK',
+      }
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  };
+
+  const checkAndDownload = async (fileUrl) => {
+    if (Platform.OS === 'android') {
+      const hasPermission = await getDownloadPermissionAndroid();
+      if (!hasPermission) {
+        console.log('Permissão negada');
+        return;
+      }
+    }
+    actualDownload(fileUrl);
+  };
+
+  const actualDownload = (fileUrl) => {
+    console.log(`Iniciando download do arquivo: ${fileUrl}`);
+    const { dirs } = RNFetchBlob.fs;
+    const dirToSave = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+    const fileName = fileUrl.split('/').pop();
+    
+    const configfb = {
+      fileCache: true,
+      addAndroidDownloads: {
+        useDownloadManager: true,
+        notification: true,
+        mediaScannable: true,
+        title: fileName,
+        path: `${dirToSave}/${fileName}`,
+        mime: 'application/octet-stream', // Fallback MIME type
+        description: 'Downloading file.'
+      },
+      path: `${dirToSave}/${fileName}`,
+      mime: 'application/octet-stream'
+    };
+
+    const configOptions = Platform.select({
+      ios: configfb,
+      android: configfb,
+    });
+
+    RNFetchBlob.config(configOptions || {})
+      .fetch('GET', fileUrl, {})
+      .then(res => {
+        console.log('Download concluído');
+        if (Platform.OS === 'ios') {
+          RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
+          RNFetchBlob.ios.previewDocument(configfb.path);
+        }
+        if (Platform.OS === 'android') {
+          console.log("Arquivo baixado");
+        }
+      })
+      .catch(e => {
+        console.log('Falha no download', e);
+      });
+  };
+
+  const handleScroll = (event) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const width = event.nativeEvent.layoutMeasurement.width;
+    const currentIndex = Math.floor(contentOffsetX / width);
+    setCurrentMediaIndex(currentIndex);
+  };
+
+  const downloadCurrentMedia = async () => {
+    const currentMedia = media[currentMediaIndex];
+    console.log(`Tentando baixar media na posição: ${currentMediaIndex}, Tipo: ${currentMedia.mediaType}, URL: ${currentMedia.mediaFile}`);
+    if (currentMedia) {
+      await checkAndDownload(currentMedia.mediaFile);
+    } else {
+      console.log('Nenhuma mídia encontrada na posição atual');
+    }
+  };
+
   return (
     <ScrollView>
       <View
@@ -311,12 +402,18 @@ const TrailDetail = ({
           backgroundColor: isDarkMode ? '#161716' : 'white',
         }}>
         <View>
+          
           <TouchableOpacity
             style={styles.botaoTopo}
             onPress={() => navigation.navigate('Explore')}>
             <GoBack />
           </TouchableOpacity>
-          <ScrollView horizontal={true} style={styles.scrollViewPop}>
+
+          <ScrollView horizontal={true} 
+            style={styles.scrollViewPop} 
+            onScroll={handleScroll} 
+            scrollEventThrottle={16}
+            ref={scrollViewRef}>
             {media.map((mediaItem, index) => (
               <React.Fragment key={index}>
                 {mediaItem.mediaType === 'R' ? (
@@ -352,6 +449,16 @@ const TrailDetail = ({
               </React.Fragment>
             ))}
           </ScrollView>
+
+          <TouchableOpacity
+            style={styles.downloadButton}
+            onPress={downloadCurrentMedia}
+          >
+            <Text style={styles.textSimple}>Download</Text>
+          </TouchableOpacity>
+
+          
+          
           {trailsState.viajar === false ? (
             flag === 0 ? (
               <TouchableOpacity style={styles.botaoComecar}>
@@ -470,7 +577,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   itemContainer: {
-    width: '48%', // Adjust width as needed
+    width: '45%', // Adjust width as needed
     marginBottom: 10,
     borderWidth: 0,
     borderColor: 'black',
@@ -554,6 +661,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textAlignVertical: 'center',
     marginTop: 30,
+  },
+  downloadButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 2,
+    backgroundColor: 'black',
+    padding: 10,
+    borderRadius: 10,
   },
 });
 
