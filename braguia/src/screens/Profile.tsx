@@ -10,6 +10,12 @@ import {
   Image,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {fetchUser} from '../redux/actions';
+
+import EncryptedStorage from 'react-native-encrypted-storage';
+import {Q} from '@nozbe/watermelondb';
+
+import database from '../model/database';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -18,8 +24,39 @@ import Feather from 'react-native-vector-icons/Feather';
 
 import {AuthContext} from '../navigation/AuthContext';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
+import {User} from '../model/model';
 
 export default function Profile() {
+  const [userData, setUserData] = React.useState<User>();
+  const {username} = React.useContext(AuthContext);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log('UserNAME:', username);
+
+        const usersCollection = database.collections.get<User>('users');
+        const user = await usersCollection
+          .query(Q.where('username', username))
+          .fetch();
+
+        if (user.length > 0) {
+          setUserData(user[0]);
+          console.log('User found:', user[0].username);
+        } else {
+          console.log('No User found in DB');
+          const cookiesStored = await EncryptedStorage.getItem('cookies');
+          if (cookiesStored) {
+            fetchUser(cookiesStored);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
   const {logout} = React.useContext(AuthContext);
 
   const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
@@ -41,7 +78,7 @@ export default function Profile() {
       <View style={styles.content}>
         <View>
           <Text style={[styles.username, {color: titleColor}]}>
-            NOME DO USER
+            {userData ? userData.username : 'Placeholder'}
           </Text>
           <View style={[styles.stats, {borderColor: colorDiviver}]}>
             <View style={styles.stats_cont}>
@@ -185,14 +222,14 @@ export default function Profile() {
               },
             ]}>
             <View style={[styles.button, {borderBottomWidth: 0}]}>
-              <Text style={{paddingLeft: 12, fontSize: 18, color: 'red'}}>
+              <Text style={{paddingLeft: 12, fontSize: 18, color: redtitle}}>
                 Terminar Sessão
               </Text>
 
               <Feather
                 name={'log-out'}
                 size={20}
-                color={'red'}
+                color={redtitle}
                 style={{end: 8, position: 'absolute'}}
               />
             </View>
