@@ -5,10 +5,10 @@ import Explore from '../screens/Explore';
 import Map from '../screens/Map';
 import Favorites from '../screens/Favorites';
 import Profile from '../screens/Profile';
-import Support from '../screens/Support'; // Import the Support screen component
+import Support from '../screens/Support';
 import TrailDetail from '../screens/TrailDetail';
 import PontoDeInteresseDetail from '../screens/PontoDeInteresseDetail';
-import Configs from '../screens/Configs';
+import ProfileConfigs from '../screens/ProfileConfigs';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {useColorScheme} from 'react-native';
 
@@ -69,7 +69,7 @@ function TabGroup() {
   );
 }
 
-export default function NoAuthStack() {
+export default function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
       <Stack.Screen name="tabs" component={TabGroup} />
@@ -79,7 +79,7 @@ export default function NoAuthStack() {
         name="PontoDeInteresseDetail"
         component={PontoDeInteresseDetail}
       />
-      <Stack.Screen name="Configs" component={Configs} />
+      <Stack.Screen name="Configs" component={ProfileConfigs} />
     </Stack.Navigator>
   );
 }

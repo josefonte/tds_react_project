@@ -70,7 +70,7 @@ export default function Support() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.navigate('Explore')}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
         <GoBack />
       </TouchableOpacity>
       <Text style={styles.titleText}>Bem Vindo ao Suporte do BraGuia</Text>

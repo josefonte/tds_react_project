@@ -18,18 +18,19 @@ import Feather from 'react-native-vector-icons/Feather';
 
 import {AuthContext} from '../navigation/AuthContext';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
-import {color} from '@rneui/themed/dist/config';
 
 export default function Profile() {
   const {logout} = React.useContext(AuthContext);
 
   const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
-  const {navigate} = useNavigation();
+  const navigation = useNavigation();
 
   const backgroundColor = theme.background_color;
   const titleColor = theme.text;
   const textColor = theme.text2;
   const colorDiviver = theme.color8;
+  const redButtonPressed = theme.redButton;
+  const redtitle = theme.redtitle;
 
   const onPressLeave = () => {
     logout();
@@ -69,7 +70,7 @@ export default function Profile() {
 
         <View style={styles.options}>
           <Pressable
-            onPress={() => navigate('Configs')}
+            onPress={() => navigation.navigate('Configs')}
             style={({pressed}) => [
               {
                 backgroundColor: pressed ? colorDiviver : backgroundColor,
@@ -91,12 +92,13 @@ export default function Profile() {
                 name={'chevron-right'}
                 size={22}
                 color={textColor}
-                style={{end: 10, position: 'absolute'}}
+                style={{end: 15, position: 'absolute'}}
               />
             </View>
           </Pressable>
 
           <Pressable
+            onPress={() => navigation.navigate('Support')}
             style={({pressed}) => [
               {
                 backgroundColor: pressed ? colorDiviver : backgroundColor,
@@ -116,12 +118,13 @@ export default function Profile() {
                 name={'chevron-right'}
                 size={22}
                 color={textColor}
-                style={{end: 10, position: 'absolute'}}
+                style={{end: 15, position: 'absolute'}}
               />
             </View>
           </Pressable>
 
           <Pressable
+            onPress={() => navigation.navigate('About')}
             style={({pressed}) => [
               {
                 backgroundColor: pressed ? colorDiviver : backgroundColor,
@@ -141,7 +144,7 @@ export default function Profile() {
                 name={'chevron-right'}
                 size={22}
                 color={textColor}
-                style={{end: 10, position: 'absolute'}}
+                style={{end: 15, position: 'absolute'}}
               />
             </View>
           </Pressable>
@@ -168,7 +171,7 @@ export default function Profile() {
                 name={'chevron-right'}
                 size={22}
                 color={textColor}
-                style={{end: 10, position: 'absolute'}}
+                style={{end: 15, position: 'absolute'}}
               />
             </View>
           </Pressable>
@@ -177,19 +180,19 @@ export default function Profile() {
             onPress={onPressLeave}
             style={({pressed}) => [
               {
-                backgroundColor: pressed ? colorDiviver : backgroundColor,
+                backgroundColor: pressed ? redButtonPressed : backgroundColor,
               },
             ]}>
             <View style={[styles.button, {borderBottomWidth: 0}]}>
-              <Text style={{paddingLeft: 15, fontSize: 18, color: textColor}}>
+              <Text style={{paddingLeft: 12, fontSize: 18, color: 'red'}}>
                 Terminar Sessão
               </Text>
 
               <Feather
                 name={'log-out'}
                 size={20}
-                color={textColor}
-                style={{end: 3, position: 'absolute'}}
+                color={'red'}
+                style={{end: 8, position: 'absolute'}}
               />
             </View>
           </Pressable>
@@ -229,8 +232,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderStyle: 'solid',
     borderBottomWidth: 1,
-    paddingTop: 15,
-    paddingBottom: 15,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
 
   stats: {

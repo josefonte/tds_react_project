@@ -28,9 +28,9 @@ import {Linking} from 'react-native';
 import {aViajar, acabeiViajar} from './../redux/actions';
 
 // SVG
-import GoBack from './../assets/goBack.svg';
-import StartButton from './../assets/startButton.svg';
-import EndButton from './../assets/acabarButton.svg';
+import GoBack from '../assets/goBack.svg';
+import StartButton from '../assets/startButton.svg';
+import EndButton from '../assets/acabarButton.svg';
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';
