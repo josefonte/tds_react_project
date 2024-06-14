@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,16 +8,16 @@ import {
   Linking,
 } from 'react-native';
 
-import { fetchTrails, fetchApp } from '../redux/actions';
+import {fetchTrails, fetchApp} from '../redux/actions';
 import database from '../model/database';
-import { App, Partners, Socials } from '../model/model';
-import { useAppDispatch } from '../redux/hooks';
+import {App, Partners, Socials} from '../model/model';
+import {useAppDispatch} from '../redux/hooks';
 const MAX_RETRY_COUNT = 5;
 
 // Assets
-import AppLogo from './../assets/logo.svg';
+import AppLogo from '../assets/logo.svg';
 import FacebookLogo from './../assets/facebook.svg';
-import UmLogo from './../assets/umlogo.svg';
+import UmLogo from '../assets/umlogo.svg';
 
 export default function About() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -42,7 +42,8 @@ export default function About() {
       try {
         const appCollection = database.collections.get<App>('app');
         const socialsCollection = database.collections.get<Socials>('socials');
-        const partnersCollection = database.collections.get<Partners>('partners');
+        const partnersCollection =
+          database.collections.get<Partners>('partners');
 
         const app = await appCollection.query().fetch();
         const socials = await socialsCollection.query().fetch();
@@ -52,21 +53,16 @@ export default function About() {
         setSocialsData(socials);
         setPartnersData(partners);
 
-        console.log('App Data:', app);
-        console.log('Socials Data:', socials);
-        console.log('Partners Data:', partners);
-
         if (app.length === 0 && socials.length === 0 && partners.length === 0) {
           console.log('Retrying - attempt: ', retryCount);
-          setRetryCount((prevCount) => prevCount + 1);
+          setRetryCount(prevCount => prevCount + 1);
         } else {
           console.log('Data fetched successfully');
         }
-
       } catch (error) {
         console.error('Error fetching data:', error);
         console.log('Retrying - attempt: ', retryCount);
-        setRetryCount((prevCount) => prevCount + 1);
+        setRetryCount(prevCount => prevCount + 1);
       }
     };
 
@@ -74,7 +70,9 @@ export default function About() {
   }, [retryCount]);
 
   const handlePress = (url: string) => {
-    Linking.openURL(url).catch((err) => console.error('Failed to open URL:', err));
+    Linking.openURL(url).catch(err =>
+      console.error('Failed to open URL:', err),
+    );
   };
 
   const styles = StyleSheet.create({
@@ -135,7 +133,7 @@ export default function About() {
 
   return (
     <View style={styles.container}>
-      <AppLogo height={250} width={250} marginTop={40} />
+      <AppLogo height={200} width={200} marginTop={'5%'} />
 
       {appData.length > 0 && (
         <>

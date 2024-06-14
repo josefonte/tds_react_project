@@ -16,7 +16,7 @@ import {AuthContext} from '../navigation/AuthContext';
 export default function Profile() {
   const isDarkMode = useColorScheme() === 'dark';
 
-  const {login} = useContext(AuthContext);
+  const {login, errorLogin} = useContext(AuthContext);
 
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -41,21 +41,27 @@ export default function Profile() {
         <Text style={[styles.textTitulo, {color: textColor}]}>
           Inscreve-te ou inicia sessão para aceder ao teu perfil
         </Text>
-        <Text style={{color: textColor}}>username</Text>
+        <Text style={{color: errorLogin ? 'red' : textColor}}>Username</Text>
         <TextInput
           style={[
             styles.input,
-            {borderColor: inputBorderColor, color: textColor},
+            {
+              borderColor: errorLogin ? 'red' : inputBorderColor,
+              color: textColor,
+            },
           ]}
           placeholder="username"
           onChangeText={setUsername}
           value={username}
         />
-        <Text style={{color: textColor}}>Password</Text>
+        <Text style={{color: errorLogin ? 'red' : textColor}}>Password</Text>
         <TextInput
           style={[
             styles.input,
-            {borderColor: inputBorderColor, color: textColor},
+            {
+              borderColor: errorLogin ? 'red' : inputBorderColor,
+              color: textColor,
+            },
           ]}
           placeholder="password"
           onChangeText={setPassword}

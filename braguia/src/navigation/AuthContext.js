@@ -8,46 +8,53 @@ export const AuthContext = React.createContext(); // Add this line to import the
 export const AuthProvider = ({children}) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [cookies, setCookies] = React.useState(null);
+  const [errorLogin, setErrorLogin] = React.useState(false);
 
   async function login(username, password) {
-    setIsLoading(true);
     console.log('login', username, password);
-    axios
-      .post('https://39b6-193-137-92-72.ngrok-free.app/login', {
-        username: username,
-        password: password,
-      })
-      .then(response => {
-        console.log('RESPONSE');
-        const setCookieHeader = response.headers['set-cookie'];
-        console.log('setCookieHeader', setCookieHeader);
-      })
-      .catch(error => {
-        console.log('ERROR', error);
-      });
-
-    const cookiesFAKE =
-      'csrftoken=hxygFE1vlBxdqN4DcuuZ6T561yvijWTwoAKbTjB5ppMKrrcH7hIksKyIdJZ6HnNT; Path=/; Expires=Thu, 12 Jun 2025 19:34:14 GMT;sessionid=g7ote3gntpnrt1x101bjlsei5a4m8kwt; Path=/; Expires=Thu, 27 Jun 2024 19:34:14 GMT';
-
-    axios
-      .get('https://39b6-193-137-92-72.ngrok-free.app/user', {
-        headers: {
-          Cookie: cookiesFAKE,
+    try {
+      setErrorLogin(false);
+      axios.defaults.headers.common['Cookie'] = '';
+      const loginResponse = await axios.post(
+        'https://1130-193-137-92-26.ngrok-free.app/login',
+        {
+          username: username,
+          password: password,
         },
-      })
-      .then(response => {
-        console.log('Response:', response.data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
+      );
 
-    setCookies(cookiesFAKE);
-    await EncryptedStorage.setItem('cookies', JSON.stringify(cookiesFAKE));
+      setIsLoading(true);
+      const cookiesHeader = loginResponse.headers['set-cookie'];
+      console.log('setCookieHeader', cookiesHeader);
 
-    setTimeout(() => {
+      if (cookiesHeader) {
+        setCookies(cookiesHeader);
+        await EncryptedStorage.setItem(
+          'cookies',
+          JSON.stringify(cookiesHeader),
+        );
+      }
+
+      const userResponse = await axios.get(
+        'https://1130-193-137-92-26.ngrok-free.app/user',
+        {
+          headers: {
+            Cookie: cookiesHeader,
+          },
+        },
+      );
+      console.log('Response:', userResponse.data);
+
+      //guardar dados na BD
+
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+    } catch (error) {
+      setErrorLogin(true);
+      console.log('ERROR', error);
       setIsLoading(false);
-    }, 500);
+    }
   }
 
   async function logout() {
@@ -89,7 +96,8 @@ export const AuthProvider = ({children}) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{login, logout, isLoading, cookies}}>
+    <AuthContext.Provider
+      value={{login, logout, isLoading, cookies, errorLogin}}>
       {children}
     </AuthContext.Provider>
   );
