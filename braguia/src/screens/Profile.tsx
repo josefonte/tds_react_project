@@ -150,6 +150,7 @@ export default function Profile() {
           </Pressable>
 
           <Pressable
+            onPress={() => navigation.navigate('FeedBack')}
             style={({pressed}) => [
               {
                 backgroundColor: pressed ? colorDiviver : backgroundColor,

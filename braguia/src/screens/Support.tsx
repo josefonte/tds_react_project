@@ -9,11 +9,11 @@ import {
   Image,
 } from 'react-native';
 
-import Site from './../assets/site.svg';
-import Mail from './../assets/mail.svg';
-import Phone from './../assets/phone2.svg';
-import Redirect from './../assets/redirect.svg';
-import GoBack from './../assets/goBack.svg';
+import Site from '../assets/site.svg';
+import Mail from '../assets/mail.svg';
+import Phone from '../assets/phone2.svg';
+import Redirect from '../assets/redirect.svg';
+import GoBack from '../assets/goBack.svg';
 import {useNavigation} from '@react-navigation/native';
 
 export default function Support() {

@@ -6,6 +6,7 @@ import Map from '../screens/Map';
 import Favorites from '../screens/Favorites';
 import Profile from '../screens/Profile';
 import Support from '../screens/Support';
+import Feedback from '../screens/FeedBack';
 import TrailDetail from '../screens/TrailDetail';
 import PontoDeInteresseDetail from '../screens/PontoDeInteresseDetail';
 import ProfileConfigs from '../screens/ProfileConfigs';
@@ -80,6 +81,7 @@ export default function AuthStack() {
         component={PontoDeInteresseDetail}
       />
       <Stack.Screen name="Configs" component={ProfileConfigs} />
+      <Stack.Screen name="FeedBack" component={Feedback} />
     </Stack.Navigator>
   );
 }
