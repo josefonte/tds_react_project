@@ -1,5 +1,5 @@
 export const darkModeTheme = {
-  background_color: '#191A19',
+  background_color: '#161716',
   text: '#FEFAE0',
   text2: 'white',
   green1: '#355228',

@@ -11,6 +11,7 @@ import {
   AppState,
 } from 'react-native';
 
+import {lightModeTheme, darkModeTheme} from '../utils/themes';
 import {fetchTrails, fetchApp} from '../redux/actions';
 import database from '../model/database';
 import {App, Partners, Socials} from '../model/model';
@@ -20,32 +21,30 @@ const MAX_RETRY_COUNT = 5;
 // Assets
 import AppLogo from '../assets/logo.svg';
 import FacebookLogo from '../assets/facebook.svg';
-import UmLogo from '../assets/umlogo.svg';
+import UmLogo from '../assets/UMlogo.svg';
 
 // GEOFENCING
-import { PermissionsAndroid, Platform } from 'react-native';
+import {PermissionsAndroid, Platform} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import BackgroundFetch from 'react-native-background-fetch';
 
 export default function About() {
   const isDarkMode = useColorScheme() === 'dark';
-  const textColor = isDarkMode ? '#FEFAE0' : 'black';
 
-
+  const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
 
   const [appData, setAppData] = useState<App[]>([]);
   const [socialsData, setSocialsData] = useState<Socials[]>([]);
   const [partnersData, setPartnersData] = useState<Partners[]>([]);
   const [retryCount, setRetryCount] = useState<number>(0);
 
-  var flag=false;
+  var flag = false;
   useEffect(() => {
     const fetchData = async () => {
       if (retryCount >= MAX_RETRY_COUNT && flag === true) {
         console.log('Max retry count reached. Stopping retries.');
         return;
       }
-
 
       try {
         const appCollection = database.collections.get<App>('app');
@@ -61,7 +60,6 @@ export default function About() {
         setSocialsData(socials);
         setPartnersData(partners);
 
-        
         if (app.length !== 0 && socials.length !== 0 && partners.length !== 0) {
           flag = true;
         }
@@ -69,23 +67,20 @@ export default function About() {
         console.log('App Data:', app);
         console.log('Socials Data:', socials);
         console.log('Partners Data:', partners);
-
       } catch (error) {
         console.error('Error fetching data:', error);
         console.log('Retrying - attempt2: ', retryCount);
-        setRetryCount((prevCount) => prevCount + 1);
+        setRetryCount(prevCount => prevCount + 1);
       }
-      
-      if(!flag){
+
+      if (!flag) {
         console.log('Retrying - attempt: ', retryCount);
-        setRetryCount((prevCount) => prevCount + 1);
+        setRetryCount(prevCount => prevCount + 1);
       }
-      
     };
 
     fetchData();
   }, [retryCount]);
-
 
   const handlePress = (url: string) => {
     Linking.openURL(url).catch(err =>
@@ -93,49 +88,49 @@ export default function About() {
     );
   };
 
-
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       justifyContent: 'flex-start',
-      backgroundColor: isDarkMode ? '#161716' : '#FEFAE0',
+      flexDirection: 'column',
+      backgroundColor: theme.background_color,
       alignItems: 'center',
+      padding: '5%',
     },
     appNameText: {
-      fontSize: 50,
-      fontFamily: 'Roboto',
+      fontSize: 40,
       fontWeight: 'bold',
-      color: isDarkMode ? '#FEFAE0' : 'black',
-      marginTop: 10,
-      marginBottom: 40,
+      color: theme.text,
+      marginBottom: 10,
     },
     appDescText: {
       fontSize: 20,
-      fontFamily: 'Roboto',
-      color: isDarkMode ? '#FEFAE0' : 'black',
-      marginBottom: 30,
+      color: theme.text,
+      marginBottom: 25,
+      textAlign: 'center',
     },
     appLandingText: {
       fontSize: 14,
-      fontFamily: 'Roboto',
-      color: isDarkMode ? '#FEFAE0' : 'black',
-      marginBottom: 40,
-      alignSelf: 'center',
-      alignItems: 'center',
-      alignContent: 'center',
+      color: theme.text,
+      marginBottom: 25,
+      textAlign: 'justify',
     },
     rowContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 5,
       width: '80%',
+    },
+    columnContainer: {
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      alignItems: 'center',
     },
     infoText: {
       fontSize: 15,
-      fontFamily: 'Roboto',
-      color: isDarkMode ? '#FEFAE0' : 'black',
-      marginBottom: 20,
+      fontWeight: '600',
+      color: theme.text,
+      marginBottom: 10,
     },
     imageButton: {
       marginHorizontal: 5,
@@ -149,19 +144,19 @@ export default function About() {
       alignSelf: 'center',
     },
     partnerText: {
-      fontSize: 10,
+      fontSize: 13,
       fontFamily: 'Roboto',
-      color: isDarkMode ? '#FEFAE0' : 'black',
+      color: theme.text,
       marginBottom: 5,
       alignSelf: 'center',
       alignItems: 'center',
       alignContent: 'center',
-    }
+    },
   });
 
   return (
     <View style={styles.container}>
-      <AppLogo height={200} width={200} marginTop={'5%'} />
+      <AppLogo height={200} width={200} />
 
       {appData.length > 0 && (
         <>
@@ -172,47 +167,51 @@ export default function About() {
       )}
 
       <View style={styles.rowContainer}>
-        <Text style={styles.infoText}>Segue-nos em:</Text>
-        <Text style={styles.infoText}>Os nossos parceiros:</Text>
-      </View>
-
-      <View style={styles.rowContainer}>
-        {socialsData.map((social, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.imageButton}
-            onPress={() => handlePress(social.socialUrl)}>
-            <FacebookLogo height={100} width={100} />
-          </TouchableOpacity>
-        ))}
-
-{partnersData.map((partner, index) => {
-        console.log('Rendering partner:', partner); // Debugging log
-        return (
-          <View key={index} style={styles.container}>
-            <Text style={styles.infoText}>{partner.partnerName}</Text>
+        <View style={styles.columnContainer}>
+          <Text style={styles.infoText}>Segue-nos em:</Text>
+          {socialsData.map((social, index) => (
             <TouchableOpacity
+              key={index}
               style={styles.imageButton}
-              onPress={() => handlePress(partner.partnerUrl)}>
-              <UmLogo height={100} width={150} />
+              onPress={() => handlePress(social.socialUrl)}>
+              <FacebookLogo height={100} width={100} />
             </TouchableOpacity>
+          ))}
+        </View>
 
-            <TouchableOpacity
-              onPress={() => Linking.openURL(`mailto:${partner.partnerMail}`)}
-              style={styles.partnerText}>
-              <Text style={styles.partnerText}>{partner.partnerMail}</Text>
-            </TouchableOpacity>
+        <View style={styles.columnContainer}>
+          <Text style={styles.infoText}>Os nossos parceiros:</Text>
+          {partnersData.map((partner, index) => {
+            console.log('Rendering partner:', partner); // Debugging log
+            return (
+              <View key={index} style={styles.container}>
+                <Text style={[styles.infoText, {marginBottom: 0}]}>
+                  {partner.partnerName}
+                </Text>
+                <TouchableOpacity
+                  style={styles.imageButton}
+                  onPress={() => handlePress(partner.partnerUrl)}>
+                  <UmLogo height={100} width={150} />
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => Linking.openURL(`tel:${partner.partnerPhone}`)}
-              style={styles.partnerText}>
-              <Text style={styles.partnerText}>{partner.partnerPhone}</Text>
-            </TouchableOpacity>
-          </View>
-        );
-      })}
+                <TouchableOpacity
+                  onPress={() =>
+                    Linking.openURL(`mailto:${partner.partnerMail}`)
+                  }
+                  style={styles.partnerText}>
+                  <Text style={styles.partnerText}>{partner.partnerMail}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(`tel:${partner.partnerPhone}`)}
+                  style={styles.partnerText}>
+                  <Text style={styles.partnerText}>{partner.partnerPhone}</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })}
+        </View>
       </View>
     </View>
   );
 }
-

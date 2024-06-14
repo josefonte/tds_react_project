@@ -18,14 +18,13 @@ export const AuthProvider = ({children}) => {
     try {
       setErrorLogin(false);
 
-      // Perform the login request using Fetch API
       const response = await fetch(
         'https://1130-193-137-92-26.ngrok-free.app/login',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Cookie: '', // Clear any existing cookies
+            Cookie: '',
           },
           body: JSON.stringify({
             username: username,
