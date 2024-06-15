@@ -6,9 +6,10 @@ import {
   View,
   Pressable,
   useColorScheme,
-  Switch,
+  Switch, PermissionsAndroid, Platform 
 } from 'react-native';
-
+import Geolocation from '@react-native-community/geolocation';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import {useNavigation} from '@react-navigation/native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
