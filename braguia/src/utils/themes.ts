@@ -6,6 +6,10 @@ export const darkModeTheme = {
   redButtontitle: 'red',
   redButtonPressed: '#580B0B',
   redButton: '#4A1B1B',
+  filterButtonBackground: '#D4E0AE',
+  filterButtonBackgroundPressed: '#161716',
+  filterButtonIcon: '#161716',
+  filterButtonIconPressed: '#A3A3A3',
 
   color2: '#262626',
   color3: '#D4E0AE',
@@ -22,6 +26,11 @@ export const lightModeTheme = {
   redButtontitle: '#580B0B',
   redButtonPressed: '#8A3B3B',
   redButton: '#D45B5B',
+  filterButtonBackground: '#D4E0AE',
+  filterButtonBackgroundPressed: 'white',
+  filterButtonIcon: '#161716',
+  filterButtonIconPressed: '#A3A3A3',
+
   color2: 'white',
   color3: '#FFFFFF',
   color6: 'black',

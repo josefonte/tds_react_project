@@ -29,8 +29,6 @@ import Geolocation from '@react-native-community/geolocation';
 import BackgroundFetch from 'react-native-background-fetch';
 
 export default function About() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
 
   const [appData, setAppData] = useState<App[]>([]);
