@@ -6,6 +6,7 @@ import { Pin, Trail } from '../model/model';
 import { Q } from '@nozbe/watermelondb';
 import PushNotification from 'react-native-push-notification';
 
+
 interface State {
     region: {
         latitude: number;
@@ -21,22 +22,16 @@ interface State {
 interface GeoPoint {
     lat: number;
     lng: number;
-    trail: Trail | null;
+    pin: Pin | null;
 }
 
 
 async function createGeoPoints(pins: Pin[]): Promise<GeoPoint[]> {
     const geoPoints: Promise<GeoPoint>[] = pins.map(async pin => {
-        const trails = await database.collections
-            .get<Trail>('trails')
-            .query(Q.where('trail_id', pin.trail))
-            .fetch();
-        // Assuming there's only one trail per pin
-        const trail = trails.length > 0 ? trails[0] : null;
         return {
             lat: pin.pinLat,
             lng: pin.pinLng,
-            trail: trail
+            pin: pin
         };
     });
     const resolvedGeoPoints = await Promise.all(geoPoints);
@@ -74,6 +69,7 @@ const useBackgroundGeolocationTracker = () => {
     const [geoPoints, setGeoPoints] = useState<GeoPoint[]>([]);
     const [retryCount, setRetryCount] = useState<number>(0);
     const [flag, setFlag] = useState<number>(0);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -166,23 +162,31 @@ const useBackgroundGeolocationTracker = () => {
 
         // Onchange
         BackgroundGeolocation.on('location', (location) => {
+
             console.log('[DEBUG] BackgroundGeolocation location', location);
             console.log("GEOPOINTS:");
             console.log(geoPointsRef.current);
             for (const ponto of geoPointsRef.current) {
                 const check = triggeredPointOrNot(ponto.lat, ponto.lng, location.latitude, location.longitude)
                 if (check === true) {
+                    const simplePonto = {
+                        ponto: ponto.pin
+                        // Add other properties as needed, ensuring no circular references
+                    };
                     console.log("VOU MANDAR NOTIFICAÇAO!");
+
                     PushNotification.localNotification({
                         channelId: "notificacaoPins",
                         title: 'Triggered Point Detected',
-                        message: `Point (${ponto.lat}, ${ponto.lng}) is within 20 kilometers!`
+                        message: `Point (${ponto.lat}, ${ponto.lng}) is close!`,
+                        actions: ["View"]
                     });
                 }
                 else {
                     console.log("LIMIT TESTING NOTIFICAÇOES");
                 }
             }
+
 
             BackgroundGeolocation.startTask((taskKey) => {
                 const region = Object.assign({}, location, {
@@ -210,10 +214,10 @@ const useBackgroundGeolocationTracker = () => {
                     channelId: "notificacaoPins", // You can name this channel as per your requirement
                     channelName: "notificacaoPins",
                     channelDescription: "A default channel for notifications",
-                    playSound: true,
+                    playSound: false,
                     soundName: "default",
-                    importance: 4, // (optional) default: 4. Available options: 1-5.
-                    vibrate: true,
+                    importance: 3, // (optional) default: 4. Available options: 1-5.
+                    vibrate: false,
                 },
                 (created: any) => console.log(`Notification channel created: ${created}`)
             );
@@ -286,3 +290,4 @@ const useBackgroundGeolocationTracker = () => {
 };
 
 export default useBackgroundGeolocationTracker;
+

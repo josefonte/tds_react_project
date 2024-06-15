@@ -27,6 +27,7 @@ import UmLogo from '../assets/umlogo.svg';
 import {PermissionsAndroid, Platform} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import BackgroundFetch from 'react-native-background-fetch';
+import PushNotification from 'react-native-push-notification';
 
 export default function About() {
   const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
@@ -79,6 +80,13 @@ export default function About() {
 
     fetchData();
   }, [retryCount]);
+
+  PushNotification.configure({
+    onAction: function (notification) {
+        console.log('Notification action received: ', notification.action);
+        console.log('mensagem lá dentro -> ' + notification.message)
+    }
+  });
 
   const handlePress = (url: string) => {
     Linking.openURL(url).catch(err =>

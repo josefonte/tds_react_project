@@ -52,9 +52,9 @@ export default function App(): React.JSX.Element {
   //const perm2 = requestFineLocation();
   const geolocationState = useBackgroundGeolocationTracker();
 
-  useEffect(() => {
-    console.log('Geolocation state updated:', geolocationState);
-  }, [geolocationState]);
+  //useEffect(() => {
+  //  console.log('Geolocation state updated:', geolocationState);
+  //}, [geolocationState]);
 
 
 
