@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState,useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,10 +9,13 @@ import {
   Switch,
   PermissionsAndroid,
   Platform,
+  Linking,
+  Alert,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
-import {useNavigation} from '@react-navigation/native';
+import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -26,10 +29,120 @@ import {cleanFavoritesUser, cleanHistoricoUser} from '../redux/actions';
 
 export default function ProfileConfigs() {
   const navigation = useNavigation();
+  const isFocused = useIsFocused(); // Hook para verificar se a tela está focada
   const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
-  const [isEnabled, setIsEnabled] = React.useState(false);
+  const [isEnabled, setIsEnabled] = useState(false);
 
-  const toggleSwitch = () => setIsEnabled(!isEnabled);
+  useEffect(() => {
+    // Verifica o estado da localização ao montar o componente
+    checkLocationStatus();
+  }, [isFocused]); // Executa sempre que a tela estiver focada
+
+  const checkLocationStatus = async () => {
+    try {
+      const status = await check(
+        Platform.OS === 'ios' ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION
+      );
+      if (status === RESULTS.GRANTED) {
+        setIsEnabled(true);
+      } else {
+        setIsEnabled(false);
+      }
+    } catch (error) {
+      console.log('Error checking location status:', error);
+    }
+  };
+
+  const requestLocationPermission = async () => {
+    try {
+      const status = await request(
+        Platform.OS === 'ios' ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION
+      );
+      if (status === RESULTS.GRANTED) {
+        enableLocation();
+      } else {
+        setIsEnabled(false);
+      }
+    } catch (error) {
+      console.log('Error requesting location permission:', error);
+    }
+  };
+
+  const enableLocation = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const result = await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+          interval: 10000,
+          fastInterval: 5000,
+        });
+        if (result === 'enabled' || result === 'already-enabled') {
+          setIsEnabled(true);
+        }
+      } catch (err) {
+        console.log('Error enabling location:', err);
+        Alert.alert(
+          'Erro',
+          'Não foi possível ativar a localização. Por favor, ative manualmente nas configurações do dispositivo.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'OK',
+              onPress: () => {
+                Linking.openSettings();
+              },
+            },
+          ]
+        );
+        setIsEnabled(false);
+      }
+    } else {
+      Geolocation.getCurrentPosition(
+        position => {
+          setIsEnabled(true);
+        },
+        error => {
+          console.log('Error getting current position:', error);
+          setIsEnabled(false);
+        }
+      );
+    }
+  };
+
+  const toggleSwitch = async () => {
+    if (!isEnabled) {
+      await requestLocationPermission();
+    } else {
+      if (Platform.OS === 'android') {
+        Alert.alert(
+          'Desativar Localização',
+          'Por favor, desative o GPS manualmente nas configurações do seu dispositivo.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'OK',
+              onPress: () => {
+                Linking.openSettings();
+              },
+            },
+          ]
+        );
+      } else {
+        setIsEnabled(false);
+      }
+    }
+  };
+
+  // Função para verificar e atualizar o estado do slider
+  const updateLocationStatus = () => {
+    checkLocationStatus(); // Verifica o status atual
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      updateLocationStatus(); // Atualiza o status ao focar na tela
+    }
+  }, [isFocused]);
+
 
   const backgroundColor = theme.background_color;
   const titleColor = theme.text;
@@ -213,13 +326,12 @@ export default function ProfileConfigs() {
               Dados e Segurança
             </Text>
             <Pressable>
-              <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
-                <Text style={{fontSize: 16, color: textColor, marginLeft: 10}}>
+              <View style={[styles.button, { borderBottomColor: colorDiviver }]}>
+                <Text style={{ fontSize: 16, color: textColor, marginLeft: 10 }}>
                   Serviços de Localização
                 </Text>
-
                 <Switch
-                  trackColor={{false: '#767577', true: '#81b0ff'}}
+                  trackColor={{ false: '#767577', true: '#81b0ff' }}
                   thumbColor={isEnabled ? '#f4f3f4' : '#f4f3f4'}
                   ios_backgroundColor="#3e3e3e"
                   onValueChange={toggleSwitch}
@@ -227,7 +339,7 @@ export default function ProfileConfigs() {
                   style={{
                     end: 0,
                     position: 'absolute',
-                    transform: [{scaleX: 0.8}, {scaleY: 0.8}],
+                    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
                   }}
                 />
               </View>
