@@ -48,7 +48,8 @@ export default function App(): React.JSX.Element {
     fetchApp();
     setFlag(1);
   }
-
+  const perm1 = requestBackgroundLocation();
+  const perm2 = requestFineLocation();
   const geolocationState = useBackgroundGeolocationTracker();
 
   useEffect(() => {
