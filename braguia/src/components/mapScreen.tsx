@@ -1,12 +1,58 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import MapView, {Marker, Polyline} from 'react-native-maps';
+import database from '../model/database';
+import { Pin } from '../model/model';
+import { useNavigation } from '@react-navigation/native';
 
 interface MapProps {
   localizacoes: [number, number][];
 }
 
+interface point {
+  lat: number;
+  lng: number;
+  pin: Pin;
+}
+
+async function createGeoPoints(pins: Pin[]): Promise<point[]> {
+  const geoPoints: Promise<point>[] = pins.map(async pin => {
+      return {
+          lat: pin.pinLat,
+          lng: pin.pinLng,
+          pin: pin,
+      };
+  });
+  const resolvedGeoPoints = await Promise.all(geoPoints);
+
+  console.log("GEOFENCING DONE");
+
+  return resolvedGeoPoints;
+}
+
+
 const MapScreen: React.FunctionComponent<MapProps> = ({localizacoes}) => {
+  const navigation = useNavigation();
+  const [points, setPoints] = useState<point[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+        try {
+            const fetchedPins = await database.collections
+                .get<Pin>('pins')
+                .query()
+                .fetch();
+
+              const result = await createGeoPoints(fetchedPins);
+              setPoints(result);
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    fetchData();
+}, []);
+
   if (!localizacoes) {
     return (
       <View style={styles.container}>
@@ -17,7 +63,20 @@ const MapScreen: React.FunctionComponent<MapProps> = ({localizacoes}) => {
             longitude: -8.396, // Longitude da Universidade do Minho
             latitudeDelta: 0.91,
             longitudeDelta: 0.91,
-          }}></MapView>
+          }}>
+        {points.map((point, index) => (
+          <Marker
+            key={index}
+            coordinate={{
+              latitude: point.lat,
+              longitude: point.lng,
+            }}
+            onPress={() => navigation.navigate('PontoDeInteresseDetail', {
+              pin: point.pin,
+            })}
+          />
+        ))}
+          </MapView>
       </View>
     );
   } else if (localizacoes.length == 1) {
