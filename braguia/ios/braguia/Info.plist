@@ -69,5 +69,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string></string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string></string>
 </dict>
 </plist>

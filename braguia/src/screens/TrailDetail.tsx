@@ -16,6 +16,10 @@ import {
   Linking,
   Dimensions,
 } from 'react-native';
+
+import RNFetchBlob from 'rn-fetch-blob';
+import {downloadFile, getDownloadPermissionAndroid} from './../auxFuncs/index';
+
 import {Media, Pin, Trail} from '../model/model';
 
 import {acabeiViajar, addHistorico} from '../redux/actions';
@@ -26,7 +30,6 @@ import Sound from 'react-native-sound';
 import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
-import RNFetchBlob from 'rn-fetch-blob';
 // SVG
 import GoBack from '../assets/goBack.svg';
 import StartButton from '../assets/startButton.svg';
@@ -426,6 +429,24 @@ const TrailDetail = ({
                   </TouchableOpacity>
                 ) : mediaItem.mediaType === 'I' ? (
                   <View>
+                    <TouchableOpacity
+                        style={[styles.downloadButton]}
+                        onPress={() => {
+                          if (Platform.OS === 'android') {
+                            getDownloadPermissionAndroid().then(granted => {
+                              if (granted) {
+                                downloadFile(mediaItem.mediaFile);
+                              }
+                            });
+                          } else {
+                            downloadFile(mediaItem.mediaFile).then(res => {
+                              RNFetchBlob.ios.previewDocument(res.path());
+                            });
+                          }
+                        }}
+                    >
+                      <Text style={styles.textSimple}>Download</Text>
+                    </TouchableOpacity>
                     <Image
                       source={{uri: mediaItem.mediaFile}}
                       style={styles.imagemRolo}
@@ -438,6 +459,24 @@ const TrailDetail = ({
                       style={styles.videoRolo}
                       controls={true}
                     />
+                    <TouchableOpacity
+                      style={[styles.downloadButton]}
+                      onPress={() => {
+                        if (Platform.OS === 'android') {
+                          getDownloadPermissionAndroid().then(granted => {
+                            if (granted) {
+                              downloadFile(mediaItem.mediaFile);
+                            }
+                          });
+                        } else {
+                          downloadFile(mediaItem.mediaFile).then(res => {
+                            RNFetchBlob.ios.previewDocument(res.path());
+                          });
+                        }
+                      }}
+                    >
+                      <Text style={styles.textSimple}>Download</Text>
+                    </TouchableOpacity>
                   </View>
                 ) : (
                   <View>
@@ -449,13 +488,14 @@ const TrailDetail = ({
               </React.Fragment>
             ))}
           </ScrollView>
-
+          {/*
           <TouchableOpacity
             style={styles.downloadButton}
             onPress={downloadCurrentMedia}
           >
             <Text style={styles.textSimple}>Download</Text>
           </TouchableOpacity>
+           */}
 
           
           

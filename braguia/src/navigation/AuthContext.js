@@ -16,28 +16,38 @@ export const AuthProvider = ({children}) => {
     console.log('login', username, password);
 
     try {
-      axios.defaults.headers.common['Cookie'] = '';
-
       setErrorLogin(false);
-      const loginResponse = await axios.post(
+
+      const response = await fetch(
         'https://1130-193-137-92-26.ngrok-free.app/login',
         {
-          username: username,
-          password: password,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: '',
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+          }),
         },
       );
 
-      setIsLoading(true);
-      const cookiesHeader = loginResponse.headers['set-cookie'];
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
 
+      const cookiesHeader = response.headers.get('set-cookie');
       console.log('[Login Request] - Cookies : ', cookiesHeader);
+
+      setIsLoading(true);
 
       if (cookiesHeader) {
         setCookies(cookiesHeader);
-        await EncryptedStorage.setItem('cookies', cookiesHeader[0]);
+        await EncryptedStorage.setItem('cookies', cookiesHeader);
         setUsername(username);
         await EncryptedStorage.setItem('username', username);
-        fetchUser(cookiesHeader[0]);
+        fetchUser(cookiesHeader);
       }
 
       setTimeout(() => {
