@@ -2,7 +2,7 @@ import React from 'react';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import axios from 'axios';
 import {fetchUser} from '../redux/actions';
-import {useAppDispatch} from '../redux/hooks';
+import {API_URL} from '../utils/constants';
 
 export const AuthContext = React.createContext(); // Add this line to import the 'AuthContext' namespace
 
@@ -18,20 +18,17 @@ export const AuthProvider = ({children}) => {
     try {
       setErrorLogin(false);
 
-      const response = await fetch(
-        'https://1130-193-137-92-26.ngrok-free.app/login',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: '',
-          },
-          body: JSON.stringify({
-            username: username,
-            password: password,
-          }),
+      const response = await fetch(API_URL + 'login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: '',
         },
-      );
+        body: JSON.stringify({
+          username: username,
+          password: password,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error('Network response was not ok');

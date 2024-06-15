@@ -109,6 +109,7 @@ export default function Explore() {
             borderRadius: 1000,
             width: '83%',
             height: 50,
+            borderBlockColor: 'transparent',
             padding: 3,
             justifyContent: 'center',
           }}

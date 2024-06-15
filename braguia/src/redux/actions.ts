@@ -13,6 +13,7 @@ import {
 } from './../model/model'; // Adjust the import path as needed
 import database from './../model/database'; // Adjust the import path as needed
 import axios from 'axios';
+import {API_URL} from '../utils/constants';
 
 export const fetchTrailsRequest = () => {
   console.log('Dispatching fetchTrailsRequest action...');
@@ -62,9 +63,7 @@ export const fetchTrails = async () => {
   console.log('FUI CHAMADO (Colocar Informação na DB)');
 
   try {
-    const response = await fetch(
-      'https://1130-193-137-92-26.ngrok-free.app/trails',
-    );
+    const response = await fetch(API_URL + 'trails');
     const trailsData = await response.json();
 
     // Get existing trail IDs from the database
@@ -193,9 +192,7 @@ export const fetchAppFailure = (error: any) => {
 
 export const fetchApp = async () => {
   try {
-    const response = await fetch(
-      'https://1130-193-137-92-26.ngrok-free.app/app',
-    );
+    const response = await fetch(API_URL + 'app');
     const appsData = await response.json();
 
     const existingApp = await database.collections
@@ -294,16 +291,13 @@ export const fetchUser = async (cookiesHeader: any) => {
   try {
     console.log('[FETCH USER] - Cookies : ', cookiesHeader);
 
-    const response = await fetch(
-      'https://1130-193-137-92-26.ngrok-free.app/user',
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookiesHeader,
-        },
+    const response = await fetch(API_URL + 'user', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: cookiesHeader,
       },
-    );
+    });
 
     if (!response.ok) {
       throw new Error('Network response was not ok');
