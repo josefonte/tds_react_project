@@ -3,6 +3,7 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import axios from 'axios';
 import {fetchUser} from '../redux/actions';
 import {API_URL} from '../utils/constants';
+import {deleteCookies} from '../utils/cookieManager';
 
 export const AuthContext = React.createContext(); // Add this line to import the 'AuthContext' namespace
 
@@ -18,33 +19,28 @@ export const AuthProvider = ({children}) => {
     try {
       setErrorLogin(false);
 
-      const response = await fetch(API_URL + 'login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: '',
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-        }),
+      deleteCookies();
+
+      const response = await axios.post(API_URL + 'login', {
+        username,
+        password,
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('Network response was not ok');
       }
 
-      const cookiesHeader = response.headers.get('set-cookie');
-      console.log('[Login Request] - Cookies : ', cookiesHeader);
+      const cookiesHeader = response.headers['set-cookie'];
+      console.log('[Login Request] - Cookies : ', cookiesHeader[0]);
 
       setIsLoading(true);
 
       if (cookiesHeader) {
-        setCookies(cookiesHeader);
-        await EncryptedStorage.setItem('cookies', cookiesHeader);
+        setCookies(cookiesHeader[0]);
+        await EncryptedStorage.setItem('cookies', cookiesHeader[0]);
         setUsername(username);
         await EncryptedStorage.setItem('username', username);
-        fetchUser(cookiesHeader);
+        fetchUser(cookiesHeader[0]);
       }
 
       setTimeout(() => {

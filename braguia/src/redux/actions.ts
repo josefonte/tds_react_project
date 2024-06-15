@@ -291,19 +291,20 @@ export const fetchUser = async (cookiesHeader: any) => {
   try {
     console.log('[FETCH USER] - Cookies : ', cookiesHeader);
 
-    const response = await fetch(API_URL + 'user', {
-      method: 'GET',
+    const response = await axios.get(API_URL + 'user', {
       headers: {
         'Content-Type': 'application/json',
         Cookie: cookiesHeader,
       },
     });
 
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+    if (response.status !== 200) {
+      throw new Error(
+        'Network response was not ok, status: ' + response.status,
+      );
     }
 
-    const user = await response.json();
+    const user = await response.data;
 
     console.log('[FETCH USER] - response : ', user);
 
