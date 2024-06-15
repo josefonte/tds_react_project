@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
 import { Platform, Alert } from 'react-native';
+import database from '../model/database';
+import { Pin, Trail } from '../model/model';
+import { Q } from '@nozbe/watermelondb';
+import PushNotification from 'react-native-push-notification';
 
 interface State {
     region: {
@@ -14,7 +18,112 @@ interface State {
     isEnter: boolean;
 }
 
+interface GeoPoint {
+    lat: number;
+    lng: number;
+    trail: Trail | null;
+}
+
+
+async function createGeoPoints(pins: Pin[]): Promise<GeoPoint[]> {
+    const geoPoints: Promise<GeoPoint>[] = pins.map(async pin => {
+        const trails = await database.collections
+            .get<Trail>('trails')
+            .query(Q.where('trail_id', pin.trail))
+            .fetch();
+        // Assuming there's only one trail per pin
+        const trail = trails.length > 0 ? trails[0] : null;
+        return {
+            lat: pin.pinLat,
+            lng: pin.pinLng,
+            trail: trail
+        };
+    });
+    const resolvedGeoPoints = await Promise.all(geoPoints);
+
+    console.log("GEOFENCING DONE");
+
+    return resolvedGeoPoints;
+}
+
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371e3;
+    const aa = lat1 * Math.PI / 180;
+    const bb = lat2 * Math.PI / 180;
+    const cc = (lat2 - lat1) * Math.PI / 180;
+    const dd = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(cc / 2) * Math.sin(cc / 2) +
+        Math.cos(aa) * Math.cos(bb) *
+        Math.sin(dd / 2) * Math.sin(dd / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distance in meters
+}
+
+
+function triggeredPointOrNot(lat1: number, lon1: number, lat2: number, lon2: number): boolean {
+    const distance = calculateDistance(lat1, lon1, lat2, lon2);
+    return distance < 8955200; // Geofencing radius
+}
+
 const useBackgroundGeolocationTracker = () => {
+
+    const [pins, setPins] = useState<Pin[]>([]);
+    const [geoPoints, setGeoPoints] = useState<GeoPoint[]>([]);
+    const [retryCount, setRetryCount] = useState<number>(0);
+    const [flag, setFlag] = useState<number>(0);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const fetchedPins = await database.collections
+                    .get<Pin>('pins')
+                    .query()
+                    .fetch();
+                if (fetchedPins.length === 0) {
+                    setRetryCount(retryCount + 1);
+                    setTimeout(fetchData, 2000);
+                } else {
+                    setPins(fetchedPins);
+                    setFlag(1); // Trigger creation of geoPoints
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, [retryCount]); // Only retry fetching pins when retryCount changes
+
+    useEffect(() => {
+        if (flag === 1 && pins.length > 0) { // Ensure flag is set and pins are fetched
+            console.log("Creating GeoPoints...");
+            async function fetchData2() {
+                try {
+                    const result = await createGeoPoints(pins);
+                    const uniqueGeoPoints = result.filter((point, index, self) =>
+                        index === self.findIndex((p) => (
+                            p.lat === point.lat && p.lng === point.lng
+                        ))
+                    );
+
+                    console.log("[GEOFENCES] Created:", uniqueGeoPoints);
+                    setGeoPoints(uniqueGeoPoints);
+                } catch (error) {
+                    console.error('Error creating geoPoints:', error);
+                }
+            }
+
+            fetchData2();
+        }
+    }, [pins, flag]); // Trigger creation of geoPoints when flag or pins change
+
+    // Ensure geoPoints is not accessed until it's populated
+    console.log("Current geoPoints:", geoPoints);
+    const geoPointsRef = useRef<GeoPoint[]>([]);
+    geoPointsRef.current = geoPoints;
+
     const [state, setState] = useState<State>({
         region: null,
         latitude: null,
@@ -58,6 +167,22 @@ const useBackgroundGeolocationTracker = () => {
         // Onchange
         BackgroundGeolocation.on('location', (location) => {
             console.log('[DEBUG] BackgroundGeolocation location', location);
+            console.log("GEOPOINTS:");
+            console.log(geoPointsRef.current);
+            for (const ponto of geoPointsRef.current) {
+                const check = triggeredPointOrNot(ponto.lat, ponto.lng, location.latitude, location.longitude)
+                if (check === true) {
+                    console.log("VOU MANDAR NOTIFICAÇAO!");
+                    PushNotification.localNotification({
+                        channelId: "notificacaoPins",
+                        title: 'Triggered Point Detected',
+                        message: `Point (${ponto.lat}, ${ponto.lng}) is within 20 kilometers!`
+                    });
+                }
+                else {
+                    console.log("LIMIT TESTING NOTIFICAÇOES");
+                }
+            }
 
             BackgroundGeolocation.startTask((taskKey) => {
                 const region = Object.assign({}, location, {
@@ -79,6 +204,19 @@ const useBackgroundGeolocationTracker = () => {
         // On Start
         BackgroundGeolocation.on('start', () => {
             console.log('[INFO] BackgroundGeolocation service has been started');
+
+            PushNotification.createChannel(
+                {
+                    channelId: "notificacaoPins", // You can name this channel as per your requirement
+                    channelName: "notificacaoPins",
+                    channelDescription: "A default channel for notifications",
+                    playSound: true,
+                    soundName: "default",
+                    importance: 4, // (optional) default: 4. Available options: 1-5.
+                    vibrate: true,
+                },
+                (created: any) => console.log(`Notification channel created: ${created}`)
+            );
 
             BackgroundGeolocation.getCurrentLocation(
                 (location) => {
@@ -134,6 +272,8 @@ const useBackgroundGeolocationTracker = () => {
         BackgroundGeolocation.on('stationary', (location) => {
             console.log('[DEBUG] BackgroundGeolocation stationary', location);
         });
+
+
 
         return () => {
             BackgroundGeolocation.events.forEach((event) =>

@@ -21,7 +21,7 @@ const MAX_RETRY_COUNT = 5;
 // Assets
 import AppLogo from '../assets/logo.svg';
 import FacebookLogo from '../assets/facebook.svg';
-import UmLogo from '../assets/UMlogo.svg';
+import UmLogo from '../assets/umlogo.svg';
 
 // GEOFENCING
 import {PermissionsAndroid, Platform} from 'react-native';
