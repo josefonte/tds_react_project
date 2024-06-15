@@ -82,7 +82,11 @@ export default function Profile() {
           </Text>
           <View style={[styles.stats, {borderColor: colorDiviver}]}>
             <View style={styles.stats_cont}>
-              <Text style={[styles.stats_num, {color: textColor}]}>1</Text>
+              <Text style={[styles.stats_num, {color: textColor}]}>
+                {userData?.historico !== ''
+                  ? userData?.historico?.split(';').length
+                  : 0}
+              </Text>
               <Text style={[styles.stats_desc, {color: textColor}]}>
                 Feitos
               </Text>

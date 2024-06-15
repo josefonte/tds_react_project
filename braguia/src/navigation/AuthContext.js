@@ -8,7 +8,7 @@ import {deleteCookies} from '../utils/cookieManager';
 export const AuthContext = React.createContext(); // Add this line to import the 'AuthContext' namespace
 
 export const AuthProvider = ({children}) => {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [cookies, setCookies] = React.useState(null);
   const [errorLogin, setErrorLogin] = React.useState(false);
   const [username, setUsername] = React.useState('');
@@ -72,13 +72,13 @@ export const AuthProvider = ({children}) => {
     try {
       const cookiesStored = await EncryptedStorage.getItem('cookies');
       const usernameStored = await EncryptedStorage.getItem('username');
-      if (cookiesStored && username) {
-        console.log('cookiesStored', cookiesStored);
-        console.log('usernameStored', usernameStored);
+
+      console.log('cookiesStored', cookiesStored);
+      console.log('usernameStored', usernameStored);
+
+      if (cookiesStored && usernameStored) {
         setCookies(cookiesStored);
         setUsername(usernameStored);
-
-        await fetchUser(cookiesStored);
       }
     } catch (error) {
       console.log(error);
