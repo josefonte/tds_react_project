@@ -81,12 +81,12 @@ export default function About() {
     fetchData();
   }, [retryCount]);
 
-  PushNotification.configure({
-    onAction: function (notification) {
-        console.log('Notification action received: ', notification.action);
-        console.log('mensagem lá dentro -> ' + notification.message)
-    }
-  });
+  //PushNotification.configure({
+  //  onAction: function (notification) {
+  //      console.log('Notification action received: ', notification.action);
+  //      console.log('mensagem lá dentro -> ' + notification.message)
+  //  }
+  //});
 
   const handlePress = (url: string) => {
     Linking.openURL(url).catch(err =>
