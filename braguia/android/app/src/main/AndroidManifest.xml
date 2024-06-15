@@ -32,5 +32,10 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+      <service
+        android:name="com.marianhello.bgloc.sync.AuthenticatorService"
+        android:exported="true"> <!-- Set to true or false based on your needs -->
+    <!-- Intent filters and other attributes -->
+      </service>
     </application>
 </manifest>

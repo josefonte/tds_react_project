@@ -28,8 +28,9 @@ import {AuthProvider} from './navigation/AuthContext';
 import { PermissionsAndroid, Platform } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import startLocationUpdates from './utils/location';
-import BackgroundTimer from 'react-native-background-timer';
+import { requestBackgroundLocation, requestFineLocation } from './utils/location';
+import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
+import useBackgroundGeolocationTracker from './utils/BgTracking';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -48,30 +49,11 @@ export default function App(): React.JSX.Element {
     setFlag(1);
   }
 
+  const geolocationState = useBackgroundGeolocationTracker();
+
   useEffect(() => {
-    let watchId: number | null = null;
-
-    const handleAppStateChange = (nextAppState: AppStateStatus) => {
-        if (nextAppState === 'active') {
-            console.log('App is in foreground');
-            startLocationUpdates();
-        } else if (nextAppState === 'background') {
-            console.log('App is in background');
-        }
-    };
-
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-    startLocationUpdates();
-
-    return () => {
-        if (watchId !== null) {
-            Geolocation.clearWatch(watchId);
-        }
-        BackgroundTimer.stopBackgroundTimer();
-        subscription.remove();
-    };
-}, []);
+    console.log('Geolocation state updated:', geolocationState);
+  }, [geolocationState]);
 
 
 

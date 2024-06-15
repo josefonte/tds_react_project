@@ -21,6 +21,7 @@ buildscript {
 
 allprojects {
     repositories {
+        maven { url 'https://jcenter.bintray.com' }
         // Required for react-native-background-fetch
         maven { url("${project(':react-native-background-fetch').projectDir}/libs") }
     }

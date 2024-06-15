@@ -86,6 +86,8 @@ export default function About() {
     fetchData();
   }, [retryCount]);
 
+  
+
 
   const handlePress = (url: string) => {
     Linking.openURL(url).catch(err =>

@@ -53,35 +53,5 @@ const requestFineLocation = async (): Promise<boolean> => {
     }
 };
 
-const startLocationUpdates = async () => {
-    const permissionGranted = await requestFineLocation(); // Change to requestBackgroundLocation if needed
-    const permissionGranted2 = await requestBackgroundLocation();
 
-    if (permissionGranted && permissionGranted2) {
-        // Configure location updates
-        Geolocation.setRNConfiguration({ skipPermissionRequests: false, authorizationLevel: 'auto' });
-
-        // Function to get location
-        const getLocation = () => {
-            Geolocation.getCurrentPosition(
-                (position) => {
-                    console.log('Position:', position.coords);
-                    // Handle your location data here
-                },
-                (error) => {
-                    console.error('Error getting location', error);
-                },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-            );
-        };
-
-        // Start background timer to fetch location every 5 minutes
-        BackgroundTimer.runBackgroundTimer(() => {
-            getLocation();
-        }, 5 * 1000); // 5 minutes in milliseconds
-    } else {
-        Alert.alert('Permission not granted', 'Unable to fetch location in background.');
-    }
-};
-
-export default startLocationUpdates;
+export { requestBackgroundLocation, requestFineLocation };
