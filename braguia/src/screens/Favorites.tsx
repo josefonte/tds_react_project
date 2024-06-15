@@ -29,8 +29,7 @@ export default function Favorites() {
       const trail = await trailCollection
         .query(Q.where('trail_id', trailId)) // Assuming 'trailId' is the correct field name
         .fetch();
-      console.log('HERE IS THE TRAIL');
-      console.log(trail[0]);
+
       return trail[0]; // Assuming trailId is unique, so we return the first (and only) item in the array
     } catch (error) {
       throw new Error('Failed to fetch traill');
@@ -56,24 +55,26 @@ export default function Favorites() {
   }, [trailsState.historico]);
 
   return (
-    <ScrollView>
-      <View
-        style={{flex: 1, backgroundColor: isDarkMode ? '#161716' : 'white'}}>
-        <Text style={[styles.textTitulo, {color: textColor}]}>
-          Histórico Trilhos
-        </Text>
-        {trailData.map((trail: Trail, index: number) => (
-          <View key={index}>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('TrailDetail', {trail: trail})
-              }>
-              <SugestedTrail trail={trail}></SugestedTrail>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
+    <View>
+      <ScrollView>
+        <View
+          style={{flex: 1, backgroundColor: isDarkMode ? '#161716' : 'white'}}>
+          <Text style={[styles.textTitulo, {color: textColor}]}>
+            Histórico Trilhos
+          </Text>
+          {trailData.map((trail: Trail, index: number) => (
+            <View key={index}>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('TrailDetail', {trail: trail})
+                }>
+                <SugestedTrail trail={trail}></SugestedTrail>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 

@@ -101,7 +101,7 @@ export default function Profile() {
               }}
             />
             <View style={styles.stats_cont}>
-              <Text style={[styles.stats_num, {color: textColor}]}>8</Text>
+              <Text style={[styles.stats_num, {color: textColor}]}>0</Text>
               <Text style={[styles.stats_desc, {color: textColor}]}>
                 Criados
               </Text>
@@ -110,6 +110,32 @@ export default function Profile() {
         </View>
 
         <View style={styles.options}>
+          <Pressable
+            onPress={() => navigation.navigate('ProfileHistorico')}
+            style={({pressed}) => [
+              {
+                backgroundColor: pressed ? colorDiviver : backgroundColor,
+              },
+            ]}>
+            <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
+              <MaterialIcons
+                name={'history'}
+                size={20}
+                color={textColor}
+                style={{paddingHorizontal: 10}}
+              />
+
+              <Text style={{fontSize: 18, color: textColor}}>Histórico</Text>
+
+              <Octicons
+                name={'chevron-right'}
+                size={22}
+                color={textColor}
+                style={{end: 15, position: 'absolute'}}
+              />
+            </View>
+          </Pressable>
+
           <Pressable
             onPress={() => navigation.navigate('Configs')}
             style={({pressed}) => [

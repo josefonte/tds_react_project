@@ -26,9 +26,9 @@ export const lightModeTheme = {
   redButtontitle: '#580B0B',
   redButtonPressed: '#8A3B3B',
   redButton: '#D45B5B',
-  filterButtonBackground: '#D4E0AE',
+  filterButtonBackground: '#161716',
   filterButtonBackgroundPressed: 'white',
-  filterButtonIcon: '#161716',
+  filterButtonIcon: 'white',
   filterButtonIconPressed: '#A3A3A3',
 
   color2: 'white',

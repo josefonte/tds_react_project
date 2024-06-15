@@ -96,7 +96,7 @@ export default function Explore() {
       style={{
         backgroundColor: backgroundColor,
         flex: 1,
-        paddingHorizontal: '4%',
+
         paddingTop: '3%',
       }}>
       <View style={styles.containerTop}>
@@ -182,7 +182,7 @@ export default function Explore() {
           ))}
         </ScrollView>
 
-        <Text style={[styles.textTitulo, {color: textColor}]}>
+        <Text style={[styles.textTitulo, {color: textColor, marginTop: 10}]}>
           Roteiros Populares
         </Text>
         {trails && trails.length > 0 ? (
@@ -233,8 +233,10 @@ export default function Explore() {
         ) : (
           <Text>Loading...</Text>
         )}
-        <Text style={[styles.textTitulo, {color: textColor}]}>Sugestões</Text>
-        <ScrollView>
+        <Text style={[styles.textTitulo, {color: textColor, marginLeft: 10}]}>
+          Sugestões
+        </Text>
+        <View style={{marginHorizontal: 10}}>
           {trails.map((trail: Trail, index: number) => (
             <View key={index}>
               <TouchableOpacity
@@ -245,7 +247,7 @@ export default function Explore() {
               </TouchableOpacity>
             </View>
           ))}
-        </ScrollView>
+        </View>
       </ScrollView>
     </View>
   );
@@ -261,6 +263,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
+    paddingHorizontal: 10,
   },
   textTitulo: {
     fontSize: 26,
@@ -269,6 +272,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 0.25,
     marginBottom: 20,
+    marginLeft: 10,
   },
   scrollViewContent: {
     flexDirection: 'row',

@@ -198,18 +198,17 @@ const styles = StyleSheet.create({
     zIndex: 1, // Ensure the text appears on top of the SVG
   },
   sugest: {
-    width: '96%',
+    width: '100%',
     height: 150,
     borderRadius: 8,
   },
   view: {
-    marginLeft: 10,
     marginBottom: 20,
   },
   gradient: {
     position: 'absolute',
     height: 150,
-    width: '96%',
+    width: '100%',
     borderRadius: 8,
   },
 });

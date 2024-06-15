@@ -10,6 +10,7 @@ import Feedback from '../screens/FeedBack';
 import TrailDetail from '../screens/TrailDetail';
 import PontoDeInteresseDetail from '../screens/PontoDeInteresseDetail';
 import ProfileConfigs from '../screens/ProfileConfigs';
+import ProfileHistorico from '../screens/ProfileHistorico';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {useColorScheme} from 'react-native';
 
@@ -81,6 +82,7 @@ export default function AuthStack() {
         component={PontoDeInteresseDetail}
       />
       <Stack.Screen name="Configs" component={ProfileConfigs} />
+      <Stack.Screen name="ProfileHistorico" component={ProfileHistorico} />
       <Stack.Screen name="FeedBack" component={Feedback} />
     </Stack.Navigator>
   );

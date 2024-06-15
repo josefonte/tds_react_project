@@ -12,8 +12,11 @@ import {
   App,
 } from './../model/model'; // Adjust the import path as needed
 import database from './../model/database'; // Adjust the import path as needed
+import {Q} from '@nozbe/watermelondb';
 import axios from 'axios';
 import {API_URL} from '../utils/constants';
+
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 export const fetchTrailsRequest = () => {
   console.log('Dispatching fetchTrailsRequest action...');
@@ -351,5 +354,68 @@ export const fetchUser = async (cookiesHeader: any) => {
     });
   } catch (error) {
     console.log('Error fetching user:', error);
+  }
+};
+export const addHistoricoUser = async (trail: Trail) => {
+  console.log('ADDING HISTORICO');
+  const username = await EncryptedStorage.getItem('username');
+
+  const usersCollection = database.collections.get<User>('users');
+  const userQuery = await usersCollection
+    .query(Q.where('username', username))
+    .fetch();
+
+  if (userQuery.length > 0) {
+    const user = userQuery[0];
+    console.log('User found in the database:', user);
+
+    const trail_id = trail.trailId.toString();
+    let hist = '';
+
+    if (
+      user.historico === '' ||
+      user.historico === null ||
+      user.historico === undefined
+    ) {
+      hist = trail_id;
+    } else {
+      const historicoArray = user.historico.split(';');
+
+      if (!historicoArray.includes(trail_id)) {
+        historicoArray.push(trail_id);
+      }
+
+      hist = historicoArray.join(';');
+    }
+
+    await database.write(async () => {
+      await user.update((u: any) => {
+        u.historico = hist;
+      });
+    });
+
+    console.log('Historico Adicionado: ', hist);
+  } else {
+    console.error('User not found in the database.');
+  }
+};
+
+export const cleanHistoricoUser = async () => {
+  console.log('APAGAR HISTORICO');
+  const username = await EncryptedStorage.getItem('username');
+
+  const usersCollection = database.collections.get<User>('users');
+  const userQuery = await usersCollection
+    .query(Q.where('username', username))
+    .fetch();
+
+  if (userQuery.length > 0) {
+    const user = userQuery[0];
+
+    await database.write(async () => {
+      await user.update((u: any) => {
+        u.historico = '';
+      });
+    });
   }
 };

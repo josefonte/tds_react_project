@@ -22,7 +22,7 @@ import {downloadFile, getDownloadPermissionAndroid} from './../auxFuncs/index';
 
 import {Media, Pin, Trail} from '../model/model';
 
-import {acabeiViajar, addHistorico} from '../redux/actions';
+import {acabeiViajar, addHistorico, addHistoricoUser} from '../redux/actions';
 import {AppDispatch, RootState} from '../redux/store';
 import {useDispatch, useSelector} from 'react-redux';
 import {useAppSelector, useAppDispatch} from '../redux/hooks';
@@ -199,7 +199,15 @@ const TrailDetail = ({
       .map(([latitude, longitude]) => `${latitude},${longitude}`)
       .join('/');
     const url = `https://www.google.com/maps/dir/${destinationString}`;
-    dispatch(addHistorico(trail.trailId));
+
+    addHistoricoUser(trail)
+      .then(() => {
+        console.log('Adicionado ao historico | trailId : ', trail.trailId);
+      })
+      .catch(error => {
+        throw error;
+      });
+
     console.log(url);
     Linking.openURL(url).catch(err =>
       console.error('Error opening Google Maps:', err),
@@ -308,7 +316,6 @@ const TrailDetail = ({
     fetchData(); // Call fetchData when the component mounts
   }, []);
 
-
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
   const scrollViewRef = useRef(null);
@@ -322,12 +329,12 @@ const TrailDetail = ({
         buttonNeutral: 'Pergunte-me depois',
         buttonNegative: 'Cancelar',
         buttonPositive: 'OK',
-      }
+      },
     );
     return granted === PermissionsAndroid.RESULTS.GRANTED;
   };
 
-  const checkAndDownload = async (fileUrl) => {
+  const checkAndDownload = async fileUrl => {
     if (Platform.OS === 'android') {
       const hasPermission = await getDownloadPermissionAndroid();
       if (!hasPermission) {
@@ -338,12 +345,13 @@ const TrailDetail = ({
     actualDownload(fileUrl);
   };
 
-  const actualDownload = (fileUrl) => {
+  const actualDownload = fileUrl => {
     console.log(`Iniciando download do arquivo: ${fileUrl}`);
-    const { dirs } = RNFetchBlob.fs;
-    const dirToSave = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+    const {dirs} = RNFetchBlob.fs;
+    const dirToSave =
+      Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
     const fileName = fileUrl.split('/').pop();
-    
+
     const configfb = {
       fileCache: true,
       addAndroidDownloads: {
@@ -353,10 +361,10 @@ const TrailDetail = ({
         title: fileName,
         path: `${dirToSave}/${fileName}`,
         mime: 'application/octet-stream', // Fallback MIME type
-        description: 'Downloading file.'
+        description: 'Downloading file.',
       },
       path: `${dirToSave}/${fileName}`,
-      mime: 'application/octet-stream'
+      mime: 'application/octet-stream',
     };
 
     const configOptions = Platform.select({
@@ -373,7 +381,7 @@ const TrailDetail = ({
           RNFetchBlob.ios.previewDocument(configfb.path);
         }
         if (Platform.OS === 'android') {
-          console.log("Arquivo baixado");
+          console.log('Arquivo baixado');
         }
       })
       .catch(e => {
@@ -381,7 +389,7 @@ const TrailDetail = ({
       });
   };
 
-  const handleScroll = (event) => {
+  const handleScroll = event => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const width = event.nativeEvent.layoutMeasurement.width;
     const currentIndex = Math.floor(contentOffsetX / width);
@@ -390,7 +398,9 @@ const TrailDetail = ({
 
   const downloadCurrentMedia = async () => {
     const currentMedia = media[currentMediaIndex];
-    console.log(`Tentando baixar media na posição: ${currentMediaIndex}, Tipo: ${currentMedia.mediaType}, URL: ${currentMedia.mediaFile}`);
+    console.log(
+      `Tentando baixar media na posição: ${currentMediaIndex}, Tipo: ${currentMedia.mediaType}, URL: ${currentMedia.mediaFile}`,
+    );
     if (currentMedia) {
       await checkAndDownload(currentMedia.mediaFile);
     } else {
@@ -405,16 +415,16 @@ const TrailDetail = ({
           backgroundColor: isDarkMode ? '#161716' : 'white',
         }}>
         <View>
-          
           <TouchableOpacity
             style={styles.botaoTopo}
-            onPress={() => navigation.navigate('Explore')}>
+            onPress={() => navigation.goBack()}>
             <GoBack />
           </TouchableOpacity>
 
-          <ScrollView horizontal={true} 
-            style={styles.scrollViewPop} 
-            onScroll={handleScroll} 
+          <ScrollView
+            horizontal={true}
+            style={styles.scrollViewPop}
+            onScroll={handleScroll}
             scrollEventThrottle={16}
             ref={scrollViewRef}>
             {media.map((mediaItem, index) => (
@@ -430,21 +440,20 @@ const TrailDetail = ({
                 ) : mediaItem.mediaType === 'I' ? (
                   <View>
                     <TouchableOpacity
-                        style={[styles.downloadButton]}
-                        onPress={() => {
-                          if (Platform.OS === 'android') {
-                            getDownloadPermissionAndroid().then(granted => {
-                              if (granted) {
-                                downloadFile(mediaItem.mediaFile);
-                              }
-                            });
-                          } else {
-                            downloadFile(mediaItem.mediaFile).then(res => {
-                              RNFetchBlob.ios.previewDocument(res.path());
-                            });
-                          }
-                        }}
-                    >
+                      style={[styles.downloadButton]}
+                      onPress={() => {
+                        if (Platform.OS === 'android') {
+                          getDownloadPermissionAndroid().then(granted => {
+                            if (granted) {
+                              downloadFile(mediaItem.mediaFile);
+                            }
+                          });
+                        } else {
+                          downloadFile(mediaItem.mediaFile).then(res => {
+                            RNFetchBlob.ios.previewDocument(res.path());
+                          });
+                        }
+                      }}>
                       <Text style={styles.textSimple}>Download</Text>
                     </TouchableOpacity>
                     <Image
@@ -473,8 +482,7 @@ const TrailDetail = ({
                             RNFetchBlob.ios.previewDocument(res.path());
                           });
                         }
-                      }}
-                    >
+                      }}>
                       <Text style={styles.textSimple}>Download</Text>
                     </TouchableOpacity>
                   </View>
@@ -497,8 +505,6 @@ const TrailDetail = ({
           </TouchableOpacity>
            */}
 
-          
-          
           {trailsState.viajar === false ? (
             flag === 0 ? (
               <TouchableOpacity style={styles.botaoComecar}>

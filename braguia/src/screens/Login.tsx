@@ -8,6 +8,7 @@ import {
   Pressable,
   useColorScheme,
   Image,
+  TouchableOpacity,
 } from 'react-native';
 
 import AppLogo from '../assets/logo.svg';
@@ -71,7 +72,7 @@ export default function Profile() {
         <Text style={[styles.forgotPassword, {color: textColor}]}>
           Esqueceu-se da password?
         </Text>
-        <Pressable
+        <TouchableOpacity
           style={[
             styles.buttonIniciar,
             {backgroundColor: buttonIniciarBackground},
@@ -80,8 +81,8 @@ export default function Profile() {
           <Text style={[styles.textIniciar, {color: buttonIniciarTextColor}]}>
             Iniciar Sessão
           </Text>
-        </Pressable>
-        <Pressable
+        </TouchableOpacity>
+        <TouchableOpacity
           style={[
             styles.buttonCriar,
             {
@@ -92,7 +93,7 @@ export default function Profile() {
           <Text style={[styles.textCriar, {color: buttonCriarTextColor}]}>
             Criar Conta
           </Text>
-        </Pressable>
+        </TouchableOpacity>
       </View>
     </View>
   );
