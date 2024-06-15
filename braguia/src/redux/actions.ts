@@ -290,11 +290,12 @@ export const fetchApp = async () => {
 export const fetchUser = async (cookiesHeader: any) => {
   try {
     console.log('[FETCH USER] - Cookies : ', cookiesHeader);
+    const csrftoken = cookiesHeader.split(';')[0];
+    const sessionid = cookiesHeader.split(';')[4].split(',')[1];
 
     const response = await axios.get(API_URL + 'user', {
       headers: {
-        'Content-Type': 'application/json',
-        Cookie: cookiesHeader,
+        Cookie: csrftoken + ';' + sessionid,
       },
     });
 
