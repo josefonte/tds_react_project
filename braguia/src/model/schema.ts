@@ -17,6 +17,7 @@ const schema = appSchema({
         {name: 'is_active', type: 'boolean'},
         {name: 'date_joined', type: 'string'},
         {name: 'historico', type: 'string'},
+        {name: 'favorites', type: 'string'},
       ],
     }),
     tableSchema({

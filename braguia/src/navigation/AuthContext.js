@@ -40,6 +40,7 @@ export const AuthProvider = ({children}) => {
         await EncryptedStorage.setItem('cookies', cookiesHeader[0]);
         setUsername(username);
         await EncryptedStorage.setItem('username', username);
+
         fetchUser(cookiesHeader[0]);
       }
 

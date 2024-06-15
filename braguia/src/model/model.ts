@@ -15,6 +15,7 @@ class User extends Model {
   @field('is_active') isActive!: boolean;
   @field('date_joined') dateJoined!: string | null;
   @field('historico') historico!: string | null;
+  @field('favorites') favorites!: string;
 }
 
 class Trail extends Model {

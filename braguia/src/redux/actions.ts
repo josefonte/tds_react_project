@@ -344,6 +344,7 @@ export const fetchUser = async (cookiesHeader: any) => {
               newUser.isActive = user.is_active;
               newUser.dateJoined = user.date_joined;
               newUser.historico = '';
+              newUser.favorites = '';
             });
 
           console.log('[FETCH USER] - Add new user : ', newUser);
@@ -367,7 +368,6 @@ export const addHistoricoUser = async (trail: Trail) => {
 
   if (userQuery.length > 0) {
     const user = userQuery[0];
-    console.log('User found in the database:', user);
 
     const trail_id = trail.trailId.toString();
     let hist = '';
@@ -415,6 +415,109 @@ export const cleanHistoricoUser = async () => {
     await database.write(async () => {
       await user.update((u: any) => {
         u.historico = '';
+      });
+    });
+  }
+};
+
+export const addFavoriteUser = async (trail: Trail) => {
+  console.log('ADDING Favorite');
+  const username = await EncryptedStorage.getItem('username');
+
+  const usersCollection = database.collections.get<User>('users');
+  const userQuery = await usersCollection
+    .query(Q.where('username', username))
+    .fetch();
+
+  if (userQuery.length > 0) {
+    const user = userQuery[0];
+    console.log('User found in the database:', user);
+
+    const trail_id = trail.trailId.toString();
+    let fav = '';
+
+    if (
+      user.favorites === '' ||
+      user.favorites === null ||
+      user.favorites === undefined
+    ) {
+      fav = trail_id;
+    } else {
+      const favoritesArray = user.favorites.split(';');
+
+      if (!favoritesArray.includes(trail_id)) {
+        favoritesArray.push(trail_id);
+      }
+
+      fav = favoritesArray.join(';');
+    }
+
+    await database.write(async () => {
+      await user.update((u: any) => {
+        u.favorites = fav;
+      });
+    });
+
+    console.log('Favorito Adicionado: ', fav);
+  } else {
+    console.error('User not found in the database.');
+  }
+};
+
+export const removeFavoriteUser = async (trail: Trail) => {
+  console.log('Removing Favorite');
+  const username = await EncryptedStorage.getItem('username');
+
+  const usersCollection = database.collections.get<User>('users');
+  const userQuery = await usersCollection
+    .query(Q.where('username', username))
+    .fetch();
+
+  if (userQuery.length > 0) {
+    const user = userQuery[0];
+
+    const trail_id = trail.trailId.toString();
+    let fav = '';
+
+    if (
+      user.favorites === '' ||
+      user.favorites === null ||
+      user.favorites === undefined
+    ) {
+      fav = '';
+    } else {
+      const favoritesArray = user.favorites.split(';');
+
+      fav = favoritesArray.filter(item => item !== trail_id).join(';');
+    }
+
+    await database.write(async () => {
+      await user.update((u: any) => {
+        u.favorites = fav;
+      });
+    });
+
+    console.log('Favorito Adicionado: ', fav);
+  } else {
+    console.error('User not found in the database.');
+  }
+};
+
+export const cleanFavoritesUser = async () => {
+  console.log('Apagar Favoritos');
+  const username = await EncryptedStorage.getItem('username');
+
+  const usersCollection = database.collections.get<User>('users');
+  const userQuery = await usersCollection
+    .query(Q.where('username', username))
+    .fetch();
+
+  if (userQuery.length > 0) {
+    const user = userQuery[0];
+
+    await database.write(async () => {
+      await user.update((u: any) => {
+        u.favorites = '';
       });
     });
   }

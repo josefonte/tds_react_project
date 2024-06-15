@@ -16,13 +16,23 @@ import {
   Linking,
   Dimensions,
 } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Octicons from 'react-native-vector-icons/Octicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import RNFetchBlob from 'rn-fetch-blob';
 import {downloadFile, getDownloadPermissionAndroid} from './../auxFuncs/index';
 
 import {Media, Pin, Trail} from '../model/model';
 
-import {acabeiViajar, addHistorico, addHistoricoUser} from '../redux/actions';
+import {
+  acabeiViajar,
+  addFavoriteUser,
+  addHistorico,
+  addHistoricoUser,
+  removeFavoriteUser,
+} from '../redux/actions';
 import {AppDispatch, RootState} from '../redux/store';
 import {useDispatch, useSelector} from 'react-redux';
 import {useAppSelector, useAppDispatch} from '../redux/hooks';
@@ -31,12 +41,12 @@ import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
 // SVG
-import GoBack from '../assets/goBack.svg';
 import StartButton from '../assets/startButton.svg';
 import EndButton from '../assets/acabarButton.svg';
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';
+import {darkModeTheme, lightModeTheme} from '../utils/themes';
 
 const TrailDetail = ({
   route,
@@ -46,10 +56,27 @@ const TrailDetail = ({
   console.log('Entrei num trail específico');
   const {trail} = route.params;
   const isDarkMode = useColorScheme() === 'dark';
-  const textColor = isDarkMode ? '#FEFAE0' : 'black';
+
+  const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
+
+  const backgroundColor = theme.background_color;
+  const titleColor = theme.text;
+  const textColor = theme.text2;
+  const colorDiviver = theme.color8;
+  const redButtonText = theme.redButtontitle;
+  const redButtonPressed = theme.redButtonPressed;
+  const redButton = theme.redButton;
+
   const navigation = useNavigation();
   const trailsState = useSelector((state: RootState) => state.trails);
   const dispatch = useDispatch();
+
+  const [favoriteButton, setFavoriteButton] = useState<boolean>(false);
+
+  const clickFavorite = () => {
+    !favoriteButton ? addFavoriteUser(trail) : removeFavoriteUser(trail);
+    setFavoriteButton(!favoriteButton);
+  };
 
   // Dar audio
   useEffect(() => {
@@ -409,94 +436,112 @@ const TrailDetail = ({
   };
 
   return (
-    <ScrollView>
-      <View
-        style={{
-          backgroundColor: isDarkMode ? '#161716' : 'white',
-        }}>
-        <View>
-          <TouchableOpacity
-            style={styles.botaoTopo}
-            onPress={() => navigation.goBack()}>
-            <GoBack />
-          </TouchableOpacity>
+    <View style={[styles.container, {backgroundColor: backgroundColor}]}>
+      <ScrollView>
+        <View
+          style={{
+            backgroundColor: isDarkMode ? '#161716' : 'white',
+          }}>
+          <View>
+            <TouchableOpacity
+              style={styles.botaoTopo}
+              onPress={() => navigation.goBack()}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View
+                  style={{
+                    borderRadius: 100,
+                    backgroundColor: backgroundColor,
+                    width: 45,
+                    height: 45,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Octicons
+                    name={'chevron-left'}
+                    size={30}
+                    color={colorDiviver}
+                    style={{paddingRight: 3}}
+                  />
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
 
-          <ScrollView
-            horizontal={true}
-            style={styles.scrollViewPop}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
-            ref={scrollViewRef}>
-            {media.map((mediaItem, index) => (
-              <React.Fragment key={index}>
-                {mediaItem.mediaType === 'R' ? (
-                  <TouchableOpacity
-                    onPress={() => playSound(mediaItem.mediaFile)}>
-                    <View style={styles.audioRolo}>
-                      <Text style={styles.audioText}>Audio</Text>
-                      <Text style={styles.audioText}>Premium Only</Text>
+            <ScrollView
+              horizontal={true}
+              style={styles.scrollViewPop}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+              ref={scrollViewRef}>
+              {media.map((mediaItem, index) => (
+                <React.Fragment key={index}>
+                  {mediaItem.mediaType === 'R' ? (
+                    <TouchableOpacity
+                      onPress={() => playSound(mediaItem.mediaFile)}>
+                      <View style={styles.audioRolo}>
+                        <Text style={styles.audioText}>Audio</Text>
+                        <Text style={styles.audioText}>Premium Only</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ) : mediaItem.mediaType === 'I' ? (
+                    <View>
+                      <TouchableOpacity
+                        style={[styles.downloadButton]}
+                        onPress={() => {
+                          if (Platform.OS === 'android') {
+                            getDownloadPermissionAndroid().then(granted => {
+                              if (granted) {
+                                downloadFile(mediaItem.mediaFile);
+                              }
+                            });
+                          } else {
+                            downloadFile(mediaItem.mediaFile).then(res => {
+                              RNFetchBlob.ios.previewDocument(res.path());
+                            });
+                          }
+                        }}>
+                        <Text style={styles.textSimple}>Download</Text>
+                      </TouchableOpacity>
+                      <Image
+                        source={{uri: mediaItem.mediaFile}}
+                        style={styles.imagemRolo}
+                      />
                     </View>
-                  </TouchableOpacity>
-                ) : mediaItem.mediaType === 'I' ? (
-                  <View>
-                    <TouchableOpacity
-                      style={[styles.downloadButton]}
-                      onPress={() => {
-                        if (Platform.OS === 'android') {
-                          getDownloadPermissionAndroid().then(granted => {
-                            if (granted) {
-                              downloadFile(mediaItem.mediaFile);
-                            }
-                          });
-                        } else {
-                          downloadFile(mediaItem.mediaFile).then(res => {
-                            RNFetchBlob.ios.previewDocument(res.path());
-                          });
-                        }
-                      }}>
-                      <Text style={styles.textSimple}>Download</Text>
-                    </TouchableOpacity>
-                    <Image
-                      source={{uri: mediaItem.mediaFile}}
-                      style={styles.imagemRolo}
-                    />
-                  </View>
-                ) : mediaItem.mediaType === 'V' ? (
-                  <View>
-                    <Video
-                      source={{uri: mediaItem.mediaFile}}
-                      style={styles.videoRolo}
-                      controls={true}
-                    />
-                    <TouchableOpacity
-                      style={[styles.downloadButton]}
-                      onPress={() => {
-                        if (Platform.OS === 'android') {
-                          getDownloadPermissionAndroid().then(granted => {
-                            if (granted) {
-                              downloadFile(mediaItem.mediaFile);
-                            }
-                          });
-                        } else {
-                          downloadFile(mediaItem.mediaFile).then(res => {
-                            RNFetchBlob.ios.previewDocument(res.path());
-                          });
-                        }
-                      }}>
-                      <Text style={styles.textSimple}>Download</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <View>
-                    <Text onPress={() => playSound(mediaItem.mediaFile)}>
-                      Unknown media type
-                    </Text>
-                  </View>
-                )}
-              </React.Fragment>
-            ))}
-          </ScrollView>
-          {/*
+                  ) : mediaItem.mediaType === 'V' ? (
+                    <View>
+                      <Video
+                        source={{uri: mediaItem.mediaFile}}
+                        style={styles.videoRolo}
+                        controls={true}
+                      />
+                      <TouchableOpacity
+                        style={[styles.downloadButton]}
+                        onPress={() => {
+                          if (Platform.OS === 'android') {
+                            getDownloadPermissionAndroid().then(granted => {
+                              if (granted) {
+                                downloadFile(mediaItem.mediaFile);
+                              }
+                            });
+                          } else {
+                            downloadFile(mediaItem.mediaFile).then(res => {
+                              RNFetchBlob.ios.previewDocument(res.path());
+                            });
+                          }
+                        }}>
+                        <Text style={styles.textSimple}>Download</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View>
+                      <Text onPress={() => playSound(mediaItem.mediaFile)}>
+                        Unknown media type
+                      </Text>
+                    </View>
+                  )}
+                </React.Fragment>
+              ))}
+            </ScrollView>
+            {/*
           <TouchableOpacity
             style={styles.downloadButton}
             onPress={downloadCurrentMedia}
@@ -504,119 +549,144 @@ const TrailDetail = ({
             <Text style={styles.textSimple}>Download</Text>
           </TouchableOpacity>
            */}
-
-          {trailsState.viajar === false ? (
-            flag === 0 ? (
-              <TouchableOpacity style={styles.botaoComecar}>
-                <StartButton />
+            <View style={styles.botaoComecar}>
+              <TouchableOpacity onPress={clickFavorite}>
+                <View
+                  style={{
+                    backgroundColor: favoriteButton
+                      ? titleColor
+                      : backgroundColor,
+                    borderColor: favoriteButton ? titleColor : colorDiviver,
+                    borderWidth: 2,
+                    height: 50,
+                    width: 50,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 100,
+                  }}>
+                  <Feather
+                    name={'heart'}
+                    size={25}
+                    color={favoriteButton ? backgroundColor : colorDiviver}
+                    style={{paddingHorizontal: 10}}
+                  />
+                </View>
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.botaoComecar}
-                onPress={() => openGoogleMapsDirections(locs)}>
-                <StartButton />
-              </TouchableOpacity>
-            )
-          ) : (
-            <TouchableOpacity
-              style={styles.botaoComecar}
-              onPress={() => dispatch(acabeiViajar())}>
-              <EndButton />
-            </TouchableOpacity>
-          )}
-        </View>
-        <Text style={[styles.textTitulo, {color: textColor}]}>
-          {trail.trailName}
-        </Text>
-        <Text
-          style={[
-            styles.textSimple,
-            {color: textColor, fontSize: 13, marginBottom: 20},
-          ]}>
-          Braga, Braga
-        </Text>
-        <Text style={[styles.textSimple, {color: textColor}]}>
-          {trail.trailDesc}
-        </Text>
-        <Text
-          style={[
-            styles.textTitulo,
-            {color: textColor, fontSize: 22, marginBottom: 10},
-          ]}>
-          Informação Geral
-        </Text>
-        <View style={styles.gridContainer}>
-          <View style={styles.itemContainer}>
-            <Text style={styles.itemText}>Comprimento do Roteiro</Text>
-            <Text style={styles.itemValue}>{distancia}</Text>
-          </View>
-          <View style={styles.itemContainer}>
-            <Text style={styles.itemText}>Tempo Médio</Text>
-            <Text style={styles.itemValue}>{trail.trailDuration}</Text>
-          </View>
-        </View>
-
-        <View style={styles.gridContainer}>
-          <View style={styles.itemContainer}>
-            <Text style={styles.itemText}>Pontos de Interesse</Text>
-            <Text style={styles.itemValue}>{numerodePins}</Text>
-          </View>
-          <View style={styles.itemContainer}>
-            <Text style={styles.itemText}>Tipo de Roteiro</Text>
-            <Text style={styles.itemValue}>oi</Text>
-          </View>
-        </View>
-
-        <Text
-          style={[
-            styles.textTitulo,
-            {color: textColor, fontSize: 22, marginBottom: 10},
-          ]}>
-          Pontos de Interesse
-        </Text>
-        <View style={[styles.horizontalLine, styles.pinspins]} />
-        <View style={[styles.pinspins]}>
-          {flag2 === 0 ? (
-            <Text>Loading...</Text>
-          ) : (
-            pins.map((pin, index) => (
-              <View key={index}>
-                <TouchableOpacity
-                  key={index}
-                  onPress={() =>
-                    navigation.navigate('PontoDeInteresseDetail', {
-                      pin: pin,
-                    })
-                  }
-                  style={[styles.itemPontoInteresse]}>
-                  <Text key={index}>{pin.pinName}</Text>
+              {trailsState.viajar === false ? (
+                flag === 0 ? (
+                  <TouchableOpacity>
+                    <StartButton />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => openGoogleMapsDirections(locs)}>
+                    <StartButton />
+                  </TouchableOpacity>
+                )
+              ) : (
+                <TouchableOpacity onPress={() => dispatch(acabeiViajar())}>
+                  <EndButton />
                 </TouchableOpacity>
-                <View style={styles.horizontalLine} />
-              </View>
-            ))
-          )}
-        </View>
-        <Text
-          style={[
-            styles.textTitulo,
-            {color: textColor, fontSize: 22, marginBottom: 10},
-          ]}>
-          Mapa
-        </Text>
-      </View>
+              )}
+            </View>
+          </View>
 
-      {flag === 0 ? (
-        <Text>Loading...</Text>
-      ) : (
-        <View style={[styles.containerMapa]}>
-          <MapScreen localizacoes={locs} />
+          <Text style={[styles.textTitulo, {color: textColor}]}>
+            {trail.trailName}
+          </Text>
+          <Text
+            style={[
+              styles.textSimple,
+              {color: textColor, fontSize: 13, marginBottom: 20},
+            ]}>
+            Braga, Braga
+          </Text>
+          <Text style={[styles.textSimple, {color: textColor}]}>
+            {trail.trailDesc}
+          </Text>
+          <Text
+            style={[
+              styles.textTitulo,
+              {color: textColor, fontSize: 22, marginBottom: 10},
+            ]}>
+            Informação Geral
+          </Text>
+          <View style={styles.gridContainer}>
+            <View style={styles.itemContainer}>
+              <Text style={styles.itemText}>Comprimento do Roteiro</Text>
+              <Text style={styles.itemValue}>{distancia}</Text>
+            </View>
+            <View style={styles.itemContainer}>
+              <Text style={styles.itemText}>Tempo Médio</Text>
+              <Text style={styles.itemValue}>{trail.trailDuration}</Text>
+            </View>
+          </View>
+
+          <View style={styles.gridContainer}>
+            <View style={styles.itemContainer}>
+              <Text style={styles.itemText}>Pontos de Interesse</Text>
+              <Text style={styles.itemValue}>{numerodePins}</Text>
+            </View>
+            <View style={styles.itemContainer}>
+              <Text style={styles.itemText}>Tipo de Roteiro</Text>
+              <Text style={styles.itemValue}>oi</Text>
+            </View>
+          </View>
+
+          <Text
+            style={[
+              styles.textTitulo,
+              {color: textColor, fontSize: 22, marginBottom: 10},
+            ]}>
+            Pontos de Interesse
+          </Text>
+          <View style={[styles.horizontalLine, styles.pinspins]} />
+          <View style={[styles.pinspins]}>
+            {flag2 === 0 ? (
+              <Text>Loading...</Text>
+            ) : (
+              pins.map((pin, index) => (
+                <View key={index}>
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() =>
+                      navigation.navigate('PontoDeInteresseDetail', {
+                        pin: pin,
+                      })
+                    }
+                    style={[styles.itemPontoInteresse]}>
+                    <Text key={index}>{pin.pinName}</Text>
+                  </TouchableOpacity>
+                  <View style={styles.horizontalLine} />
+                </View>
+              ))
+            )}
+          </View>
+          <Text
+            style={[
+              styles.textTitulo,
+              {color: textColor, fontSize: 22, marginBottom: 10},
+            ]}>
+            Mapa
+          </Text>
         </View>
-      )}
-    </ScrollView>
+
+        {flag === 0 ? (
+          <Text>Loading...</Text>
+        ) : (
+          <View style={[styles.containerMapa]}>
+            <MapScreen localizacoes={locs} />
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -672,10 +742,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.25,
   },
   botaoComecar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+
     position: 'absolute',
     bottom: -20,
     right: 20,
-    alignItems: 'flex-end',
     zIndex: 2,
   },
   botaoTopo: {

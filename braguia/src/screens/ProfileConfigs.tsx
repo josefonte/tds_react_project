@@ -22,7 +22,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import {AuthContext} from '../navigation/AuthContext';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {color} from '@rneui/themed/dist/config';
-import {cleanHistoricoUser} from '../redux/actions';
+import {cleanFavoritesUser, cleanHistoricoUser} from '../redux/actions';
 
 export default function ProfileConfigs() {
   const navigation = useNavigation();
@@ -233,7 +233,10 @@ export default function ProfileConfigs() {
               </View>
             </Pressable>
             <Pressable
-              onPress={cleanHistoricoUser}
+              onPress={() => {
+                cleanHistoricoUser();
+                cleanFavoritesUser();
+              }}
               style={({pressed}) => [
                 {
                   backgroundColor: pressed ? redButton : backgroundColor,
@@ -241,7 +244,7 @@ export default function ProfileConfigs() {
               ]}>
               <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
                 <Text style={{fontSize: 16, color: textColor, marginLeft: 10}}>
-                  Limpar dados armaenados
+                  Limpar dados armazenados
                 </Text>
 
                 <Octicons
