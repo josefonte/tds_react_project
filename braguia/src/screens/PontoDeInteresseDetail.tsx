@@ -40,6 +40,7 @@ import EndButton from '../assets/acabarButton.svg';
 import MapScreen from '../components/mapScreen';
 import RNFetchBlob from 'rn-fetch-blob';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
+import { ScreenHeight, ScreenWidth } from '@rneui/themed/dist/config';
 const PontoDeInteresseDetail = ({
   route,
 }: {
@@ -191,7 +192,6 @@ const requestStoragePermission = async () => {
 };
 
   const downloadFile =async(fileUrl) => {
-    setDownloadButton(!downloadButton);
     const granted = await requestStoragePermission();
     if(!granted) return;
     
@@ -238,111 +238,129 @@ const requestStoragePermission = async () => {
 
   }
 
-  const [downloadButton, setDownloadButton] = useState<boolean>(false);
-
-  const clickDownload = (fileUrl) => {
-    setDownloadButton(!downloadButton);
-    downloadFile(fileUrl);
-  };
 
 
   //console.log(media);
   return (
-    <View style={[styles.container, { backgroundColor: backgroundColor }]}>
-      <ScrollView>
-        <View style={{ backgroundColor: isDarkMode ? '#161716' : 'white' }}>
-          <View>
-            <TouchableOpacity style={styles.botaoTopo} onPress={() => navigation.goBack()}>
-              <GoBack />
-            </TouchableOpacity>
-            {/* Botão de download para cada item de mídia */}
-        {media.length > 0 && (
+    <ScrollView>
+      <View
+        style={{
+          backgroundColor: isDarkMode ? '#161716' : 'white',
+        }}>
+        <View>
+          <TouchableOpacity
+            style={styles.botaoTopo}
+            onPress={() => navigation.goBack()}>
+            <GoBack />
+          </TouchableOpacity>
           <ScrollView horizontal={true} style={styles.scrollViewPop}>
-            {media.map((mediaItem, index) => (
-              <View key={index} style={{ marginBottom: 20, alignItems: 'center' }}>
-                {mediaItem.mediaType === 'R' ? (
-                  <TouchableOpacity onPress={() => playSound(mediaItem.mediaFile)}>
-                    <View style={styles.audioRolo}>
-                      <Text style={styles.audioText}>Audio</Text>
-                      <Text style={styles.audioText}>Premium Only</Text>
+            {media.length === 0 ? (
+              <View style={[styles.emptyImagens]}></View>
+            ) : (
+              media.map((mediaItem, index) => (
+                <React.Fragment key={index}>
+                  {mediaItem.mediaType === 'R' ? (
+                    <TouchableOpacity
+                      onPress={() => playSound(mediaItem.mediaFile)}>
+                      <View style={styles.audioRolo}>
+                        <Text style={styles.audioText}>Audio</Text>
+                        <Text style={styles.audioText}>Premium Only</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ) : mediaItem.mediaType === 'I' ? (
+                    <View>
+                      <Image
+                        source={{uri: mediaItem.mediaFile}}
+                        style={styles.imagemRolo}
+                      />
                     </View>
-                  </TouchableOpacity>
-                ) : mediaItem.mediaType === 'I' ? (
-                  <View>
-                    <Image
-                      source={{ uri: mediaItem.mediaFile }}
-                      style={styles.imagemRolo}
-                    />
-                  </View>
-                ) : mediaItem.mediaType === 'V' ? (
-                  <View>
-                    <Video
-                      source={{ uri: mediaItem.mediaFile }}
-                      style={styles.videoRolo}
-                      controls={true}
-                    />
-                  </View>
-                ) : (
-                  <View>
-                    <Text onPress={() => playSound(mediaItem.mediaFile)}>
-                      Unknown media type
-                    </Text>
-                  </View>
-                )}
-
-                <TouchableOpacity onPress={() => clickDownload(mediaItem.mediaFile)}>
+                  ) : mediaItem.mediaType === 'V' ? (
+                    <View>
+                      <Video
+                        source={{uri: mediaItem.mediaFile}}
+                        style={styles.videoRolo}
+                        controls={true}
+                      />
+                    </View>
+                  ) : (
+                    <View>
+                      <Text onPress={() => playSound(mediaItem.mediaFile)}>
+                        Unknown media type
+                      </Text>
+                    </View>
+                  )}
+                <View style={styles.botaoDownload}>
+                  <TouchableOpacity onPress={()=> downloadFile(mediaItem.mediaFile)}>
                   <View style={{
-                    backgroundColor: downloadButton ? titleColor : backgroundColor,
-                    borderColor: downloadButton ? titleColor : colorDiviver,
+                    backgroundColor:  backgroundColor,
+                    borderColor: colorDiviver,
                     borderWidth: 2,
                     height: 50,
                     width: 50,
                     alignItems: 'center',
                     borderRadius: 100,
                     justifyContent: 'center',
-                    marginTop: 10, // Espaço acima do botão de download
                   }}>
-                    <Feather
-                      name={'download'}
-                      size={25}
-                      color={downloadButton ? backgroundColor : colorDiviver}
-                      style={{ paddingHorizontal: 10 }}
-                    />
+                  <Feather
+                    name={'download'}
+                    size={25}
+                    color={ colorDiviver}
+                    style={{ paddingHorizontal: 10 }}
+                  />
                   </View>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
-        )}
+                  </TouchableOpacity>
 
-
-            {/* Condição para botão de começar/finalizar viagem */}
-            {trailsState.viajar === false ? (
-              <TouchableOpacity style={styles.botaoComecar} onPress={() => navigateToLocation(pin.pinLat, pin.pinLng)}>
-                <StartButton />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.botaoComecar} onPress={() => dispatch(acabeiViajar())}>
-                <EndButton />
-              </TouchableOpacity>
+                </View>
+                </React.Fragment>
+              ))
             )}
+          </ScrollView>
+   
 
-            {/* Detalhes do ponto de interesse */}
-            <Text style={[styles.textTitulo, { color: textColor }]}>{pin.pinName}</Text>
-            <Text style={[styles.textSimple, { color: textColor, fontSize: 13, marginBottom: 20 }]}>Braga, Braga</Text>
-            <Text style={[styles.textSimple, { color: textColor }]}>{pin.pinDesc}</Text>
-            <Text style={[styles.textTitulo, { color: textColor, fontSize: 22, marginBottom: 10 }]}>Mapa</Text>
-          </View>
+          {trailsState.viajar === false ? (
+            <TouchableOpacity
+              style={styles.botaoComecar}
+              onPress={() => navigateToLocation(pin.pinLat, pin.pinLng)}>
+              <StartButton />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.botaoComecar}
+              onPress={() => dispatch(acabeiViajar())}>
+              <EndButton />
+            </TouchableOpacity>
+          )}
         </View>
+        <Text style={[styles.textTitulo, {color: textColor}]}>
+          {pin.pinName}
+        </Text>
+        <Text
+          style={[
+            styles.textSimple,
+            {color: textColor, fontSize: 13, marginBottom: 20},
+          ]}>
+          Braga, Braga
+        </Text>
+        <Text style={[styles.textSimple, {color: textColor}]}>
+          {pin.pinDesc}
+        </Text>
+        <Text
+          style={[
+            styles.textTitulo,
+            {color: textColor, fontSize: 22, marginBottom: 10},
+          ]}>
+          Mapa
+        </Text>
+      </View>
 
-        {/* Componente do mapa */}
-        <View style={[styles.containerMapa]}>
-          <MapScreen localizacoes={[[pin.pinLat, pin.pinLng]]} />
-        </View>
-      </ScrollView>
-    </View>
+      <View style={[styles.containerMapa]}>
+        <MapScreen localizacoes={[[pin.pinLat, pin.pinLng]]} />
+      </View>
+    </ScrollView>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -381,21 +399,27 @@ const styles = StyleSheet.create({
     left: 10,
     zIndex: 2,
   },
+  botaoDownload: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 2,
+  },
   scrollViewPop: {
     flexDirection: 'row',
     zIndex: 1,
   },
   imagemRolo: {
-    height: 190,
-    width: 395,
+    height: 225,
+    width: ScreenWidth,
   },
   videoRolo: {
-    height: 190,
-    width: 395,
+    height: 225,
+    width: ScreenWidth,
   },
   audioRolo: {
-    height: 190,
-    width: 395,
+    height: 225,
+    width: ScreenWidth,
     backgroundColor: 'grey',
   },
   audioText: {
