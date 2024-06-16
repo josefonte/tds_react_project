@@ -126,10 +126,9 @@ export default function ProfileConfigs() {
             },
           ]
         );
-      } else {
-        setIsEnabled(false);
-      }
+      } 
     }
+    setIsEnabled(!isEnabled);
   };
 
   // Função para verificar e atualizar o estado do slider
