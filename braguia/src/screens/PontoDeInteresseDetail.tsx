@@ -13,6 +13,7 @@ import {
   ScrollView,
   PermissionsAndroid,
   Platform,
+  Linking,
   Dimensions,
 } from 'react-native';
 import {Media, Pin, Trail} from '../model/model';
@@ -28,7 +29,6 @@ import Sound from 'react-native-sound';
 import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
-import {Linking} from 'react-native';
 import {aViajar, acabeiViajar} from './../redux/actions';
 
 // SVG
@@ -38,6 +38,7 @@ import EndButton from '../assets/acabarButton.svg';
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';
+import RNFS from 'react-native-fs';
 import RNFetchBlob from 'rn-fetch-blob';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import { ScreenHeight, ScreenWidth } from '@rneui/themed/dist/config';
@@ -149,7 +150,30 @@ const PontoDeInteresseDetail = ({
     const fetchMedia = async () => {
       try {
         const mediaData = await getMediaFromPin(pin.pinId);
-        setMedia(mediaData);
+
+        const localMediaData = await Promise.all(
+          mediaData.map(async (mediaItem) => {
+            const downloadDir = RNFS.DownloadDirectoryPath;
+            const filePath = `${downloadDir}/${mediaItem.mediaFile.split('/').pop()}`;
+            console.log("O ficheiro se estiver downloaded está com este caminho:",filePath);
+            const fileExists = await RNFS.exists(filePath);
+
+            if (fileExists) {
+              console.log("Entrei na condição se existe o ficheiro existe nos downloads");
+              const updatedMediaItem = {...mediaItem, DownloadedMediaFile: `${filePath}`};
+              console.log('FilePath:', filePath); // Log the updated media item
+              console.log('Updated media item:', updatedMediaItem); // Log the updated media item
+              console.log("media api url:", mediaItem.mediaFile);
+              console.log("Downloaded media item", mediaItem.DownloadedMediaFile); // Log the downloaded media item
+              return updatedMediaItem;
+            }
+            return mediaItem;
+          })
+        );
+
+        console.log('Local media data:', localMediaData); // Log the local media data
+
+        setMedia(localMediaData);
       } catch (error) {
         console.error('Error fetching media:', error);
       }
@@ -161,35 +185,43 @@ const PontoDeInteresseDetail = ({
     }
   }, [pin.pinId]);
 
+  useEffect(() => {
+    console.log("O estado media foi atualizado:", media);
+    media.map((mediaItem) => {
+      console.log("aaaa", mediaItem.mediaFile);
+      console.log("bbbb", mediaItem.DownloadedMediaFile);
+    });
+
+  }, [media]);
 
 
  
 //------------------- Download ---------------------------- 
 
-const requestStoragePermission = async () => {
-  try{
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-      {
-        title: 'Permissão para download',
-        message: 'O BraGuia precisa de permissão para realizar o Download.',
-        buttonNeutral: 'Pergunte-me depois',
-        buttonNegative: 'Cancelar',
-        buttonPositive: 'OK',
+  const requestStoragePermission = async () => {
+    try{
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Permissão para download',
+          message: 'O BraGuia precisa de permissão para realizar o Download.',
+          buttonNeutral: 'Pergunte-me depois',
+          buttonNegative: 'Cancelar',
+          buttonPositive: 'OK',
+        }
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Storage permission granted');
+        return true;
+      } else {
+        console.log('Storage permission denied');
+        return false;
       }
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('Storage permission granted');
-      return true;
-    } else {
-      console.log('Storage permission denied');
+    } catch (err) {
+      console.warn(err);
       return false;
     }
-  } catch (err) {
-    console.warn(err);
-    return false;
-  }
-};
+  };
 
   const downloadFile =async(fileUrl) => {
     const granted = await requestStoragePermission();
@@ -220,21 +252,29 @@ const requestStoragePermission = async () => {
       android: configfb,
     });
 
-    RNFetchBlob.config(configOptions || {})
-      .fetch('GET', fileUrl, {})
-      .then(res => {
-        console.log('Download concluído');
-        if (Platform.OS === 'ios') {
-          RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
-          RNFetchBlob.ios.previewDocument(configfb.path);
-        }
-        if (Platform.OS === 'android') {
-          console.log("Arquivo baixado");
-        }
-      })
-      .catch(e => {
-        console.log('Falha no download', e);
-      });
+    try {
+      const res = await RNFetchBlob.config(configOptions || {}).fetch('GET', fileUrl, {});
+  
+      console.log('Download concluído');
+  
+      let downloadedFilePath;
+
+      if (Platform.OS === 'ios') {
+        await RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
+        downloadedFilePath = configfb.path;
+        RNFetchBlob.ios.previewDocument(configfb.path);
+      } else if (Platform.OS === 'android') {
+        console.log('Arquivo baixado');
+        downloadedFilePath = res.path(); // Obter o caminho do arquivo baixado no Android
+      }
+
+      console.log('Caminho do arquivo baixado:', downloadedFilePath);
+
+
+
+    } catch (e) {
+      console.log('Falha no download', e);
+    }
 
   }
 
@@ -256,29 +296,31 @@ const requestStoragePermission = async () => {
               <View style={[styles.emptyImagens]}></View>
             ) : (
               media.map((mediaItem, index) => (
-                <View key={index} style={{ flexDirection: 'column', alignItems: 'center'}}>
+                <View key={index} style={{ flexDirection: 'column', alignItems: 'center' }}>
                   {mediaItem.mediaType === 'R' ? (
                     <TouchableOpacity onPress={() => playSound(mediaItem.mediaFile)}>
                       <View style={styles.audioRolo}>
-                        <Text style={styles.audioText}>Audio</Text>
-                        <Text style={styles.audioText}>Premium Only</Text>
+                        <Text style={styles.audioText}>Áudio</Text>
+                        <Text style={styles.audioText}>Apenas Premium</Text>
                       </View>
                     </TouchableOpacity>
                   ) : mediaItem.mediaType === 'I' ? (
                     <Image
-                      source={{ uri: mediaItem.mediaFile }}
+                      source={{ uri: mediaItem.DownloadedMediaFile ? `file://${mediaItem.DownloadedMediaFile}` : mediaItem.mediaFile }}
                       style={styles.imagemRolo}
-                      />
+                    />
                   ) : mediaItem.mediaType === 'V' ? (
                     <Video
-                    source={{ uri: mediaItem.mediaFile }}
+                      source={{ uri: mediaItem.mediaFile }}
                       style={styles.videoRolo}
                       controls={true}
                     />
                   ) : (
-                    <View>
+                    <View style={styles.imagemRolo}>
                       <Text onPress={() => playSound(mediaItem.mediaFile)}>
-                        Unknown media type
+                        <Text style={styles.unknown}>
+                          Tipo de mídia desconhecido
+                        </Text>
                       </Text>
                     </View>
                   )}
@@ -438,6 +480,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     padding: 10,
     borderRadius: 10,
+  },
+  unknown:{
+    fontFamily: 'Roboto',
+    fontSize: 20,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    marginTop: 50,
   },
 });
 
