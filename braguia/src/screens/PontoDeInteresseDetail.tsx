@@ -254,66 +254,46 @@ const requestStoragePermission = async () => {
             <GoBack />
           </TouchableOpacity>
           <ScrollView horizontal={true} style={styles.scrollViewPop}>
-            {media.length === 0 ? (
-              <View style={[styles.emptyImagens]}></View>
-            ) : (
-              media.map((mediaItem, index) => (
-                <React.Fragment key={index}>
-                  {mediaItem.mediaType === 'R' ? (
-                    <TouchableOpacity
-                      onPress={() => playSound(mediaItem.mediaFile)}>
-                      <View style={styles.audioRolo}>
-                        <Text style={styles.audioText}>Audio</Text>
-                        <Text style={styles.audioText}>Premium Only</Text>
+            <View style={styles.scrollViewPop}>
+              {media.length === 0 ? (
+                <View style={[styles.emptyImagens]}></View>
+              ) : (
+                media.map((mediaItem, index) => (
+                  <React.Fragment key={index}>
+                    {mediaItem.mediaType === 'R' ? (
+                      <TouchableOpacity
+                        onPress={() => playSound(mediaItem.mediaFile)}>
+                        <View style={styles.audioRolo}>
+                          <Text style={styles.audioText}>Audio</Text>
+                          <Text style={styles.audioText}>Premium Only</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ) : mediaItem.mediaType === 'I' ? (
+                      <View>
+                        <Image
+                          source={{uri: mediaItem.mediaFile}}
+                          style={styles.imagemRolo}
+                        />
                       </View>
-                    </TouchableOpacity>
-                  ) : mediaItem.mediaType === 'I' ? (
-                    <View>
-                      <Image
-                        source={{uri: mediaItem.mediaFile}}
-                        style={styles.imagemRolo}
-                      />
-                    </View>
-                  ) : mediaItem.mediaType === 'V' ? (
-                    <View>
-                      <Video
-                        source={{uri: mediaItem.mediaFile}}
-                        style={styles.videoRolo}
-                        controls={true}
-                      />
-                    </View>
-                  ) : (
-                    <View>
-                      <Text onPress={() => playSound(mediaItem.mediaFile)}>
-                        Unknown media type
-                      </Text>
-                    </View>
-                  )}
-                <View style={styles.botaoDownload}>
-                  <TouchableOpacity onPress={()=> downloadFile(mediaItem.mediaFile)}>
-                  <View style={{
-                    backgroundColor:  backgroundColor,
-                    borderColor: colorDiviver,
-                    borderWidth: 2,
-                    height: 50,
-                    width: 50,
-                    alignItems: 'center',
-                    borderRadius: 100,
-                    justifyContent: 'center',
-                  }}>
-                  <Feather
-                    name={'download'}
-                    size={25}
-                    color={ colorDiviver}
-                    style={{ paddingHorizontal: 10 }}
-                  />
-                  </View>
-                  </TouchableOpacity>
-
-                </View>
-                </React.Fragment>
-              ))
-            )}
+                    ) : mediaItem.mediaType === 'V' ? (
+                      <View>
+                        <Video
+                          source={{uri: mediaItem.mediaFile}}
+                          style={styles.videoRolo}
+                          controls={true}
+                          />
+                      </View>
+                    ) : (
+                      <View>
+                        <Text onPress={() => playSound(mediaItem.mediaFile)}>
+                          Unknown media type
+                        </Text>
+                      </View>
+                    )}
+                  </React.Fragment>
+                ))
+              )}
+            </View>
           </ScrollView>
    
 

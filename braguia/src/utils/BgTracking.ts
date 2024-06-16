@@ -174,7 +174,7 @@ const useBackgroundGeolocationTracker = () => {
                     PushNotification.localNotification({
                         channelId: "notificacaoPins",
                         title: 'Triggered Point Detected',
-                        message: "Point (${ponto.lat}, ${ponto.lng}) is close ->${ponto.pin}",
+                        message: `Point (${ponto.lat}, ${ponto.lng}) is close ->${ponto.pin?.pinId}`,
                         actions: ["View"],
                     });
                 }
