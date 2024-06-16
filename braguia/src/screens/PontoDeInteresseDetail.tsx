@@ -32,16 +32,13 @@ import database from '../model/database';
 import {aViajar, acabeiViajar} from './../redux/actions';
 
 // SVG
-import GoBack from '../assets/goBack.svg';
-import StartButton from '../assets/startButton.svg';
-import EndButton from '../assets/acabarButton.svg';
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';
 import RNFS from 'react-native-fs';
 import RNFetchBlob from 'rn-fetch-blob';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
-import { ScreenHeight, ScreenWidth } from '@rneui/themed/dist/config';
+import {ScreenHeight, ScreenWidth} from '@rneui/themed/dist/config';
 import EncryptedStorage from 'react-native-encrypted-storage';
 const PontoDeInteresseDetail = ({
   route,
@@ -65,6 +62,37 @@ const PontoDeInteresseDetail = ({
   const trailsState = useSelector((state: RootState) => state.trails);
   const dispatch = useDispatch();
 
+  const ButtonStartStop = (start: boolean) => {
+    return (
+      <View
+        style={{
+          width: start ? 125 : 115,
+          height: 50,
+          backgroundColor: start ? '#355228' : '#612828',
+          borderRadius: 15,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 5,
+          paddingHorizontal: 10,
+        }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: 600,
+            color: "#FEFAE0",
+            paddingLeft: 5,
+          }}>
+          {start ? 'Começar' : 'Acabar'}
+        </Text>
+        <MaterialIcons
+          name={start ? 'play-outline' : 'stop'}
+          size={22}
+          color="#FEFAE0"
+        />
+      </View>
+    );
+  };
 
   // Abrir Maps
   const navigateToLocation = (latitude: number, longitude: number) => {
@@ -228,15 +256,16 @@ const PontoDeInteresseDetail = ({
     }
   };
 
-  const downloadFile =async(fileUrl) => {
+  const downloadFile = async fileUrl => {
     const granted = await requestStoragePermission();
-    if(!granted) return;
-    
+    if (!granted) return;
+
     console.log(`Iniciando download do arquivo: ${fileUrl}`);
-    const { dirs } = RNFetchBlob.fs;
-    const dirToSave = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+    const {dirs} = RNFetchBlob.fs;
+    const dirToSave =
+      Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
     const fileName = fileUrl.split('/').pop();
-    
+
     const configfb = {
       fileCache: true,
       addAndroidDownloads: {
@@ -246,10 +275,10 @@ const PontoDeInteresseDetail = ({
         title: fileName,
         path: `${dirToSave}/${fileName}`,
         mime: 'application/octet-stream', // Fallback MIME type
-        description: 'Downloading file.'
+        description: 'Downloading file.',
       },
       path: `${dirToSave}/${fileName}`,
-      mime: 'application/octet-stream'
+      mime: 'application/octet-stream',
     };
 
     const configOptions = Platform.select({
@@ -284,128 +313,180 @@ const PontoDeInteresseDetail = ({
 
 
   return (
-    <View style={[styles.container, { backgroundColor: isDarkMode ? '#161716' : 'white' }]}>
-      <ScrollView>
+    <View style={[styles.container, {backgroundColor: backgroundColor}]}>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View>
-        <View style={{ backgroundColor: isDarkMode ? '#161716' : 'white' }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-            <TouchableOpacity style={styles.botaoTopo} onPress={() => navigation.goBack()}>
-              <GoBack />
-            </TouchableOpacity>
-          </View>
-  
-          <ScrollView horizontal={true} style={styles.scrollViewPop}>
-            {media.length === 0 || isPremium === false ? (
-              <View style={[styles.emptyImagens]}>
-                <Text>Media for Premium Only</Text>
-              </View>
-            ) : (
-              media.map((mediaItem, index) => (
-                <View key={index} style={{ flexDirection: 'column', alignItems: 'center' }}>
-                  {mediaItem.mediaType === 'R' ? (
-                    <TouchableOpacity onPress={() => playSound(mediaItem.DownloadedMediaFile || mediaItem.mediaFile)}>
-                      <View style={styles.audioRolo}>
-                        <Text style={styles.audioText}>Áudio</Text>
-                        <Text style={styles.audioText}>Apenas Premium</Text>
+          <View style={{backgroundColor: backgroundColor}}>
+            <View
+              style={{
+                position: 'absolute',
+                top: 20,
+                left: 15,
+                zIndex: 2,
+              }}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View
+                  style={{
+                    zIndex: 2,
+                    borderRadius: 100,
+                    backgroundColor: backgroundColor,
+                    width: 48,
+                    height: 48,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Octicons
+                    name={'chevron-left'}
+                    size={28}
+                    color={colorDiviver}
+                    style={{paddingRight: 3}}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView horizontal={true} style={styles.scrollViewPop}>
+              {media.length === 0 || isPremium === false ? (
+                <View style={[styles.emptyImagens]}>
+                  <Text>Media Premium Only</Text>
+                </View>
+              ) : (
+                media.map((mediaItem, index) => (
+                  <View
+                    key={index}
+                    style={{flexDirection: 'column', alignItems: 'center' }}>
+                    {mediaItem.mediaType === 'R' ? (
+                      <TouchableOpacity
+                        onPress={() => playSound(mediaItem.DownloadedMediaFile || mediaItem.mediaFile)}>
+                        <View style={styles.audioRolo}>
+                          <Text style={styles.audioText}>Áudio</Text>
+                          <Text style={styles.audioText}>Apenas Premium</Text>
                         {mediaItem.DownloadedMediaFile && (
                           <Text style={styles.textSimple}>Arquivo baixado</Text>
-                          )}
+                            )}
                       </View>
-                    </TouchableOpacity>
-                  ) : mediaItem.mediaType === 'I' ? (
-                    <View>
+                      </TouchableOpacity>
+                    ) : mediaItem.mediaType === 'I' ? (
+                      <View>
                       <Image
-                        source={{ uri: mediaItem.DownloadedMediaFile ? `file://${mediaItem.DownloadedMediaFile}` : mediaItem.mediaFile }}
-                        style={styles.imagemRolo}
+                          source={{uri: mediaItem.DownloadedMediaFile ? `file://${mediaItem.DownloadedMediaFile}` : mediaItem.mediaFile}}
+                          style={styles.imagemRolo}
                       />
-                      {mediaItem.DownloadedMediaFile && (
+                        {mediaItem.DownloadedMediaFile && (
                         <Text style={styles.textSimple}>Arquivo baixado</Text>
                       )}
                     </View>
                   ) : mediaItem.mediaType === 'V' ? (
-                    <View>
+                      <View>
                       <Video
-                        source={{ uri: mediaItem.DownloadedMediaFile || mediaItem.mediaFile }}
-                        style={styles.videoRolo}
-                        controls={true}
-                      />
-                      {mediaItem.DownloadedMediaFile && (
+                            source={{uri: mediaItem.DownloadedMediaFile || mediaItem.mediaFile}}
+                          style={styles.videoRolo}
+                          controls={true}
+                        />
+                        {mediaItem.DownloadedMediaFile && (
                         <Text style={styles.downloadedText}>Arquivo baixado</Text>
                       )}
                     </View>
                   ) : (
-                    <View style={styles.imagemRolo}>
-                      <Text onPress={() => playSound(mediaItem.mediaFile)}>
-                        <Text style={styles.unknown}>
+                      <View style={styles.imagemRolo}>
+                        <Text onPress={() => playSound(mediaItem.mediaFile)}>
+                          <Text style={styles.unknown}>
                           Tipo de mídia desconhecido
                         </Text>
-                      </Text>
-                    </View>
-                  )}
-                  <View style={styles.botaoDownload}>
-                    <TouchableOpacity onPress={() => downloadFile(mediaItem.mediaFile)} >
-                      <View
-                        style={{
-                          backgroundColor: backgroundColor,
-                          borderColor: colorDiviver,
-                          borderWidth: 2,
-                          height: 50,
-                          width: 50,
-                          alignItems: 'center',
-                          borderRadius: 100,
-                          justifyContent: 'center',
-                        }}>
-                        <Feather
-                          name={'download'}
-                          size={25}
-                          color={colorDiviver}
-                          style={{ paddingHorizontal: 10 }}
-                          />
+                        </Text>
                       </View>
-                    </TouchableOpacity>
+                    )}
+                    <View style={styles.botaoDownload}>
+                      <TouchableOpacity
+                        onPress={() => downloadFile(mediaItem.mediaFile)}>
+                        <View
+                          style={{
+                            backgroundColor: backgroundColor,
+                            borderColor: colorDiviver,
+                            borderWidth: 2,
+                            height: 50,
+                            width: 50,
+                            alignItems: 'center',
+                            borderRadius: 100,
+                            justifyContent: 'center',
+                          }}>
+                          <Feather
+                            name={'download'}
+                            size={25}
+                            color={colorDiviver}
+                            style={{paddingHorizontal: 10}}
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              ))
+                ))
+              )}
+            </ScrollView>
+
+            {trailsState.viajar === false ? (
+              <TouchableOpacity
+                style={styles.botaoComecar}
+                onPress={() => navigateToLocation(pin.pinLat, pin.pinLng)}>
+                {ButtonStartStop(true)}
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.botaoComecar}
+                onPress={() => dispatch(acabeiViajar())}>
+                {ButtonStartStop(false)}
+              </TouchableOpacity>
             )}
-          </ScrollView>
-  
-          {trailsState.viajar === false ? (
-            <TouchableOpacity
-            style={styles.botaoComecar}
-            onPress={() => navigateToLocation(pin.pinLat, pin.pinLng)}>
-              <StartButton />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-            style={styles.botaoComecar}
-            onPress={() => dispatch(acabeiViajar())}>
-              <EndButton />
-            </TouchableOpacity>
-          )}
           </View>
 
-          <Text style={[styles.textTitulo, { color: textColor }]}>
+          <Text style={[styles.textTitulo, {color: titleColor}]}>
             {pin.pinName}
           </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: 3,
+              alignContent: 'center',
+              alignItems: 'center',
+              marginTop: 5,
+              marginBottom: 20,
+            }}>
+            <Ionicons
+              name={'location-outline'}
+              size={16}
+              color={titleColor}
+              style={{marginLeft: 15}}
+            />
+            <Text style={[{color: titleColor, fontSize: 15}]}>Braga</Text>
+          </View>
+
           <Text
             style={[
-              styles.textSimple,
-              { color: textColor, fontSize: 13, marginBottom: 20 },
+              {
+                fontSize: 15,
+                color: textColor,
+                textAlign: 'justify',
+                paddingHorizontal: 15,
+                lineHeight: 20,
+              },
             ]}>
-            Braga, Braga
-          </Text>
-          <Text style={[styles.textSimple, { color: textColor }]}>
             {pin.pinDesc}
           </Text>
           <Text
             style={[
-              styles.textTitulo,
-              { color: textColor, fontSize: 22, marginBottom: 10 },
+              {
+                color: titleColor,
+                fontSize: 22,
+                fontWeight: 'bold',
+                marginLeft: 15,
+                marginBottom: 20,
+                marginTop: 20,
+              },
             ]}>
             Mapa
           </Text>
         </View>
-  
+
         <View style={[styles.containerMapa]}>
           <MapScreen localizacoes={[[pin.pinLat, pin.pinLng]]} />
         </View>
@@ -413,8 +494,6 @@ const PontoDeInteresseDetail = ({
     </View>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -424,7 +503,8 @@ const styles = StyleSheet.create({
     marginTop: 100,
   },
   containerMapa: {
-    height: 700,
+    marginHorizontal: 15,
+    height: 350,
   },
   textSimple: {
     marginLeft: 10,
@@ -432,9 +512,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textTitulo: {
-    marginTop: 20,
-    marginLeft: 10,
-    fontSize: 28,
+    marginTop: 30,
+    marginLeft: 15,
+    fontSize: 30,
     fontFamily: 'Roboto',
     lineHeight: 32,
     fontWeight: 'bold',

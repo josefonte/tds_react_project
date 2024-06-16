@@ -249,7 +249,7 @@ export default function Explore() {
         <Text style={[styles.textTitulo, {color: textColor, marginLeft: 15}]}>
           Sugestões
         </Text>
-        <View style={{marginHorizontal: 10}}>
+        <View style={{marginHorizontal: 15}}>
           {trails && trails.length > 0 ? (
             trails.map((trail: Trail, index: number) => (
               <View key={index}>

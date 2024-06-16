@@ -10,6 +10,10 @@ import {Q} from '@nozbe/watermelondb';
 interface PopularTrailProps {
   trail: Trail;
 }
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Octicons from 'react-native-vector-icons/Octicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Feather from 'react-native-vector-icons/Feather';
 
 const PopularTrail: React.FunctionComponent<PopularTrailProps> = ({trail}) => {
   console.log('Carreguei imagem popular');
@@ -147,21 +151,62 @@ const PopularTrail: React.FunctionComponent<PopularTrailProps> = ({trail}) => {
         <View style={[styles.viewTextoPop]}>
           <Text style={[styles.textoPop]}>{trail.trailName}</Text>
           <View style={styles.trailInfoContainer}>
-            <Text style={[styles.textoPop2, {marginLeft: 30}]}>
-              {trail.trailDuration}
-            </Text>
-            <Text style={[styles.textoPop2, {marginLeft: 85}]}>
-              {distancia}
-            </Text>
+            <View style={[styles.itemBar]}>
+              <Ionicons name="time-outline" size={13} color="black" />
+              <View></View>
+              <Text style={styles.textoPop2}> {trail.trailDuration}</Text>
+              <Text
+                style={{
+                  fontSize: 8,
+                  color: 'black',
+                  fontWeight: 'normal',
+                  alignSelf: 'flex-end',
+                  paddingBottom: 1,
+                }}>
+                min
+              </Text>
+            </View>
+            <View
+              style={{height: '100%', width: 1, backgroundColor: 'black'}}
+            />
+            <View style={[styles.itemBar]}>
+              <Ionicons name="footsteps-outline" size={13} color="black" />
 
-            <Text style={[styles.textoPop2, {marginLeft: 135}]}>
-              {numerodePins}
-            </Text>
+              <Text style={styles.textoPop2}> {distancia}</Text>
+              <Text
+                style={{
+                  fontSize: 8,
+                  color: 'black',
+                  fontWeight: 'normal',
+                  alignSelf: 'flex-end',
+                  paddingBottom: 1,
+                }}>
+                km
+              </Text>
+            </View>
+            <View
+              style={{height: '100%', width: 1, backgroundColor: 'black'}}
+            />
+            <View style={[styles.itemBar]}>
+              <Ionicons name="location-outline" size={13} color="black" />
 
-            <Text style={[styles.textoPop2, {marginLeft: 170}]}>
-              {changeDifficulty(trail.trailDifficulty)}
-            </Text>
-            <TrailInfo height={18} width={200} marginTop={10} marginLeft={10} />
+              <Text style={styles.textoPop2}> {numerodePins}</Text>
+            </View>
+            <View
+              style={{height: '100%', width: 1, backgroundColor: 'black'}}
+            />
+            <View style={[styles.itemBar]}>
+              <Octicons
+                name="flame"
+                size={12}
+                color="black"
+                style={{marginRight: 3}}
+              />
+
+              <Text style={styles.textoPop2}>
+                {changeDifficulty(trail.trailDifficulty)}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -182,22 +227,35 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   textoPop: {
-    fontSize: 20,
+    fontSize: 22,
     marginLeft: 10,
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     color: '#FEFAE0',
   },
   trailInfoContainer: {
-    flexDirection: 'row', // To ensure the text and TrailInfo SVG are aligned horizontally
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop: 10,
+    marginLeft: 10,
+    paddingHorizontal: 5,
+    height: 20,
+    width: 245,
+    borderRadius: 5,
+    backgroundColor: 'white',
+  },
+  itemBar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    paddingHorizontal: 3,
   },
   textoPop2: {
-    position: 'absolute',
     fontSize: 12,
     color: 'black',
-    marginTop: 10,
     fontWeight: 'bold',
-    zIndex: 1, // Ensure the text appears on top of the SVG
   },
   popular: {
     width: 300,
@@ -205,7 +263,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   view: {
-    marginLeft: 10,
+    marginRight: 10,
     marginBottom: 20,
   },
   gradient: {

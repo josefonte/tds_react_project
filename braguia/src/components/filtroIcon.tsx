@@ -88,7 +88,7 @@ const FiltroIcon: React.FC<{
 };
 
 const styles = StyleSheet.create({
-  container: {marginLeft: 10},
+  container: {marginRight: 10},
   image: {
     width: 80,
     height: 80,

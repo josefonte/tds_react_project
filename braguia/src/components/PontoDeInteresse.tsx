@@ -30,6 +30,7 @@ const PontoDeInteresse: React.FunctionComponent<PontoDeInteresseProps> = ({
 }) => {
   console.log('Carreguei ponto de interesse popular');
   const trailsState = useSelector((state: RootState) => state.trails);
+
   const [media, setMedia] = useState<Media[]>([]);
 
   const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   view: {
-    marginLeft: 15,
+    marginRight: 10,
     marginBottom: 20,
   },
   gradient: {
