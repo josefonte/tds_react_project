@@ -1,5 +1,5 @@
-import {Database, Model} from '@nozbe/watermelondb';
-import {field, readonly, relation} from '@nozbe/watermelondb/decorators';
+import { Database, Model } from '@nozbe/watermelondb';
+import { field, readonly, relation } from '@nozbe/watermelondb/decorators';
 
 class User extends Model {
   static table = 'users';
@@ -67,7 +67,7 @@ class RelatedTrail extends Model {
 
   @field('value') value!: string;
   @field('attrib') attrib!: string;
-  @relation('trails', 'trail_id') trail!: Trail;
+  @field('rel_trail_id') trail!: number;
 }
 
 class RelatedPin extends Model {
@@ -75,7 +75,7 @@ class RelatedPin extends Model {
 
   @field('value') value!: string;
   @field('attrib') attrib!: string;
-  @relation('pins', 'pin_id') pin!: Pin;
+  @field('rel_pin_id') pin!: number;
 }
 
 class Socials extends Model {

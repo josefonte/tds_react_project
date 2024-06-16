@@ -127,8 +127,6 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     fontSize: 18,
-    borderBottomWidth: 1,
-    borderStyle: 'solid',
   },
 
   buttonIniciar: {

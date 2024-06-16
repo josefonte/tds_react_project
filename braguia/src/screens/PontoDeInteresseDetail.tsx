@@ -42,6 +42,7 @@ import RNFS from 'react-native-fs';
 import RNFetchBlob from 'rn-fetch-blob';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import { ScreenHeight, ScreenWidth } from '@rneui/themed/dist/config';
+import EncryptedStorage from 'react-native-encrypted-storage';
 const PontoDeInteresseDetail = ({
   route,
 }: {
@@ -143,14 +144,14 @@ const PontoDeInteresseDetail = ({
   }
 
   const [media, setMedia] = useState<Media[]>([]);
-
+  const [isPremium, setIsPremium] = useState<boolean>(false);
   const prevPinIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     const fetchMedia = async () => {
       try {
         const mediaData = await getMediaFromPin(pin.pinId);
-
+        
         const localMediaData = await Promise.all(
           mediaData.map(async (mediaItem) => {
             const downloadDir = RNFS.DownloadDirectoryPath;
@@ -170,6 +171,13 @@ const PontoDeInteresseDetail = ({
         console.log('Local media data:', localMediaData); // Log the local media data
 
         setMedia(localMediaData);
+        
+        const tipo = await EncryptedStorage.getItem('userType');
+        if (tipo === "Premium"){
+          console.log("[TIPO USER] SET PREMIUM");
+          setIsPremium(true);
+        }
+
       } catch (error) {
         console.error('Error fetching media:', error);
       }
@@ -287,8 +295,10 @@ const PontoDeInteresseDetail = ({
           </View>
   
           <ScrollView horizontal={true} style={styles.scrollViewPop}>
-            {media.length === 0 ? (
-              <View style={[styles.emptyImagens]}></View>
+            {media.length === 0 || isPremium === false ? (
+              <View style={[styles.emptyImagens]}>
+                <Text>Media for Premium Only</Text>
+              </View>
             ) : (
               media.map((mediaItem, index) => (
                 <View key={index} style={{ flexDirection: 'column', alignItems: 'center' }}>

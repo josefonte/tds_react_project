@@ -15,7 +15,7 @@ import Login from './screens/Login';
 import Support from './screens/Support'; // Import the Support screen component
 import TrailDetail from './screens/TrailDetail';
 import PontoDeInteresseDetail from './screens/PontoDeInteresseDetail';
-import {Provider, useDispatch} from 'react-redux';
+import {Provider, useDispatch, useSelector} from 'react-redux';
 import store from './redux/store';
 
 import {createStackNavigator} from '@react-navigation/stack';

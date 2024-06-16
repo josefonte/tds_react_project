@@ -12,11 +12,12 @@ import {
   App,
 } from './../model/model'; // Adjust the import path as needed
 import database from './../model/database'; // Adjust the import path as needed
-import {Q} from '@nozbe/watermelondb';
+import { Q } from '@nozbe/watermelondb';
 import axios from 'axios';
-import {API_URL} from '../utils/constants';
+import { API_URL } from '../utils/constants';
 
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { useDispatch } from 'react-redux';
 
 export const fetchTrailsRequest = () => {
   console.log('Dispatching fetchTrailsRequest action...');
@@ -54,11 +55,17 @@ export const acabeiViajar = () => {
   };
 };
 
-export const addHistorico = (t: Trail) => {
-  console.log('Dispatching addHistorico action...');
+export const comecarViajar = () => {
+  console.log('Dispatching aViajar action (start)...');
   return {
-    type: 'ADICIONEI_AO_HISTORICO_VIAGEM',
-    payload: t,
+    type: 'COMECEI_A_VIAJAR',
+  };
+};
+
+export const premiumUpdate = () => {
+  console.log('Updating Premium User...');
+  return {
+    type: 'EU_SOU_PREMIUM',
   };
 };
 
@@ -92,16 +99,17 @@ export const fetchTrails = async () => {
               newTrail.trailDifficulty = trailData.trail_difficulty;
               newTrail.trailImg = trailData.trail_img;
             });
-
           for (const relatedTrail of trailData.rel_trail) {
-            await database.collections
+            const teste = await database.collections
               .get<RelatedTrail>('related_trails')
               .create((relTrail: any) => {
                 relTrail.value = relatedTrail.value;
                 relTrail.attrib = relatedTrail.attrib;
-                relTrail.trail.set(newTrail);
+                relTrail.trail = relatedTrail.trail;
               });
+            console.log(teste)
           }
+
 
           for (const edgeData of trailData.edges) {
             const newEdge = await database.collections
@@ -139,13 +147,14 @@ export const fetchTrails = async () => {
                 });
 
               for (const relPinData of pinData.rel_pin || []) {
-                await database.collections
+                const teste2 = await database.collections
                   .get<RelatedPin>('related_pins')
                   .create((relPin: any) => {
                     relPin.value = relPinData.value;
                     relPin.attrib = relPinData.attrib;
-                    relPin.pin.set(newPin);
+                    relPin.pin = newPin.id;
                   });
+                console.log(teste2);
               }
 
               for (const mediaData of pinData.media || []) {
@@ -315,6 +324,8 @@ export const fetchUser = async (cookiesHeader: any) => {
     if (user.username === '') {
       throw new Error('User not found');
     }
+    console.log("NO WAY");
+    await EncryptedStorage.setItem('userType', user.user_type);
 
     const existingUsers = await database.collections
       .get<User>('users')
@@ -346,7 +357,6 @@ export const fetchUser = async (cookiesHeader: any) => {
               newUser.historico = '';
               newUser.favorites = '';
             });
-
           console.log('[FETCH USER] - Add new user : ', newUser);
         } catch (createUserError) {
           console.log('Error creating new user', createUserError);

@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container2: {
-    height: '30%',
+    height: 300,
     width: '100%',
     justifyContent: 'center',
     borderRadius: 20,
