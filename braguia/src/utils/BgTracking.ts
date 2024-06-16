@@ -60,7 +60,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 function triggeredPointOrNot(lat1: number, lon1: number, lat2: number, lon2: number): boolean {
     const distance = calculateDistance(lat1, lon1, lat2, lon2);
-    return distance < 8955200; // Geofencing radius
+    return distance < 5000; // Geofencing radius
 }
 
 const useBackgroundGeolocationTracker = () => {
@@ -144,11 +144,11 @@ const useBackgroundGeolocationTracker = () => {
                 Platform.OS === 'android'
                     ? BackgroundGeolocation.ACTIVITY_PROVIDER
                     : BackgroundGeolocation.DISTANCE_FILTER_PROVIDER,
-            interval: 10000,
+            interval: 20000,
             fastestInterval: 10000,
-            activitiesInterval: 10000,
+            activitiesInterval: 20000,
             stopOnStillActivity: false,
-            url: 'http://192.168.0.97:3000/locations',
+            url: null,
             syncUrl: 'http://192.168.0.97:3000/sync',
             httpHeaders: {
                 'X-FOO': 'bar',
@@ -242,6 +242,12 @@ const useBackgroundGeolocationTracker = () => {
             );
         });
 
+
+        BackgroundGeolocation.on('stop', () => {
+            console.log('[INFO] BackgroundGeolocation service has been stopped');
+        });
+
+
         BackgroundGeolocation.checkStatus((status) => {
             console.log(
                 '[INFO] BackgroundGeolocation service is running',
@@ -257,7 +263,7 @@ const useBackgroundGeolocationTracker = () => {
 
             // you don't need to check status before start (this is just the example)
             // if (!status.isRunning) {
-            BackgroundGeolocation.start(); //triggers start on start event
+            // BackgroundGeolocation.start(); //triggers start on start event
             // }
         });
 

@@ -25,7 +25,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNFetchBlob from 'rn-fetch-blob';
 import {downloadFile, getDownloadPermissionAndroid} from './../auxFuncs/index';
 import RNFS from 'react-native-fs';
-
+import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
 import {Media, Pin, Trail, User} from '../model/model';
 
 import {
@@ -311,6 +311,7 @@ const TrailDetail = ({
 
   // GOOGLE MAPS
   const openGoogleMapsDirections = (locations: [number, number][]) => {
+    BackgroundGeolocation.start();
     const destinationString = locations
       .map(([latitude, longitude]) => `${latitude},${longitude}`)
       .join('/');
@@ -329,6 +330,13 @@ const TrailDetail = ({
       console.error('Error opening Google Maps:', err),
     );
   };
+
+  // End button
+
+  const endViagem = () => {
+    dispatch(acabeiViajar());
+    BackgroundGeolocation.stop();
+  }
 
   const [numerodePins, setNumeroPins] = useState(0);
   const [distancia, setDistancia] = useState(0);
@@ -518,6 +526,7 @@ const TrailDetail = ({
   
   }
 
+
   return (
     <View style={[styles.container, {backgroundColor: backgroundColor}]}>
       <ScrollView>
@@ -553,7 +562,20 @@ const TrailDetail = ({
 
             <ScrollView horizontal={true} style={styles.scrollViewPop}>
             {media.length === 0 || isPremium === false ? (
-            <View style={[styles.emptyImagens]}></View>
+            <View style={[styles.emptyImagens]}>
+            <MaterialIcons
+              name={'image-off-outline'}
+              size={100}
+              color={colorDiviver}
+              style={{paddingHorizontal: 10}}
+            />
+            <Text
+              style={[
+                {fontWeight: 500, color: colorDiviver, textAlign: 'center'},
+              ]}>
+              Media indisponível {'\n '} para utilizadores gratuitos
+            </Text>
+          </View>
           ) : (
             media.map((mediaItem, index) => (
               <View key={index} style={{ flexDirection: 'column', alignItems: 'center' }}>
@@ -657,7 +679,7 @@ const TrailDetail = ({
                   </TouchableOpacity>
                 )
               ) : (
-                <TouchableOpacity onPress={() => dispatch(acabeiViajar())}>
+                <TouchableOpacity onPress={() => endViagem()}>
                   {ButtonStartStop(false)}
                 </TouchableOpacity>
               )}
@@ -817,7 +839,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   emptyImagens: {
-    marginTop: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 225,
+    width: ScreenWidth,
+    backgroundColor: 'gray',
   },
   gridCollumn: {
     flexDirection: 'column',

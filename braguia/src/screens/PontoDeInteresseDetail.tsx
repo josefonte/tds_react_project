@@ -31,7 +31,7 @@ import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
 import {aViajar, acabeiViajar} from './../redux/actions';
-
+import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
 // SVG
 
 // COMPONENTES
@@ -98,10 +98,16 @@ const PontoDeInteresseDetail = ({
 
   // Abrir Maps
   const navigateToLocation = (latitude: number, longitude: number) => {
+    BackgroundGeolocation.start();
     const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
     dispatch(aViajar());
     Linking.openURL(url);
   };
+
+  const endViagem = () => {
+    dispatch(acabeiViajar());
+    BackgroundGeolocation.stop();
+  }
 
   // Dar audio
   useEffect(() => {
@@ -354,8 +360,19 @@ const PontoDeInteresseDetail = ({
                 </View>
               ) : isPremium === false ? (
                 <View style={[styles.emptyImagens]}>
-                  <Text>Media Premium Only</Text>
-                </View>
+                <MaterialIcons
+                  name={'image-off-outline'}
+                  size={100}
+                  color={colorDiviver}
+                  style={{paddingHorizontal: 10}}
+                />
+                <Text
+                  style={[
+                    {fontWeight: 500, color: colorDiviver, textAlign: 'center'},
+                  ]}>
+                  Media indisponível {'\n '} para utilizadores gratuitos
+                </Text>
+              </View>
               ): (
                 media.map((mediaItem, index) => (
                   <View
@@ -439,7 +456,7 @@ const PontoDeInteresseDetail = ({
             ) : (
               <TouchableOpacity
                 style={styles.botaoComecar}
-                onPress={() => dispatch(acabeiViajar())}>
+                onPress={() => endViagem()}>
                 {ButtonStartStop(false)}
               </TouchableOpacity>
             )}
@@ -506,7 +523,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   emptyImagens: {
-    marginTop: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 225,
+    width: ScreenWidth,
+    backgroundColor: 'gray',
   },
   containerMapa: {
     marginHorizontal: 15,
