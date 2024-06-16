@@ -98,9 +98,13 @@ export default function About() {
         case 'View':
           // Handle 'View' action
           console.log('User pressed "View" action');
+          console.log(notification.message);
+          const strr : string = notification.message.toString()
+          const lastChar: string = strr.slice(-1); // Get the last character
+          const lastCharAsInt: number = parseInt(lastChar, 10); // Convert to integer
           const fetchedTrails = await database.collections
           .get<Pin>('pins')
-          .query(Q.where('pin_id', notification.data.ponto))
+          .query(Q.where('pin_id', lastCharAsInt))
           .fetch();
           navigation.navigate('PontoDeInteresseDetail', {pin: fetchedTrails[0]})
           // Navigate to a specific screen or perform an action
