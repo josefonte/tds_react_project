@@ -25,10 +25,10 @@ const PopularTrail: React.FunctionComponent<PopularTrailProps> = ({trail}) => {
       return 'Fácil';
     }
     if (dificuldade === 'D') {
-      return 'Fácil';
+      return 'Médio -';
     }
     if (dificuldade === 'C') {
-      return 'Médio';
+      return 'Médio +';
     }
     if (dificuldade === 'B') {
       return 'Difícil';

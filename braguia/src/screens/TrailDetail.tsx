@@ -15,6 +15,7 @@ import {
   Platform,
   Linking,
   Dimensions,
+  Alert,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -25,7 +26,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {downloadFile, getDownloadPermissionAndroid} from './../auxFuncs/index';
 import RNFS from 'react-native-fs';
 
-import {Media, Pin, Trail} from '../model/model';
+import {Media, Pin, Trail, User} from '../model/model';
 
 import {
   acabeiViajar,
@@ -41,6 +42,8 @@ import Sound from 'react-native-sound';
 import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
+import { AuthContext } from '../navigation/AuthContext';
+
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';
@@ -48,6 +51,7 @@ import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {ScreenWidth} from '@rneui/themed/dist/config';
 import PontoDeInteresse from '../components/PontoDeInteresse';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { requestStoragePermission } from '../utils/location';
 
 const changeDifficulty = (dificuldade: string) => {
   if (dificuldade === 'E') {
@@ -80,7 +84,7 @@ const TrailDetail = ({
   const titleColor = theme.text;
   const textColor = theme.text2;
   const colorDiviver = theme.color8;
-
+  const {username} = React.useContext(AuthContext);
   const navigation = useNavigation();
   const trailsState = useSelector((state: RootState) => state.trails);
   const dispatch = useDispatch();
@@ -128,6 +132,24 @@ const TrailDetail = ({
   // Dar audio
   useEffect(() => {
     Sound.setCategory('Playback');
+
+    const fetchFavorite = async () => {
+      if (username) {
+        const usersCollection = database.collections.get<User>('users');
+        const user = await usersCollection
+          .query(Q.where('username', username))
+          .fetch();
+
+        if (user.length > 0) {
+          const userFavorites = user[0].favorites;
+          if (userFavorites.split(';').includes(trail.trailId.toString())) {
+            setFavoriteButton(true);
+          }
+        }
+      }
+    };
+
+    fetchFavorite();
   }, []);
 
   const requestCameraPermission = async () => {
@@ -417,34 +439,35 @@ const TrailDetail = ({
 
   //------------------- Download ----------------------------
 
-  const requestStoragePermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Permissão para download',
-          message: 'O BraGuia precisa de permissão para realizar o Download.',
-          buttonNeutral: 'Pergunte-me depois',
-          buttonNegative: 'Cancelar',
-          buttonPositive: 'OK',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Storage permission granted');
-        return true;
-      } else {
-        console.log('Storage permission denied');
-        return false;
-      }
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
+  
 
   const downloadFile =async(fileUrl) => {
-    const granted = await requestStoragePermission();
-    if(!granted) return;
+    let granted = await requestStoragePermission();
+    
+    if (!granted) {
+      // Permissão negada inicialmente, exibir pop-up
+      Alert.alert(
+        'Permissão necessária',
+        'Para baixar arquivos, é necessário permitir o acesso ao armazenamento.',
+        [
+          { text: 'Cancelar', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+          { text: 'Configurações', onPress: () => openAppSettings() },
+        ],
+        { cancelable: false }
+      );
+    } else {
+      // Permissão concedida, iniciar o download
+      console.log(`A iniciar download do arquivo: ${fileUrl}`);
+      // Continuar com o código para download aqui...
+    }
+
+    const openAppSettings = () => {
+      if (Platform.OS === 'ios') {
+        Linking.openURL('app-settings:');
+      } else {
+        Linking.openSettings();
+      }
+    };
     
     console.log(`A iniciar download do arquivo: ${fileUrl}`);
     const { dirs } = RNFetchBlob.fs;
@@ -529,7 +552,7 @@ const TrailDetail = ({
             </View>
 
             <ScrollView horizontal={true} style={styles.scrollViewPop}>
-            {media.length === 0 ? (
+            {media.length === 0 || isPremium === false ? (
             <View style={[styles.emptyImagens]}></View>
           ) : (
             media.map((mediaItem, index) => (
@@ -557,7 +580,7 @@ const TrailDetail = ({
                 ) : mediaItem.mediaType === 'V' ? (
                   <View>
                     <Video
-                      source={{ uri: mediaItem.DownloadedMediaFile || mediaItem.mediaFile }}
+                      source={{ uri: mediaItem.DownloadedMediaFile ? `file://${mediaItem.DownloadedMediaFile}` : mediaItem.mediaFile}}
                       style={styles.videoRolo}
                       controls={true}
                     />

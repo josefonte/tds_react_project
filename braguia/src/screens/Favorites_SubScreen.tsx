@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -13,7 +13,7 @@ import SugestedTrail from '../components/SugestedTrail';
 import database from '../model/database';
 import {Q} from '@nozbe/watermelondb';
 import {Trail, User} from '../model/model';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {AuthContext} from '../navigation/AuthContext';
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -30,38 +30,40 @@ export default function FavoritesTab() {
   const textColor = theme.text2;
   const colorDiviver = theme.color8;
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersCollection = database.collections.get<User>('users');
-        console.log('username:', username);
-        const userQuery = await usersCollection
-          .query(Q.where('username', username))
-          .fetch();
 
-        if (userQuery.length > 0 && userQuery[0].favorites !== '') {
-          const user = userQuery[0];
-          const trailIds =
-            user?.favorites?.split(';').map(i => parseInt(i)) ?? [];
-          console.log('trailIds:', trailIds);
-          if (trailIds.length > 0) {
-            const trailCollection = database.collections.get<Trail>('trails');
+  const fetchData = async () => {
+    try {
+      const usersCollection = database.collections.get<User>('users');
+      console.log('username:', username);
+      const userQuery = await usersCollection
+        .query(Q.where('username', username))
+        .fetch();
 
-            const trails = await trailCollection
-              .query(Q.where('trail_id', Q.oneOf(trailIds)))
-              .fetch();
+      if (userQuery.length > 0 && userQuery[0].favorites !== '') {
+        const user = userQuery[0];
+        const trailIds =
+          user?.favorites?.split(';').map(i => parseInt(i)) ?? [];
+        console.log('trailIds:', trailIds);
+        if (trailIds.length > 0) {
+          const trailCollection = database.collections.get<Trail>('trails');
 
-            setTrailList(trails);
-          }
+          const trails = await trailCollection
+            .query(Q.where('trail_id', Q.oneOf(trailIds)))
+            .fetch();
+
+          setTrailList(trails);
         }
-      } catch (error) {
-        console.error('Error fetching trails:', error);
       }
-    };
-    console.log('fetchData');
-
-    fetchData();
-  }, []);
+    } catch (error) {
+      console.error('Error fetching trails:', error);
+    }
+  };
+  useFocusEffect(
+    useCallback(() => {
+      console.log('fetchData');
+      fetchData();
+    }, [username])
+  );
 
   return (
     <View style={[styles.container, {backgroundColor: backgroundColor}]}>

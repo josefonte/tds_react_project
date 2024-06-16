@@ -15,6 +15,7 @@ import {
   Platform,
   Linking,
   Dimensions,
+  Alert,
 } from 'react-native';
 import {Media, Pin, Trail} from '../model/model';
 import Feather from 'react-native-vector-icons/Feather';
@@ -40,6 +41,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {ScreenHeight, ScreenWidth} from '@rneui/themed/dist/config';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { requestStoragePermission } from '../utils/location';
 const PontoDeInteresseDetail = ({
   route,
 }: {
@@ -231,34 +233,34 @@ const PontoDeInteresseDetail = ({
  
 //------------------- Download ---------------------------- 
 
-  const requestStoragePermission = async () => {
-    try{
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Permissão para download',
-          message: 'O BraGuia precisa de permissão para realizar o Download.',
-          buttonNeutral: 'Pergunte-me depois',
-          buttonNegative: 'Cancelar',
-          buttonPositive: 'OK',
-        }
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Storage permission granted');
-        return true;
-      } else {
-        console.log('Storage permission denied');
-        return false;
-      }
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
 
   const downloadFile = async fileUrl => {
-    const granted = await requestStoragePermission();
-    if (!granted) return;
+      let granted = await requestStoragePermission();
+      
+      if (!granted) {
+        // Permissão negada inicialmente, exibir pop-up
+        Alert.alert(
+          'Permissão necessária',
+          'Para baixar arquivos, é necessário permitir o acesso ao armazenamento.',
+          [
+            { text: 'Cancelar', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+            { text: 'Configurações', onPress: () => openAppSettings() },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        // Permissão concedida, iniciar o download
+        console.log(`A iniciar download do arquivo: ${fileUrl}`);
+        // Continuar com o código para download aqui...
+      }
+  
+      const openAppSettings = () => {
+        if (Platform.OS === 'ios') {
+          Linking.openURL('app-settings:');
+        } else {
+          Linking.openSettings();
+        }
+      };
 
     console.log(`Iniciando download do arquivo: ${fileUrl}`);
     const {dirs} = RNFetchBlob.fs;
@@ -346,11 +348,15 @@ const PontoDeInteresseDetail = ({
             </View>
 
             <ScrollView horizontal={true} style={styles.scrollViewPop}>
-              {media.length === 0 || isPremium === false ? (
+              {media.length === 0  ? (
+                <View style={[styles.emptyImagens]}>
+                  
+                </View>
+              ) : isPremium === false ? (
                 <View style={[styles.emptyImagens]}>
                   <Text>Media Premium Only</Text>
                 </View>
-              ) : (
+              ): (
                 media.map((mediaItem, index) => (
                   <View
                     key={index}
