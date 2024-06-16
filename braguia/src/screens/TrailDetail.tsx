@@ -20,7 +20,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import RNFS from 'react-native-fs';
 import RNFetchBlob from 'rn-fetch-blob';
 import {downloadFile, getDownloadPermissionAndroid} from './../auxFuncs/index';
 
@@ -235,11 +235,31 @@ const TrailDetail = ({
   const [locs, setLocs] = useState<[number, number][]>([]);
   const [flag, setFlag] = useState<number>(0);
   const [flag2, setFlag2] = useState<number>(0);
+  
   useEffect(() => {
     const fetchMedia = async () => {
       try {
         const mediaData = await getMediaFromTrail(trail.trailId);
-        setMedia(mediaData);
+        const localMediaData = await Promise.all(
+          mediaData.map(async (mediaItem) => {
+            const downloadDir = RNFS.DownloadDirectoryPath;
+            const filePath = `${downloadDir}/${mediaItem.mediaFile.split('/').pop()}`;
+            console.log("O ficheiro se estiver downloaded está com este caminho:",filePath);
+            const fileExists = await RNFS.exists(filePath);
+
+            if (fileExists) {
+              console.log("Entrei na condição se existe o ficheiro existe nos downloads");
+              const updatedMediaItem = {...mediaItem, DownloadedMediaFile: `${filePath}`, mediaType: mediaItem.mediaType};
+              return updatedMediaItem;
+            }
+            return mediaItem;
+          })
+        );
+
+        console.log('Local media data:', localMediaData); // Log the local media data
+
+        setMedia(localMediaData);
+
         const pinsData = await getPinsFromTrail(trail.trailId);
         await setPins(pinsData);
         await setLocs(pinsData.map(pin => [pin.pinLat, pin.pinLng]));
@@ -251,6 +271,12 @@ const TrailDetail = ({
 
     fetchMedia();
   }, [trail.id]);
+
+
+  useEffect(() => {
+    console.log("O estado media foi atualizado:", media);
+
+  }, [media]);
 
   useEffect(() => {
     console.log(pins);
@@ -421,119 +447,138 @@ const TrailDetail = ({
     }
   };
 
-  const downloadFile = async fileUrl => {
-    const granted = await requestStoragePermission();
-    if (!granted) return;
 
-    console.log(`Iniciando download do arquivo: ${fileUrl}`);
-    const {dirs} = RNFetchBlob.fs;
-    const dirToSave =
-      Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
-    const fileName = fileUrl.split('/').pop();
-
-    const configfb = {
-      fileCache: true,
-      addAndroidDownloads: {
-        useDownloadManager: true,
-        notification: true,
-        mediaScannable: true,
-        title: fileName,
-        path: `${dirToSave}/${fileName}`,
-        mime: 'application/octet-stream', // Fallback MIME type
-        description: 'Downloading file.',
-      },
+const downloadFile =async(fileUrl) => {
+  const granted = await requestStoragePermission();
+  if(!granted) return;
+  
+  console.log(`A iniciar download do arquivo: ${fileUrl}`);
+  const { dirs } = RNFetchBlob.fs;
+  const dirToSave = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+  const fileName = fileUrl.split('/').pop();
+  
+  const configfb = {
+    fileCache: true,
+    addAndroidDownloads: {
+      useDownloadManager: true,
+      notification: true,
+      mediaScannable: true,
+      title: fileName,
       path: `${dirToSave}/${fileName}`,
-      mime: 'application/octet-stream',
-    };
-
-    const configOptions = Platform.select({
-      ios: configfb,
-      android: configfb,
-    });
-
-    RNFetchBlob.config(configOptions || {})
-      .fetch('GET', fileUrl, {})
-      .then(res => {
-        console.log('Download concluído');
-        if (Platform.OS === 'ios') {
-          RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
-          RNFetchBlob.ios.previewDocument(configfb.path);
-        }
-        if (Platform.OS === 'android') {
-          console.log('Arquivo baixado');
-        }
-      })
-      .catch(e => {
-        console.log('Falha no download', e);
-      });
+      mime: 'application/octet-stream', // Fallback MIME type
+      description: 'Downloading file.'
+    },
+    path: `${dirToSave}/${fileName}`,
+    mime: 'application/octet-stream'
   };
+
+  const configOptions = Platform.select({
+    ios: configfb,
+    android: configfb,
+  });
+
+  try {
+    const res = await RNFetchBlob.config(configOptions || {}).fetch('GET', fileUrl, {});
+
+    console.log('Download concluído');
+
+    let downloadedFilePath;
+
+    if (Platform.OS === 'ios') {
+      await RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
+      downloadedFilePath = configfb.path;
+      RNFetchBlob.ios.previewDocument(configfb.path);
+    } else if (Platform.OS === 'android') {
+      console.log('Arquivo baixado');
+      downloadedFilePath = res.path(); // Obter o caminho do arquivo baixado no Android
+    }
+
+    console.log('Caminho do arquivo baixado:', downloadedFilePath);
+
+  } catch (e) {
+    console.log('Falha no download', e);
+  }
+
+}
 
   return (
     <View style={[styles.container, {backgroundColor: backgroundColor}]}>
       <ScrollView>
         <View>
-          <View style={{backgroundColor: backgroundColor}}>
-            <View
-              style={{
-                position: 'absolute',
-                top: 20,
-                left: 15,
-                zIndex: 2,
-              }}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <View
-                  style={{
-                    zIndex: 2,
-                    borderRadius: 100,
-                    backgroundColor: backgroundColor,
-                    width: 48,
-                    height: 48,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <Octicons
-                    name={'chevron-left'}
-                    size={28}
-                    color={colorDiviver}
-                    style={{paddingRight: 3}}
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
 
-            <ScrollView horizontal={true} style={styles.scrollViewPop}>
-              {media.length === 0 || isPremium === false ? (
-                <View style={[styles.emptyImagens]}>
-                  <Text>Media for Premium Only</Text>
-                </View>
-              ) : (
-                media.map((mediaItem, index) => (
-                  <View
-                    key={index}
-                    style={{flexDirection: 'column', alignItems: 'center'}}>
-                    {mediaItem.mediaType === 'R' ? (
-                      <TouchableOpacity
-                        onPress={() => playSound(mediaItem.mediaFile)}>
-                        <View style={styles.audioRolo}>
-                          <Text style={styles.audioText}>Play Audio</Text>
-                        </View>
-                      </TouchableOpacity>
-                    ) : mediaItem.mediaType === 'I' ? (
+        <View style={{ backgroundColor: isDarkMode ? '#161716' : 'white' }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+            <TouchableOpacity style={styles.botaoTopo} onPress={() => navigation.goBack()}>
+              <GoBack />
+            </TouchableOpacity>
+          </View>
+  
+          <ScrollView horizontal={true} style={styles.scrollViewPop}>
+            {media.length === 0 ? (
+              <View style={[styles.emptyImagens]}></View>
+            ) : (
+              media.map((mediaItem, index) => (
+                <View key={index} style={{ flexDirection: 'column', alignItems: 'center' }}>
+                  {mediaItem.mediaType === 'R' ? (
+                    <TouchableOpacity onPress={() => playSound(mediaItem.DownloadedMediaFile || mediaItem.mediaFile)}>
+                      <View style={styles.audioRolo}>
+                        <Text style={styles.audioText}>Áudio</Text>
+                        <Text style={styles.audioText}>Apenas Premium</Text>
+                        {mediaItem.DownloadedMediaFile && (
+                          <Text style={styles.textSimple}>Arquivo baixado</Text>
+                          )}
+                      </View>
+                    </TouchableOpacity>
+                  ) : mediaItem.mediaType === 'I' ? (
+                    <View>
                       <Image
-                        source={{uri: mediaItem.mediaFile}}
+                        source={{ uri: mediaItem.DownloadedMediaFile ? `file://${mediaItem.DownloadedMediaFile}` : mediaItem.mediaFile }}
                         style={styles.imagemRolo}
                       />
-                    ) : mediaItem.mediaType === 'V' ? (
+                      {mediaItem.DownloadedMediaFile && (
+                        <Text style={styles.textSimple}>Arquivo baixado</Text>
+                      )}
+                    </View>
+                  ) : mediaItem.mediaType === 'V' ? (
+                    <View>
                       <Video
-                        source={{uri: mediaItem.mediaFile}}
+                        source={{ uri: mediaItem.DownloadedMediaFile || mediaItem.mediaFile }}
                         style={styles.videoRolo}
                         controls={true}
                       />
-                    ) : (
-                      <View>
-                        <Text onPress={() => playSound(mediaItem.mediaFile)}>
-                          Unknown media type
+                      {mediaItem.DownloadedMediaFile && (
+                        <Text style={styles.downloadedText}>Arquivo baixado</Text>
+                      )}
+                    </View>
+                  ) : (
+                    <View style={styles.imagemRolo}>
+                      <Text onPress={() => playSound(mediaItem.mediaFile)}>
+                        <Text style={styles.unknown}>
+                          Tipo de mídia desconhecido
                         </Text>
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.botaoDownload}>
+                    <TouchableOpacity onPress={() => downloadFile(mediaItem.mediaFile)} >
+                      <View
+                        style={{
+                          backgroundColor: backgroundColor,
+                          borderColor: colorDiviver,
+                          borderWidth: 2,
+                          height: 50,
+                          width: 50,
+                          alignItems: 'center',
+                          borderRadius: 100,
+                          justifyContent: 'center',
+                        }}>
+                        <Feather
+                          name={'download'}
+                          size={25}
+                          color={colorDiviver}
+                          style={{ paddingHorizontal: 10 }}
+                          />
+
                       </View>
                     )}
                     <View style={styles.botaoDownload}>
