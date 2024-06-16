@@ -12,6 +12,7 @@ import {
   Image,
   ScrollView,
   Touchable,
+  ActivityIndicator,
 } from 'react-native';
 
 import {SearchBar} from '@rneui/themed';
@@ -139,11 +140,14 @@ export default function Explore() {
           </View>
         </TouchableOpacity>
       </View>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[styles.scrollViewContent, {marginTop: 10}]}>
+          contentContainerStyle={[
+            styles.scrollViewContent,
+            {marginTop: 10, marginLeft: 15, paddingRight: 15},
+          ]}>
           {[
             {
               packageNAme: 'Ionicons',
@@ -186,7 +190,10 @@ export default function Explore() {
           Roteiros Populares
         </Text>
         {trails && trails.length > 0 ? (
-          <ScrollView horizontal={true} style={styles.scrollViewPop}>
+          <ScrollView
+            showsHorizontalScrollIndicator={false}
+            horizontal={true}
+            style={[styles.scrollViewPop, {marginLeft: 15}]}>
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate('TrailDetail', {
@@ -205,13 +212,16 @@ export default function Explore() {
             </TouchableOpacity>
           </ScrollView>
         ) : (
-          <Text>Loading...</Text>
+          <ActivityIndicator size={'large'} />
         )}
         <Text style={[styles.textTitulo, {color: textColor}]}>
           Pontos de Interesse
         </Text>
         {pins && pins.length > 0 ? (
-          <ScrollView horizontal={true} style={styles.scrollViewPop}>
+          <ScrollView
+            showsHorizontalScrollIndicator={false}
+            horizontal={true}
+            style={[styles.scrollViewPop, {marginLeft: 15}]}>
             {pins
               .filter(
                 (pin, index, self) =>
@@ -231,22 +241,29 @@ export default function Explore() {
               ))}
           </ScrollView>
         ) : (
-          <Text>Loading...</Text>
+          <ActivityIndicator
+            size={'large'}
+            style={{width: '100%', marginVertical: 50}}
+          />
         )}
-        <Text style={[styles.textTitulo, {color: textColor, marginLeft: 10}]}>
+        <Text style={[styles.textTitulo, {color: textColor, marginLeft: 15}]}>
           Sugestões
         </Text>
         <View style={{marginHorizontal: 10}}>
-          {trails.map((trail: Trail, index: number) => (
-            <View key={index}>
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('TrailDetail', {trail: trail})
-                }>
-                <SugestedTrail trail={trail}></SugestedTrail>
-              </TouchableOpacity>
-            </View>
-          ))}
+          {trails && trails.length > 0 ? (
+            trails.map((trail: Trail, index: number) => (
+              <View key={index}>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('TrailDetail', {trail: trail})
+                  }>
+                  <SugestedTrail trail={trail}></SugestedTrail>
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <ActivityIndicator size={'large'} />
+          )}
         </View>
       </ScrollView>
     </View>
@@ -263,7 +280,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
   },
   textTitulo: {
     fontSize: 26,
@@ -272,7 +289,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 0.25,
     marginBottom: 20,
-    marginLeft: 10,
+    marginLeft: 15,
   },
   scrollViewContent: {
     flexDirection: 'row',

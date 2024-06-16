@@ -2,11 +2,11 @@ const initialState = {
   loading: false,
   error: null,
   viajar: false,
-  historico: [],
+  premium: false,
 };
 
 const trailsReducer = (state = initialState, action: any) => {
-  console.log(initialState.historico);
+  console.log(initialState.premium);
   switch (action.type) {
     case 'FETCH_TRAILS_REQUEST':
       return {
@@ -35,11 +35,15 @@ const trailsReducer = (state = initialState, action: any) => {
         ...state,
         viajar: false,
       };
-    case 'ADICIONEI_AO_HISTORICO_VIAGEM':
+    case 'COMECEI_A_VIAJAR':
       return {
         ...state,
-        historico: [...state.historico, action.payload],
         viajar: true,
+      };
+    case 'EU_SOU_PREMIUM':
+      return {
+        ...state,
+        premium: true,
       };
     default:
       return state;

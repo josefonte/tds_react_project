@@ -324,22 +324,23 @@ export default function ProfileConfigs() {
             <Text style={[styles.titleSection, {color: textColor}]}>
               Dados e Segurança
             </Text>
-            <Pressable>
-              <View style={[styles.button, { borderBottomColor: colorDiviver }]}>
-                <Text style={{ fontSize: 16, color: textColor, marginLeft: 10 }}>
+            <Pressable
+              style={({pressed}) => [
+                {
+                  backgroundColor: pressed ? colorDiviver : backgroundColor,
+                },
+              ]}
+              onPress={toggleSwitch}>
+              <View style={[styles.button, {borderBottomColor: colorDiviver}]}>
+                <Text style={{fontSize: 16, color: textColor, marginLeft: 10}}>
                   Serviços de Localização
                 </Text>
-                <Switch
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={isEnabled ? '#f4f3f4' : '#f4f3f4'}
-                  ios_backgroundColor="#3e3e3e"
-                  onValueChange={toggleSwitch}
-                  value={isEnabled}
-                  style={{
-                    end: 0,
-                    position: 'absolute',
-                    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
-                  }}
+
+                <Feather
+                  name={'external-link'}
+                  size={20}
+                  color={textColor}
+                  style={{end: 10, position: 'absolute'}}
                 />
               </View>
             </Pressable>

@@ -41,6 +41,7 @@ import MapScreen from '../components/mapScreen';
 import RNFetchBlob from 'rn-fetch-blob';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import { ScreenHeight, ScreenWidth } from '@rneui/themed/dist/config';
+import EncryptedStorage from 'react-native-encrypted-storage';
 const PontoDeInteresseDetail = ({
   route,
 }: {
@@ -142,7 +143,7 @@ const PontoDeInteresseDetail = ({
   }
 
   const [media, setMedia] = useState<Media[]>([]);
-
+  const [isPremium, setIsPremium] = useState<boolean>(false);
   const prevPinIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -150,6 +151,11 @@ const PontoDeInteresseDetail = ({
       try {
         const mediaData = await getMediaFromPin(pin.pinId);
         setMedia(mediaData);
+        const tipo = await EncryptedStorage.getItem('userType');
+        if (tipo === "Premium"){
+          console.log("[TIPO USER] SET PREMIUM");
+          setIsPremium(true);
+        }
       } catch (error) {
         console.error('Error fetching media:', error);
       }
@@ -252,8 +258,10 @@ const requestStoragePermission = async () => {
           </View>
   
           <ScrollView horizontal={true} style={styles.scrollViewPop}>
-            {media.length === 0 ? (
-              <View style={[styles.emptyImagens]}></View>
+            {media.length === 0 || isPremium === false ? (
+              <View style={[styles.emptyImagens]}>
+                <Text>Media for Premium Only</Text>
+              </View>
             ) : (
               media.map((mediaItem, index) => (
                 <View key={index} style={{ flexDirection: 'column', alignItems: 'center'}}>

@@ -1,12 +1,26 @@
 import React, {useEffect, useState} from 'react';
 import {SearchBar} from '@rneui/themed';
-import {View, Text, StyleSheet, ViewStyle, Image} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ViewStyle,
+  Image,
+  useColorScheme,
+} from 'react-native';
 import {Media, Pin, Trail} from '../model/model';
 import LinearGradient from 'react-native-linear-gradient';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from '../redux/store';
 import database from '../model/database';
 import {Q} from '@nozbe/watermelondb';
+
+import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Octicons from 'react-native-vector-icons/Octicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {darkModeTheme, lightModeTheme} from '../utils/themes';
+
 interface PontoDeInteresseProps {
   pin: Pin;
 }
@@ -17,6 +31,13 @@ const PontoDeInteresse: React.FunctionComponent<PontoDeInteresseProps> = ({
   console.log('Carreguei ponto de interesse popular');
   const trailsState = useSelector((state: RootState) => state.trails);
   const [media, setMedia] = useState<Media[]>([]);
+
+  const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
+
+  const backgroundColor = theme.background_color;
+  const titleColor = theme.text;
+  const textColor = theme.text2;
+  const colorDiviver = theme.color8;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,7 +74,35 @@ const PontoDeInteresse: React.FunctionComponent<PontoDeInteresseProps> = ({
   }
 
   const temMediaImagem = checkImagemMedia(media);
-  if (temMediaImagem === '') return null;
+  if (temMediaImagem === '')
+    return (
+      <View style={[styles.view]}>
+        <View>
+          <View
+            style={[
+              styles.popular,
+              {
+                backgroundColor: 'gray',
+                paddingTop: 30,
+                alignItems: 'center',
+              },
+            ]}>
+            <MaterialIcons
+              name="file-image-marker"
+              size={50}
+              color={colorDiviver}
+            />
+          </View>
+          <LinearGradient
+            colors={['#00000000', '#000000']}
+            style={styles.gradient}
+          />
+          <View style={[styles.viewTextoPop]}>
+            <Text style={[styles.textoPop]}>{pin.pinName}</Text>
+          </View>
+        </View>
+      </View>
+    );
   else {
     return (
       <View style={[styles.view]}>
@@ -85,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   textoPop: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     color: '#FEFAE0',
@@ -94,18 +143,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   popular: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
     borderRadius: 8,
   },
   view: {
-    marginLeft: 10,
+    marginLeft: 15,
     marginBottom: 20,
   },
   gradient: {
     position: 'absolute',
-    height: 100,
-    width: 100,
+    height: 120,
+    width: 120,
     borderRadius: 8,
   },
 });

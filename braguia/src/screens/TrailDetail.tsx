@@ -26,13 +26,11 @@ import {downloadFile, getDownloadPermissionAndroid} from './../auxFuncs/index';
 
 import {Media, Pin, Trail} from '../model/model';
 
-import GoBack from '../assets/goBack.svg';
-
 import {
   acabeiViajar,
   addFavoriteUser,
-  addHistorico,
   addHistoricoUser,
+  comecarViajar,
   removeFavoriteUser,
 } from '../redux/actions';
 import {AppDispatch, RootState} from '../redux/store';
@@ -42,14 +40,31 @@ import Sound from 'react-native-sound';
 import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
 import database from '../model/database';
-// SVG
-import StartButton from '../assets/startButton.svg';
-import EndButton from '../assets/acabarButton.svg';
 
 // COMPONENTES
 import MapScreen from '../components/mapScreen';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
-import { ScreenWidth } from '@rneui/themed/dist/config';
+import {ScreenWidth} from '@rneui/themed/dist/config';
+import PontoDeInteresse from '../components/PontoDeInteresse';
+import EncryptedStorage from 'react-native-encrypted-storage';
+
+const changeDifficulty = (dificuldade: string) => {
+  if (dificuldade === 'E') {
+    return 'Fácil';
+  }
+  if (dificuldade === 'D') {
+    return 'Fácil';
+  }
+  if (dificuldade === 'C') {
+    return 'Médio';
+  }
+  if (dificuldade === 'B') {
+    return 'Difícil';
+  }
+  if (dificuldade === 'A') {
+    return 'Mt. Difícil';
+  }
+};
 
 const TrailDetail = ({
   route,
@@ -58,27 +73,55 @@ const TrailDetail = ({
 }) => {
   console.log('Entrei num trail específico');
   const {trail} = route.params;
-  const isDarkMode = useColorScheme() === 'dark';
-
   const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
 
   const backgroundColor = theme.background_color;
   const titleColor = theme.text;
   const textColor = theme.text2;
   const colorDiviver = theme.color8;
-  const redButtonText = theme.redButtontitle;
-  const redButtonPressed = theme.redButtonPressed;
-  const redButton = theme.redButton;
 
   const navigation = useNavigation();
   const trailsState = useSelector((state: RootState) => state.trails);
   const dispatch = useDispatch();
 
   const [favoriteButton, setFavoriteButton] = useState<boolean>(false);
+  const [isPremium, setIsPremium] = useState<boolean>(false);
 
   const clickFavorite = () => {
     !favoriteButton ? addFavoriteUser(trail) : removeFavoriteUser(trail);
     setFavoriteButton(!favoriteButton);
+  };
+
+  const ButtonStartStop = (start: boolean) => {
+    return (
+      <View
+        style={{
+          width: start ? 125 : 115,
+          height: 50,
+          backgroundColor: start ? '#355228' : '#612828',
+          borderRadius: 15,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 5,
+          paddingHorizontal: 10,
+        }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: 600,
+            color: titleColor,
+            paddingLeft: 5,
+          }}>
+          {start ? 'Começar' : 'Acabar'}
+        </Text>
+        <MaterialIcons
+          name={start ? 'play-outline' : 'stop'}
+          size={22}
+          color={titleColor}
+        />
+      </View>
+    );
   };
 
   // Dar audio
@@ -237,7 +280,7 @@ const TrailDetail = ({
       .catch(error => {
         throw error;
       });
-
+    dispatch(comecarViajar());
     console.log(url);
     Linking.openURL(url).catch(err =>
       console.error('Error opening Google Maps:', err),
@@ -337,6 +380,11 @@ const TrailDetail = ({
       try {
         await getPinsFromTrail2();
         await getDistanceFromTrail();
+        const tipo = await EncryptedStorage.getItem('userType');
+        if (tipo === "Premium"){
+          console.log("[TIPO USER] SET PREMIUM");
+          setIsPremium(true);
+        }
       } catch (error) {
         console.error('Error fetching pins:', error);
         // Handle error if needed
@@ -346,43 +394,43 @@ const TrailDetail = ({
     fetchData(); // Call fetchData when the component mounts
   }, []);
 
-  
-//------------------- Download ---------------------------- 
+  //------------------- Download ----------------------------
 
-const requestStoragePermission = async () => {
-  try{
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-      {
-        title: 'Permissão para download',
-        message: 'O BraGuia precisa de permissão para realizar o Download.',
-        buttonNeutral: 'Pergunte-me depois',
-        buttonNegative: 'Cancelar',
-        buttonPositive: 'OK',
+  const requestStoragePermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Permissão para download',
+          message: 'O BraGuia precisa de permissão para realizar o Download.',
+          buttonNeutral: 'Pergunte-me depois',
+          buttonNegative: 'Cancelar',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Storage permission granted');
+        return true;
+      } else {
+        console.log('Storage permission denied');
+        return false;
       }
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('Storage permission granted');
-      return true;
-    } else {
-      console.log('Storage permission denied');
+    } catch (err) {
+      console.warn(err);
       return false;
     }
-  } catch (err) {
-    console.warn(err);
-    return false;
-  }
-};
+  };
 
-  const downloadFile =async(fileUrl) => {
+  const downloadFile = async fileUrl => {
     const granted = await requestStoragePermission();
-    if(!granted) return;
-    
+    if (!granted) return;
+
     console.log(`Iniciando download do arquivo: ${fileUrl}`);
-    const { dirs } = RNFetchBlob.fs;
-    const dirToSave = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+    const {dirs} = RNFetchBlob.fs;
+    const dirToSave =
+      Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
     const fileName = fileUrl.split('/').pop();
-    
+
     const configfb = {
       fileCache: true,
       addAndroidDownloads: {
@@ -392,10 +440,10 @@ const requestStoragePermission = async () => {
         title: fileName,
         path: `${dirToSave}/${fileName}`,
         mime: 'application/octet-stream', // Fallback MIME type
-        description: 'Downloading file.'
+        description: 'Downloading file.',
       },
       path: `${dirToSave}/${fileName}`,
-      mime: 'application/octet-stream'
+      mime: 'application/octet-stream',
     };
 
     const configOptions = Platform.select({
@@ -412,87 +460,109 @@ const requestStoragePermission = async () => {
           RNFetchBlob.ios.previewDocument(configfb.path);
         }
         if (Platform.OS === 'android') {
-          console.log("Arquivo baixado");
+          console.log('Arquivo baixado');
         }
       })
       .catch(e => {
         console.log('Falha no download', e);
       });
-
-  }
-
-
-
+  };
 
   return (
-    <View style={[styles.container, { backgroundColor: isDarkMode ? '#161716' : 'white' }]}>
+    <View style={[styles.container, {backgroundColor: backgroundColor}]}>
       <ScrollView>
         <View>
-        <View style={{ backgroundColor: isDarkMode ? '#161716' : 'white' }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-            <TouchableOpacity style={styles.botaoTopo} onPress={() => navigation.goBack()}>
-              <GoBack />
-            </TouchableOpacity>
-          </View>
-  
-          <ScrollView horizontal={true} style={styles.scrollViewPop}>
-            {media.length === 0 ? (
-              <View style={[styles.emptyImagens]}></View>
-            ) : (
-              media.map((mediaItem, index) => (
-                <View key={index} style={{ flexDirection: 'column', alignItems: 'center'}}>
-                  {mediaItem.mediaType === 'R' ? (
-                    <TouchableOpacity onPress={() => playSound(mediaItem.mediaFile)}>
-                      <View style={styles.audioRolo}>
-                        <Text style={styles.audioText}>Audio</Text>
-                        <Text style={styles.audioText}>Premium Only</Text>
-                      </View>
-                    </TouchableOpacity>
-                  ) : mediaItem.mediaType === 'I' ? (
-                    <Image
-                      source={{ uri: mediaItem.mediaFile }}
-                      style={styles.imagemRolo}
-                      />
-                  ) : mediaItem.mediaType === 'V' ? (
-                    <Video
-                    source={{ uri: mediaItem.mediaFile }}
-                      style={styles.videoRolo}
-                      controls={true}
-                    />
-                  ) : (
-                    <View>
-                      <Text onPress={() => playSound(mediaItem.mediaFile)}>
-                        Unknown media type
-                      </Text>
-                    </View>
-                  )}
-                  <View style={styles.botaoDownload}>
-                    <TouchableOpacity onPress={() => downloadFile(mediaItem.mediaFile)} >
-                      <View
-                        style={{
-                          backgroundColor: backgroundColor,
-                          borderColor: colorDiviver,
-                          borderWidth: 2,
-                          height: 50,
-                          width: 50,
-                          alignItems: 'center',
-                          borderRadius: 100,
-                          justifyContent: 'center',
-                        }}>
-                        <Feather
-                          name={'download'}
-                          size={25}
-                          color={colorDiviver}
-                          style={{ paddingHorizontal: 10 }}
-                          />
-                      </View>
-                    </TouchableOpacity>
-                  </View>
+          <View style={{backgroundColor: backgroundColor}}>
+            <View
+              style={{
+                position: 'absolute',
+                top: 20,
+                left: 15,
+                zIndex: 2,
+              }}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View
+                  style={{
+                    zIndex: 2,
+                    borderRadius: 100,
+                    backgroundColor: backgroundColor,
+                    width: 48,
+                    height: 48,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Octicons
+                    name={'chevron-left'}
+                    size={28}
+                    color={colorDiviver}
+                    style={{paddingRight: 3}}
+                  />
                 </View>
-              ))
-            )}
-          </ScrollView>
-            
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView horizontal={true} style={styles.scrollViewPop}>
+              {media.length === 0 || isPremium === false ? (
+                <View style={[styles.emptyImagens]}>
+                  <Text>Media for Premium Only</Text>
+                </View>
+              ) : (
+                media.map((mediaItem, index) => (
+                  <View
+                    key={index}
+                    style={{flexDirection: 'column', alignItems: 'center'}}>
+                    {mediaItem.mediaType === 'R' ? (
+                      <TouchableOpacity
+                        onPress={() => playSound(mediaItem.mediaFile)}>
+                        <View style={styles.audioRolo}>
+                          <Text style={styles.audioText}>Play Audio</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ) : mediaItem.mediaType === 'I' ? (
+                      <Image
+                        source={{uri: mediaItem.mediaFile}}
+                        style={styles.imagemRolo}
+                      />
+                    ) : mediaItem.mediaType === 'V' ? (
+                      <Video
+                        source={{uri: mediaItem.mediaFile}}
+                        style={styles.videoRolo}
+                        controls={true}
+                      />
+                    ) : (
+                      <View>
+                        <Text onPress={() => playSound(mediaItem.mediaFile)}>
+                          Unknown media type
+                        </Text>
+                      </View>
+                    )}
+                    <View style={styles.botaoDownload}>
+                      <TouchableOpacity
+                        onPress={() => downloadFile(mediaItem.mediaFile)}>
+                        <View
+                          style={{
+                            backgroundColor: backgroundColor,
+                            borderColor: colorDiviver,
+                            borderWidth: 2,
+                            height: 50,
+                            width: 50,
+                            alignItems: 'center',
+                            borderRadius: 100,
+                            justifyContent: 'center',
+                          }}>
+                          <Feather
+                            name={'download'}
+                            size={25}
+                            color={colorDiviver}
+                            style={{paddingHorizontal: 10}}
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))
+              )}
+            </ScrollView>
 
             <View style={styles.botaoComecar}>
               <TouchableOpacity onPress={clickFavorite}>
@@ -519,98 +589,152 @@ const requestStoragePermission = async () => {
               </TouchableOpacity>
               {trailsState.viajar === false ? (
                 flag === 0 ? (
-                  <TouchableOpacity>
-                    <StartButton />
-                  </TouchableOpacity>
+                  <TouchableOpacity>{ButtonStartStop(true)}</TouchableOpacity>
                 ) : (
                   <TouchableOpacity
                     onPress={() => openGoogleMapsDirections(locs)}>
-                    <StartButton />
+                    {ButtonStartStop(true)}
                   </TouchableOpacity>
                 )
               ) : (
                 <TouchableOpacity onPress={() => dispatch(acabeiViajar())}>
-                  <EndButton />
+                  {ButtonStartStop(false)}
                 </TouchableOpacity>
               )}
             </View>
           </View>
 
-          <Text style={[styles.textTitulo, {color: textColor}]}>
+          <Text style={[styles.textTitulo, {color: titleColor}]}>
             {trail.trailName}
           </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: 3,
+              alignContent: 'center',
+              alignItems: 'center',
+              marginTop: 5,
+              marginBottom: 20,
+            }}>
+            <Ionicons
+              name={'location-outline'}
+              size={16}
+              color={titleColor}
+              style={{marginLeft: 15}}
+            />
+            <Text style={[{color: titleColor, fontSize: 15}]}>Braga</Text>
+          </View>
+
           <Text
             style={[
-              styles.textSimple,
-              {color: textColor, fontSize: 13, marginBottom: 20},
+              {
+                fontSize: 15,
+                color: textColor,
+                textAlign: 'justify',
+                paddingHorizontal: 15,
+                lineHeight: 20,
+              },
             ]}>
-            Braga, Braga
-          </Text>
-          <Text style={[styles.textSimple, {color: textColor}]}>
             {trail.trailDesc}
           </Text>
-          <Text
-            style={[
-              styles.textTitulo,
-              {color: textColor, fontSize: 22, marginBottom: 10},
-            ]}>
-            Informação Geral
-          </Text>
-          <View style={styles.gridContainer}>
-            <View style={styles.itemContainer}>
-              <Text style={styles.itemText}>Comprimento do Roteiro</Text>
-              <Text style={styles.itemValue}>{distancia}</Text>
+
+          <View
+            style={[styles.horizontalLine, {backgroundColor: colorDiviver}]}
+          />
+
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingVertical: 10,
+              paddingHorizontal: 15,
+              width: '100%',
+              justifyContent: 'center',
+
+              alignItems: 'center',
+              gap: 5,
+            }}>
+            <View style={styles.gridCollumn}>
+              <View style={styles.gridItem}>
+                <Text style={[styles.gridText, {color: titleColor}]}>
+                  {distancia} <Text style={{fontSize: 12}}>km</Text>
+                </Text>
+                <Text style={{color: titleColor, fontSize: 12}}>
+                  Comprimento do Roteiro
+                </Text>
+              </View>
+              <View style={styles.gridItem}>
+                <Text style={[styles.gridText, {color: titleColor}]}>
+                  {numerodePins}
+                </Text>
+                <Text style={{color: titleColor, fontSize: 12}}>
+                  {' '}
+                  Pontos de Interesse
+                </Text>
+              </View>
             </View>
-            <View style={styles.itemContainer}>
-              <Text style={styles.itemText}>Tempo Médio</Text>
-              <Text style={styles.itemValue}>{trail.trailDuration}</Text>
+            <View style={styles.gridCollumn}>
+              <View style={styles.gridItem}>
+                <Text style={[styles.gridText, {color: titleColor}]}>
+                  {trail.trailDuration} <Text style={{fontSize: 12}}>km</Text>
+                </Text>
+                <Text style={{color: titleColor, fontSize: 12}}>
+                  Tempo Médio
+                </Text>
+              </View>
+              <View style={styles.gridItem}>
+                <Text style={[styles.gridText, {color: titleColor}]}>
+                  {changeDifficulty(trail.trailDifficulty)}
+                </Text>
+                <Text style={{color: titleColor, fontSize: 12}}>
+                  Dificuldade
+                </Text>
+              </View>
             </View>
           </View>
 
-          <View style={styles.gridContainer}>
-            <View style={styles.itemContainer}>
-              <Text style={styles.itemText}>Pontos de Interesse</Text>
-              <Text style={styles.itemValue}>{numerodePins}</Text>
-            </View>
-            <View style={styles.itemContainer}>
-              <Text style={styles.itemText}>Tipo de Roteiro</Text>
-              <Text style={styles.itemValue}>oi</Text>
-            </View>
-          </View>
+          <View
+            style={[styles.horizontalLine, {backgroundColor: colorDiviver}]}
+          />
 
           <Text
             style={[
-              styles.textTitulo,
-              {color: textColor, fontSize: 22, marginBottom: 10},
+              {
+                color: titleColor,
+                fontSize: 22,
+                marginBottom: 20,
+                marginLeft: 15,
+                fontWeight: '600',
+              },
             ]}>
-            Pontos de Interesse
+            Pontos do Roteiro
           </Text>
-          <View style={[styles.horizontalLine, styles.pinspins]} />
-          <View style={[styles.pinspins]}>
-            {flag2 === 0 ? (
-              <Text>Loading...</Text>
-            ) : (
-              pins.map((pin, index) => (
-                <View key={index}>
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() =>
-                      navigation.navigate('PontoDeInteresseDetail', {
-                        pin: pin,
-                      })
-                    }
-                    style={[styles.itemPontoInteresse]}>
-                    <Text key={index}>{pin.pinName}</Text>
-                  </TouchableOpacity>
-                  <View style={styles.horizontalLine} />
-                </View>
-              ))
-            )}
-          </View>
+
+          <ScrollView
+            showsHorizontalScrollIndicator={false}
+            horizontal={true}
+            style={styles.scrollViewPop}>
+            {pins.map((pin: Pin, index: number) => (
+              <View key={index}>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('PontoDeInteresseDetail', {
+                      pin: pin,
+                    })
+                  }>
+                  <PontoDeInteresse pin={pin}></PontoDeInteresse>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
           <Text
             style={[
-              styles.textTitulo,
-              {color: textColor, fontSize: 22, marginBottom: 10},
+              {
+                color: titleColor,
+                fontSize: 22,
+                marginBottom: 20,
+                marginLeft: 15,
+                fontWeight: '600',
+              },
             ]}>
             Mapa
           </Text>
@@ -632,18 +756,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  emptyImagens: {
+    marginTop: 200,
   },
-  itemContainer: {
-    width: '45%', // Adjust width as needed
-    marginBottom: 10,
-    borderWidth: 0,
-    borderColor: 'black',
-    padding: 10,
+  gridCollumn: {
+    flexDirection: 'column',
+    paddingHorizontal: 15,
+    gap: 15,
+    width: '50%',
   },
+  gridItem: {
+    height: 60,
+    width: '100%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 5,
+  },
+
+  gridText: {
+    fontSize: 25,
+    fontWeight: 'bold',
+  },
+
   itemText: {
     textAlign: 'center',
     fontSize: 16,
@@ -657,8 +792,7 @@ const styles = StyleSheet.create({
   horizontalLine: {
     height: 1,
     width: '100%',
-    backgroundColor: 'black',
-    marginVertical: 10,
+    marginVertical: 20,
   },
   linha: {
     width: 50,
@@ -666,21 +800,20 @@ const styles = StyleSheet.create({
   itemPontoInteresse: {
     marginTop: 4,
   },
-  pinspins: {
-    marginLeft: 20,
-  },
+
   containerMapa: {
-    height: 700,
+    height: 350,
+    marginHorizontal: 15,
   },
   textSimple: {
-    marginLeft: 10,
+    marginLeft: 15,
     fontFamily: 'Roboto',
     fontSize: 16,
   },
   textTitulo: {
-    marginTop: 20,
-    marginLeft: 10,
-    fontSize: 28,
+    marginTop: 30,
+    marginLeft: 15,
+    fontSize: 30,
     fontFamily: 'Roboto',
     lineHeight: 32,
     fontWeight: 'bold',
@@ -690,7 +823,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-
+    gap: 15,
     position: 'absolute',
     bottom: -20,
     right: 20,
@@ -711,7 +844,6 @@ const styles = StyleSheet.create({
   },
   scrollViewPop: {
     flexDirection: 'row',
-    zIndex: 1,
   },
   imagemRolo: {
     height: 225,
