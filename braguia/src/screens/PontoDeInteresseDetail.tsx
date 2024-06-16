@@ -160,11 +160,7 @@ const PontoDeInteresseDetail = ({
 
             if (fileExists) {
               console.log("Entrei na condição se existe o ficheiro existe nos downloads");
-              const updatedMediaItem = {...mediaItem, DownloadedMediaFile: `${filePath}`};
-              console.log('FilePath:', filePath); // Log the updated media item
-              console.log('Updated media item:', updatedMediaItem); // Log the updated media item
-              console.log("media api url:", mediaItem.mediaFile);
-              console.log("Downloaded media item", mediaItem.DownloadedMediaFile); // Log the downloaded media item
+              const updatedMediaItem = {...mediaItem, DownloadedMediaFile: `${filePath}`, mediaType: mediaItem.mediaType};
               return updatedMediaItem;
             }
             return mediaItem;
@@ -188,6 +184,7 @@ const PontoDeInteresseDetail = ({
   useEffect(() => {
     console.log("O estado media foi atualizado:", media);
     media.map((mediaItem) => {
+      console.log("cccc", mediaItem.mediaType);
       console.log("aaaa", mediaItem.mediaFile);
       console.log("bbbb", mediaItem.DownloadedMediaFile);
     });
@@ -270,8 +267,6 @@ const PontoDeInteresseDetail = ({
 
       console.log('Caminho do arquivo baixado:', downloadedFilePath);
 
-
-
     } catch (e) {
       console.log('Falha no download', e);
     }
@@ -298,23 +293,36 @@ const PontoDeInteresseDetail = ({
               media.map((mediaItem, index) => (
                 <View key={index} style={{ flexDirection: 'column', alignItems: 'center' }}>
                   {mediaItem.mediaType === 'R' ? (
-                    <TouchableOpacity onPress={() => playSound(mediaItem.mediaFile)}>
+                    <TouchableOpacity onPress={() => playSound(mediaItem.DownloadedMediaFile || mediaItem.mediaFile)}>
                       <View style={styles.audioRolo}>
                         <Text style={styles.audioText}>Áudio</Text>
                         <Text style={styles.audioText}>Apenas Premium</Text>
+                        {mediaItem.DownloadedMediaFile && (
+                          <Text style={styles.textSimple}>Arquivo baixado</Text>
+                          )}
                       </View>
                     </TouchableOpacity>
                   ) : mediaItem.mediaType === 'I' ? (
-                    <Image
-                      source={{ uri: mediaItem.DownloadedMediaFile ? `file://${mediaItem.DownloadedMediaFile}` : mediaItem.mediaFile }}
-                      style={styles.imagemRolo}
-                    />
+                    <View>
+                      <Image
+                        source={{ uri: mediaItem.DownloadedMediaFile ? `file://${mediaItem.DownloadedMediaFile}` : mediaItem.mediaFile }}
+                        style={styles.imagemRolo}
+                      />
+                      {mediaItem.DownloadedMediaFile && (
+                        <Text style={styles.textSimple}>Arquivo baixado</Text>
+                      )}
+                    </View>
                   ) : mediaItem.mediaType === 'V' ? (
-                    <Video
-                      source={{ uri: mediaItem.mediaFile }}
-                      style={styles.videoRolo}
-                      controls={true}
-                    />
+                    <View>
+                      <Video
+                        source={{ uri: mediaItem.DownloadedMediaFile || mediaItem.mediaFile }}
+                        style={styles.videoRolo}
+                        controls={true}
+                      />
+                      {mediaItem.DownloadedMediaFile && (
+                        <Text style={styles.downloadedText}>Arquivo baixado</Text>
+                      )}
+                    </View>
                   ) : (
                     <View style={styles.imagemRolo}>
                       <Text onPress={() => playSound(mediaItem.mediaFile)}>
