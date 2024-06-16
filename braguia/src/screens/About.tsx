@@ -87,6 +87,27 @@ export default function About() {
   //      console.log('mensagem lá dentro -> ' + notification.message)
   //  }
   //});
+  PushNotification.configure({
+    // Called when a remote or local notification is opened or received
+    onNotification: function (notification) {
+      console.log('Local Notification:', notification);
+  
+      // Determine which action was triggered
+      switch (notification.action) {
+        case 'View':
+          // Handle 'View' action
+          console.log('User pressed "View" action');
+          // Navigate to a specific screen or perform an action
+          // Example: navigation.navigate('DetailsScreen', { itemId: notification.data.itemId });
+          break;
+        // Add additional cases for other actions if needed
+  
+        default:
+          console.log(`Unknown action: ${notification.action}`);
+          break;
+      }
+    },
+  });
 
   const handlePress = (url: string) => {
     Linking.openURL(url).catch(err =>
