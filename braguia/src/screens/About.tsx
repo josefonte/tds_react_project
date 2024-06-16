@@ -14,9 +14,9 @@ import {
 import {lightModeTheme, darkModeTheme} from '../utils/themes';
 import {fetchTrails, fetchApp} from '../redux/actions';
 import database from '../model/database';
-import {App, Partners, Socials} from '../model/model';
+import {App, Partners, Pin, Socials} from '../model/model';
 import {useAppDispatch} from '../redux/hooks';
-
+import {useNavigation} from '@react-navigation/native';
 const MAX_RETRY_COUNT = 5;
 // Assets
 import AppLogo from '../assets/logo.svg';
@@ -28,10 +28,11 @@ import {PermissionsAndroid, Platform} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import BackgroundFetch from 'react-native-background-fetch';
 import PushNotification from 'react-native-push-notification';
+import { Q } from '@nozbe/watermelondb';
 
 export default function About() {
   const theme = useColorScheme() === 'dark' ? darkModeTheme : lightModeTheme;
-
+  const navigation = useNavigation();
   const [appData, setAppData] = useState<App[]>([]);
   const [socialsData, setSocialsData] = useState<Socials[]>([]);
   const [partnersData, setPartnersData] = useState<Partners[]>([]);
@@ -89,7 +90,7 @@ export default function About() {
   //});
   PushNotification.configure({
     // Called when a remote or local notification is opened or received
-    onNotification: function (notification) {
+    onNotification: async function (notification) {
       console.log('Local Notification:', notification);
   
       // Determine which action was triggered
@@ -97,6 +98,11 @@ export default function About() {
         case 'View':
           // Handle 'View' action
           console.log('User pressed "View" action');
+          const fetchedTrails = await database.collections
+          .get<Pin>('pins')
+          .query(Q.where('pin_id', notification.data.ponto))
+          .fetch();
+          navigation.navigate('PontoDeInteresseDetail', {pin: fetchedTrails[0]})
           // Navigate to a specific screen or perform an action
           // Example: navigation.navigate('DetailsScreen', { itemId: notification.data.itemId });
           break;

@@ -170,7 +170,7 @@ const useBackgroundGeolocationTracker = () => {
                 const check = triggeredPointOrNot(ponto.lat, ponto.lng, location.latitude, location.longitude)
                 if (check === true) {
                     const simplePonto = {
-                        ponto: ponto.pin
+                        ponto: ponto.pin.pinId
                         // Add other properties as needed, ensuring no circular references
                     };
                     console.log("VOU MANDAR NOTIFICAÇAO!");
@@ -179,7 +179,8 @@ const useBackgroundGeolocationTracker = () => {
                         channelId: "notificacaoPins",
                         title: 'Triggered Point Detected',
                         message: `Point (${ponto.lat}, ${ponto.lng}) is close!`,
-                        actions: ["View"]
+                        actions: ["View"],
+                        userInfo: { simplePonto }
                     });
                 }
                 else {
