@@ -6,6 +6,7 @@ import {
   View,
   Pressable,
   useColorScheme,
+  Alert,
 } from 'react-native';
 
 import {useNavigation} from '@react-navigation/native';
@@ -14,6 +15,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
+
+import Mailer from 'react-native-mail';
 
 import {AuthContext} from '../navigation/AuthContext';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
@@ -31,6 +34,22 @@ export default function Feedback() {
   const redButtonText = theme.redButtontitle;
   const redButtonPressed = theme.redButtonPressed;
   const redButton = theme.redButton;
+
+
+  const handleEmail = () => {
+    Mailer.mail({
+      subject: 'Feedback',
+      recipients: ['pg53751@alunos.uminho.pt'], // Replace with your email address
+      body: text,
+      isHTML: false,
+    }, (error, event) => {
+      if (error) {
+        Alert.alert('Error', 'Could not send email. Please try again.');
+      } else {
+        Alert.alert('Success', 'Email sent successfully.');
+      }
+    });
+  };
 
   return (
     <View style={[styles.container, {backgroundColor}]}>
@@ -83,7 +102,8 @@ export default function Feedback() {
           textAlignVertical="top"
         />
         <Pressable
-          style={[styles.buttonIniciar, {backgroundColor: titleColor}]}>
+          style={[styles.buttonIniciar, {backgroundColor: titleColor}]}
+          onPress={handleEmail}>
           <Text style={[styles.textIniciar, {color: backgroundColor}]}>
             Enviar Mensagem
           </Text>
