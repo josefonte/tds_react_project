@@ -28,32 +28,6 @@ const requestBackgroundLocation = async (): Promise<boolean> => {
     }
 };
 
-const requestStoragePermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        //{
-        //  title: 'Permissão para download',
-        //  message: 'O BraGuia precisa de permissão para realizar o Download.',
-        //  buttonNeutral: 'Pergunte-me depois',
-        //  buttonNegative: 'Cancelar',
-        //  buttonPositive: 'OK',
-        //},
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Storage permission granted');
-        return true;
-      } else {
-        console.log('Storage permission denied');
-        return false;
-      }
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
-
-
 const requestFineLocation = async (): Promise<boolean> => {
     try {
         const granted = await PermissionsAndroid.request(
@@ -80,4 +54,4 @@ const requestFineLocation = async (): Promise<boolean> => {
 };
 
 
-export { requestBackgroundLocation, requestFineLocation, requestStoragePermission };
+export { requestBackgroundLocation, requestFineLocation};

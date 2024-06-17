@@ -292,4 +292,3 @@ const useBackgroundGeolocationTracker = () => {
 };
 
 export default useBackgroundGeolocationTracker;
-

@@ -29,6 +29,7 @@ import {useAppSelector, useAppDispatch} from '../redux/hooks';
 import Sound from 'react-native-sound';
 import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
+import { downloadFile } from '../utils/Downloads';
 import database from '../model/database';
 import {aViajar, acabeiViajar} from './../redux/actions';
 import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
@@ -41,7 +42,6 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {ScreenHeight, ScreenWidth} from '@rneui/themed/dist/config';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import { requestStoragePermission } from '../utils/location';
 const PontoDeInteresseDetail = ({
   route,
 }: {
@@ -236,87 +236,6 @@ const PontoDeInteresseDetail = ({
   }, [media]);
 
 
- 
-//------------------- Download ---------------------------- 
-
-
-  const downloadFile = async fileUrl => {
-      let granted = await requestStoragePermission();
-      
-      if (!granted) {
-        // Permissão negada inicialmente, exibir pop-up
-        Alert.alert(
-          'Permissão necessária',
-          'Para baixar arquivos, é necessário permitir o acesso ao armazenamento.',
-          [
-            { text: 'Cancelar', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
-            { text: 'Configurações', onPress: () => openAppSettings() },
-          ],
-          { cancelable: false }
-        );
-      } else {
-        // Permissão concedida, iniciar o download
-        console.log(`A iniciar download do arquivo: ${fileUrl}`);
-        // Continuar com o código para download aqui...
-      }
-  
-      const openAppSettings = () => {
-        if (Platform.OS === 'ios') {
-          Linking.openURL('app-settings:');
-        } else {
-          Linking.openSettings();
-        }
-      };
-
-    console.log(`Iniciando download do arquivo: ${fileUrl}`);
-    const {dirs} = RNFetchBlob.fs;
-    const dirToSave =
-      Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
-    const fileName = fileUrl.split('/').pop();
-
-    const configfb = {
-      fileCache: true,
-      addAndroidDownloads: {
-        useDownloadManager: true,
-        notification: true,
-        mediaScannable: true,
-        title: fileName,
-        path: `${dirToSave}/${fileName}`,
-        mime: 'application/octet-stream', // Fallback MIME type
-        description: 'Downloading file.',
-      },
-      path: `${dirToSave}/${fileName}`,
-      mime: 'application/octet-stream',
-    };
-
-    const configOptions = Platform.select({
-      ios: configfb,
-      android: configfb,
-    });
-
-    try {
-      const res = await RNFetchBlob.config(configOptions || {}).fetch('GET', fileUrl, {});
-  
-      console.log('Download concluído');
-  
-      let downloadedFilePath;
-
-      if (Platform.OS === 'ios') {
-        await RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
-        downloadedFilePath = configfb.path;
-        RNFetchBlob.ios.previewDocument(configfb.path);
-      } else if (Platform.OS === 'android') {
-        console.log('Arquivo baixado');
-        downloadedFilePath = res.path(); // Obter o caminho do arquivo baixado no Android
-      }
-
-      console.log('Caminho do arquivo baixado:', downloadedFilePath);
-
-    } catch (e) {
-      console.log('Falha no download', e);
-    }
-
-  }
 
 
 

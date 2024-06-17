@@ -28,8 +28,9 @@ import {AuthProvider} from './navigation/AuthContext';
 import { PermissionsAndroid, Platform } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import { requestBackgroundLocation, requestFineLocation, requestStoragePermission} from './utils/location';
+import { requestBackgroundLocation, requestFineLocation} from './utils/location';
 import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
+import { requestStoragePermission } from './utils/Downloads';
 import useBackgroundGeolocationTracker from './utils/BgTracking';
 
 const Tab = createBottomTabNavigator();
