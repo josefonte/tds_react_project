@@ -21,7 +21,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { downloadFile } from '../utils/Downloads';
+
 import RNFetchBlob from 'rn-fetch-blob';
 import RNFS from 'react-native-fs';
 import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
@@ -50,6 +50,7 @@ import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {ScreenWidth} from '@rneui/themed/dist/config';
 import PontoDeInteresse from '../components/PontoDeInteresse';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { downloadFile } from '../utils/Downloads';
 
 const changeDifficulty = (dificuldade: string) => {
   if (dificuldade === 'E') {
@@ -444,8 +445,6 @@ const TrailDetail = ({
   }, []);
 
   
-
-
   return (
     <View style={[styles.container, {backgroundColor: backgroundColor}]}>
       <ScrollView>

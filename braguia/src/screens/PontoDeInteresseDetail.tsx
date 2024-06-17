@@ -29,7 +29,6 @@ import {useAppSelector, useAppDispatch} from '../redux/hooks';
 import Sound from 'react-native-sound';
 import Video, {VideoRef} from 'react-native-video';
 import {Q} from '@nozbe/watermelondb';
-import { downloadFile } from '../utils/Downloads';
 import database from '../model/database';
 import {aViajar, acabeiViajar} from './../redux/actions';
 import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
@@ -42,6 +41,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {darkModeTheme, lightModeTheme} from '../utils/themes';
 import {ScreenHeight, ScreenWidth} from '@rneui/themed/dist/config';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { downloadFile } from '../utils/Downloads';
 const PontoDeInteresseDetail = ({
   route,
 }: {
@@ -235,6 +235,8 @@ const PontoDeInteresseDetail = ({
 
   }, [media]);
 
+
+ 
 
 
 

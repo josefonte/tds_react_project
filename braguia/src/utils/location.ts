@@ -54,4 +54,4 @@ const requestFineLocation = async (): Promise<boolean> => {
 };
 
 
-export { requestBackgroundLocation, requestFineLocation};
+export { requestBackgroundLocation, requestFineLocation, requestStoragePermission };
