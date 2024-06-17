@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { PermissionsAndroid, Alert, AppState, AppStateStatus } from 'react-native';
+import { PermissionsAndroid, Alert, AppState, AppStateStatus, Platform, Linking } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import BackgroundTimer from 'react-native-background-timer';
-
+import { canOpenURL, openURL } from 'react-native-app-link';
 const requestBackgroundLocation = async (): Promise<boolean> => {
     try {
         const granted = await PermissionsAndroid.request(
@@ -54,4 +54,7 @@ const requestFineLocation = async (): Promise<boolean> => {
 };
 
 
-export { requestBackgroundLocation, requestFineLocation, requestStoragePermission };
+
+export { requestBackgroundLocation, requestFineLocation};
+
+

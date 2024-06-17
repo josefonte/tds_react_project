@@ -38,6 +38,42 @@ export default function About() {
   const [partnersData, setPartnersData] = useState<Partners[]>([]);
   const [retryCount, setRetryCount] = useState<number>(0);
 
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [googleMapsInstalled, setGoogleMapsInstalled] = useState(false);
+
+  useEffect(() => {
+    const checkGoogleMapsInstallation = async () => {
+      // Verifica se o Google Maps está instalado
+      const url = 'https://maps.google.com';
+      const isInstalled = await Linking.canOpenURL(url);
+      setGoogleMapsInstalled(isInstalled);
+      
+      // Mostra o pop-up se o Google Maps não estiver instalado
+      if (!isInstalled) {
+        setShowPopup(true);
+      }
+    };
+
+    checkGoogleMapsInstallation();
+  }, []);
+
+  const handleInstallGoogleMaps = () => {
+    const googleMapsUrl =
+      Platform.OS === 'ios'
+        ? 'https://apps.apple.com/us/app/google-maps-transit-food/id585027354'
+        : 'https://play.google.com/store/apps/details?id=com.google.android.apps.maps';
+
+    Linking.openURL(googleMapsUrl).then(() => {
+      setShowPopup(false); // Fecha o pop-up após redirecionar para a loja
+    }).catch(err => console.error('Failed to open Google Maps URL:', err));
+  };
+
+
+
+
+
+
   var flag = false;
   useEffect(() => {
     const fetchData = async () => {
@@ -81,6 +117,9 @@ export default function About() {
 
     fetchData();
   }, [retryCount]);
+
+
+
 
   //PushNotification.configure({
   //  onAction: function (notification) {
@@ -189,6 +228,35 @@ export default function About() {
       alignItems: 'center',
       alignContent: 'center',
     },
+    // Estilos para o pop-up de instalação do Google Maps
+    popupContainer: {
+      position: 'absolute',
+      backgroundColor: theme.background_color,
+      padding: 20,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: theme.color8,
+      width: '80%',
+      alignSelf: 'center',
+      top: '30%',
+    },
+    popupText: {
+      fontSize: 16,
+      marginBottom: 10,
+      textAlign: 'center',
+      fontFamily: 'Roboto',
+      color: theme.text,
+    },
+    popupButton: {
+      padding: 10,
+      borderRadius: 5,
+      marginTop: 10,
+      alignItems: 'center',
+    },
+    popupButtonText: {
+      fontSize: 16,
+      color: theme.text,
+    },
   });
 
   return (
@@ -249,6 +317,20 @@ export default function About() {
           })}
         </View>
       </View>
+    {/* Pop-up para instalação do Google Maps */}
+    {showPopup && !googleMapsInstalled && (
+        <View style={styles.popupContainer}>
+          <Text style={styles.popupText}>
+            Parece que o Google Maps não está instalado. Instale para uma melhor experiência.
+          </Text>
+          <TouchableOpacity style={styles.popupButton} onPress={handleInstallGoogleMaps}>
+            <Text style={styles.popupButtonText}>Instalar Google Maps</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.popupButton} onPress={() => setShowPopup(false)}>
+            <Text style={styles.popupButtonText}>Ignorar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
