@@ -51,6 +51,11 @@ export default function Explore() {
   const [trails, setTrails] = useState<Trail[]>([]);
   const [search, setSearch] = useState('');
   const [filterIconPressed, setFilterIconPressed] = useState<number[]>([]);
+  const [filteredTrails, setFilteredTrails] = useState<Trail[]>([]);
+  const [filteredPins, setFilteredPins] = useState<Pin[]>([]);
+
+  
+
 
   const changeFilters = (filter: number) => {
     if (filterIconPressed.includes(filter)) {
@@ -68,6 +73,17 @@ export default function Explore() {
 
   const updateSearch = (search: string) => {
     setSearch(search);
+    const lowerCaseSearch = search.toLowerCase();
+
+    const filteredTrails = trails.filter(trail =>
+      trail.trailName.toLowerCase().includes(lowerCaseSearch)
+    );  
+    setFilteredTrails(filteredTrails);
+
+    const filteredPins = pins.filter(pin =>
+      pin.pinName.toLowerCase().includes(lowerCaseSearch)
+    );
+    setFilteredPins(filteredPins);
   };
 
   useEffect(() => {
@@ -92,6 +108,10 @@ export default function Explore() {
     fetchData();
   }, []);
 
+  const handleSearch = (text: string) => {
+    setSearch(text);
+  };
+
   return (
     <View
       style={{
@@ -103,7 +123,7 @@ export default function Explore() {
       <View style={styles.containerTop}>
         <SearchBar
           placeholder="Pesquisar..."
-          onChangeText={updateSearch}
+          onChangeText={handleSearch}
           value={search}
           lightTheme={!isDarkMode}
           containerStyle={{
